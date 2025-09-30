@@ -1,6 +1,7 @@
 package com.vicgarci.kgbem.cpu
 
 import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toFlagsRegister
+import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toUByte
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -94,6 +95,69 @@ class RegistersTest {
                 carry = true,
             ),
             ALL_ZERO.copy(f = 0b11110000.toUByte()).f.toFlagsRegister(),
+        )
+    }
+
+    @Test
+    fun flagsRegisterToUByte() {
+        assertEquals(
+            0xF0.toUByte(),
+            FlagsRegister(
+                zero = true,
+                subtract = true,
+                halfCarry = true,
+                carry = true,
+            ).toUByte(),
+        )
+
+        assertEquals(
+            0x00.toUByte(),
+            FlagsRegister(
+                zero = false,
+                subtract = false,
+                halfCarry = false,
+                carry = false,
+            ).toUByte(),
+        )
+
+        assertEquals(
+            0b11100000.toUByte(),
+            FlagsRegister(
+                zero = true,
+                subtract = true,
+                halfCarry = true,
+                carry = false,
+            ).toUByte(),
+        )
+
+        assertEquals(
+            0b11010000.toUByte(),
+            FlagsRegister(
+                zero = true,
+                subtract = true,
+                halfCarry = false,
+                carry = true,
+            ).toUByte(),
+        )
+
+        assertEquals(
+            0b10110000.toUByte(),
+            FlagsRegister(
+                zero = true,
+                subtract = false,
+                halfCarry = true,
+                carry = true,
+            ).toUByte(),
+        )
+
+        assertEquals(
+            0b01110000.toUByte(),
+            FlagsRegister(
+                zero = false,
+                subtract = true,
+                halfCarry = true,
+                carry = true,
+            ).toUByte(),
         )
     }
 }
