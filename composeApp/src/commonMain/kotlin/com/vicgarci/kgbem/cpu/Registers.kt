@@ -1,14 +1,14 @@
 package com.vicgarci.kgbem.cpu
 
 data class Registers(
-    val a: UByte,
-    val b: UByte,
-    val c: UByte,
-    val d: UByte,
-    val e: UByte,
-    val f: UByte,
-    val h: UByte,
-    val l: UByte,
+    var a: UByte,
+    var b: UByte,
+    var c: UByte,
+    var d: UByte,
+    var e: UByte,
+    var f: UByte,
+    var h: UByte,
+    var l: UByte,
 ) {
 
     val af: UShort
@@ -28,6 +28,13 @@ data class Registers(
     }
 }
 
+/**
+ * @param zero true if the result of the last operation is equal to 0.
+ * @param subtract true if the last operation was a subtraction.
+ * @param carry true if the last operation resulted in an overflow.
+ * @param halfCarry true if there is an overflow from the lower nibble (the lower 4 bits) to the
+ * upper nibble (the upper 4 bits).
+ */
 data class FlagsRegister(
     val zero: Boolean,
     val subtract: Boolean,
@@ -44,15 +51,24 @@ data class FlagsRegister(
 
         fun from(register: UByte): FlagsRegister {
             return FlagsRegister(
-                zero = register.toInt().shr(ZERO_FLAG_BYTE_POSITION).and(0b1) != 0,
-                subtract = register.toInt().shr(SUBTRACT_FLAG_BYTE_POSITION).and(0b1) != 0,
-                halfCarry = register.toInt().shr(HALF_CARRY_FLAG_BYTE_POSITION).and(0b1) != 0,
-                carry = register.toInt().shr(CARRY_FLAG_BYTE_POSITION).and(0b1) != 0,
+                zero = register.toInt().ushr(ZERO_FLAG_BYTE_POSITION).and(0b1) != 0,
+                subtract = register.toInt().ushr(SUBTRACT_FLAG_BYTE_POSITION).and(0b1) != 0,
+                halfCarry = register.toInt().ushr(HALF_CARRY_FLAG_BYTE_POSITION).and(0b1) != 0,
+                carry = register.toInt().ushr(CARRY_FLAG_BYTE_POSITION).and(0b1) != 0,
             )
         }
 
         fun UByte.toFlagsRegister(): FlagsRegister {
             return from(this)
+        }
+
+        fun FlagsRegister.toUByte(): UByte {
+            var register = 0x00
+            register = register or (if (zero) 0b1 else 0b0).shl(ZERO_FLAG_BYTE_POSITION)
+            register = register or (if (subtract) 0b1 else 0b0).shl(SUBTRACT_FLAG_BYTE_POSITION)
+            register = register or (if (halfCarry) 0b1 else 0b0).shl(HALF_CARRY_FLAG_BYTE_POSITION)
+            register = register or (if (carry) 0b1 else 0b0).shl(CARRY_FLAG_BYTE_POSITION)
+            return register.toUByte()
         }
     }
 }
