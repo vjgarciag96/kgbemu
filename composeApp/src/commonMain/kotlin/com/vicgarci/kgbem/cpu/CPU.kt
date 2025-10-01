@@ -10,6 +10,7 @@ class CPU(
         when (instruction) {
             is Instruction.Add -> add(instruction.target)
             is Instruction.AddHl -> addHl(instruction.target)
+            is Instruction.AddC -> addC(instruction.target)
         }
     }
 
@@ -39,6 +40,26 @@ class CPU(
         registers.hl = sum
         val flags = FlagsRegister(
             zero = sum == 0.toUShort(),
+            subtract = false,
+            halfCarry = halfCarry,
+            carry = carry,
+        )
+        registers.f = flags.toUByte()
+    }
+
+    private fun addC(
+        target: ArithmeticTarget
+    ) {
+        val targetValue = getArithmeticTargetValue(target)
+        val (sum, carry, halfCarry) = overflowAdd(
+            registers.a.toUShort(),
+            targetValue.toUShort(),
+        )
+        val sumWithCarry = (sum + if (carry) 0b1.toUByte() else 0b0.toUByte()).toUByte()
+
+        registers.a = sumWithCarry
+        val flags = FlagsRegister(
+            zero = sumWithCarry == 0.toUByte(),
             subtract = false,
             halfCarry = halfCarry,
             carry = carry,

@@ -11,6 +11,13 @@ sealed interface Instruction {
     data class AddHl(
         override val target: ArithmeticTarget,
     ) : Instruction
+
+    /**
+     * Add with carry
+     */
+    data class AddC(
+        override val target: ArithmeticTarget,
+    ) : Instruction
 }
 
 enum class ArithmeticTarget {
