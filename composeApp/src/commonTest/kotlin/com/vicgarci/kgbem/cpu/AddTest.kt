@@ -34,8 +34,8 @@ class AddTest {
     @Test
     fun add_carry() {
         val result = overflowAdd(
-            0xFF.toUByte().also { println(it) },
-            0b1.toUByte().also { println(it) },
+            0xFF.toUByte(),
+            0b1.toUByte(),
         )
 
         assertEquals(0x0100.toUShort(), result.sum)
