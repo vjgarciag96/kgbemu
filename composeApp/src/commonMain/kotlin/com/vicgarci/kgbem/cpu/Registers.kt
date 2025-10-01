@@ -20,8 +20,12 @@ data class Registers(
     val de: UShort
         get() = getVirtual16BitRegister(d, e)
 
-    val hl: UShort
+    var hl: UShort
         get() = getVirtual16BitRegister(h, l)
+        set(value) {
+            h = ((value.toInt() and 0xFF00) ushr 8).toUByte()
+            l = ((value.toInt() and 0xFF)).toUByte()
+        }
 
     private fun getVirtual16BitRegister(left: UByte, right: UByte): UShort {
         return ((left.toInt().shl(8)) or (right.toInt())).and(0xFFFF).toUShort()

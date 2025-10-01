@@ -7,6 +7,10 @@ sealed interface Instruction {
     data class Add(
         override val target: ArithmeticTarget,
     ) : Instruction
+
+    data class AddHl(
+        override val target: ArithmeticTarget,
+    ) : Instruction
 }
 
 enum class ArithmeticTarget {

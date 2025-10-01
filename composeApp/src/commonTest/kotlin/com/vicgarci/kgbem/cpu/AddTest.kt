@@ -14,7 +14,7 @@ class AddTest {
             0x01.toUByte(),
         )
 
-        assertEquals(0x01.toUByte(), result.sum)
+        assertEquals(0x01.toUShort(), result.sum)
         assertFalse(result.carry)
         assertFalse(result.halfCarry)
     }
@@ -22,11 +22,11 @@ class AddTest {
     @Test
     fun add_halfCarry() {
         val result = overflowAdd(
-            0x0F.toUByte().also { println(it) },
-            0b1.toUByte().also { println(it) },
+            0x0F.toUByte(),
+            0b1.toUByte(),
         )
 
-        assertEquals(0x10.toUByte(), result.sum)
+        assertEquals(0x10.toUShort(), result.sum)
         assertFalse(result.carry)
         assertTrue(result.halfCarry)
     }
@@ -38,7 +38,7 @@ class AddTest {
             0b1.toUByte().also { println(it) },
         )
 
-        assertEquals(0x00.toUByte(), result.sum)
+        assertEquals(0x0100.toUShort(), result.sum)
         assertTrue(result.carry)
         assertTrue(result.halfCarry)
     }
