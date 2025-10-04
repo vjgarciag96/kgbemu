@@ -1,5 +1,6 @@
 package com.vicgarci.kgbem.cpu
 
+import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toFlagsRegister
 import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toUByte
 
 class CPU(
@@ -52,15 +53,15 @@ class CPU(
         target: ArithmeticTarget
     ) {
         val targetValue = getArithmeticTargetValue(target)
+        val carryToAdd = if (registers.f.toFlagsRegister().carry) 0b1.toUByte() else 0b0.toUByte()
         val (sum, carry, halfCarry) = overflowAdd(
             registers.a.toUShort(),
-            targetValue.toUShort(),
+            (targetValue + carryToAdd).toUShort(),
         )
-        val sumWithCarry = (sum + if (carry) 0b1.toUByte() else 0b0.toUByte()).toUByte()
 
-        registers.a = sumWithCarry
+        registers.a = sum.toUByte()
         val flags = FlagsRegister(
-            zero = sumWithCarry == 0.toUByte(),
+            zero = sum == 0.toUShort(),
             subtract = false,
             halfCarry = halfCarry,
             carry = carry,
