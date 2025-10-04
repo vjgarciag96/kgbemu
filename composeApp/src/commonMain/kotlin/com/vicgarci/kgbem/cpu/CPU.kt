@@ -17,6 +17,7 @@ class CPU(
             is Instruction.And -> and(instruction.target)
             is Instruction.Or -> or(instruction.target)
             is Instruction.Xor -> xor(instruction.target)
+            is Instruction.Cp -> cp(instruction.target)
         }
     }
 
@@ -119,6 +120,19 @@ class CPU(
     private fun xor(target: ArithmeticTarget) {
         val targetValue = getArithmeticTargetValue(target)
         registers.a = registers.a xor targetValue
+    }
+
+    private fun cp(target: ArithmeticTarget) {
+        val targetValue = getArithmeticTargetValue(target)
+
+        val (sub, halfBorrow, borrow) = sub(registers.a, targetValue)
+        val flags = FlagsRegister(
+            zero = sub == 0.toUShort(),
+            subtract = true,
+            halfCarry = halfBorrow,
+            carry = borrow,
+        )
+        registers.f = flags.toUByte()
     }
 
     private fun getArithmeticTargetValue(
