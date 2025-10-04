@@ -18,6 +18,8 @@ class CPU(
             is Instruction.Or -> or(instruction.target)
             is Instruction.Xor -> xor(instruction.target)
             is Instruction.Cp -> cp(instruction.target)
+            is Instruction.Inc -> inc(instruction.target)
+            is Instruction.Dec -> dec(instruction.target)
         }
     }
 
@@ -133,6 +135,51 @@ class CPU(
             carry = borrow,
         )
         registers.f = flags.toUByte()
+    }
+
+    private fun inc(target: ArithmeticTarget) {
+        updateArithmeticTarget(target) { register ->
+            val (sum, _, halfCarry) = overflowAdd(register, 0x1.toUByte())
+
+            val flags = registers.f.toFlagsRegister().copy(
+                zero = sum == 0x0.toUShort(),
+                subtract = false,
+                halfCarry = halfCarry,
+            )
+            registers.f = flags.toUByte()
+
+            sum.toUByte()
+        }
+    }
+
+    private fun dec(target: ArithmeticTarget) {
+        updateArithmeticTarget(target) { register ->
+            val (sub, halfBorrow, _) = sub(register, 0x1.toUByte())
+
+            val flags = registers.f.toFlagsRegister().copy(
+                zero = sub == 0x0.toUShort(),
+                subtract = true,
+                halfCarry = halfBorrow,
+            )
+            registers.f = flags.toUByte()
+
+            sub.toUByte()
+        }
+    }
+
+    private fun updateArithmeticTarget(
+        target: ArithmeticTarget,
+        update: (UByte) -> UByte,
+    ) {
+        when (target) {
+            ArithmeticTarget.A -> registers.a = update(registers.a)
+            ArithmeticTarget.B -> registers.b = update(registers.b)
+            ArithmeticTarget.C -> registers.c = update(registers.c)
+            ArithmeticTarget.D -> registers.d = update(registers.d)
+            ArithmeticTarget.E -> registers.e = update(registers.e)
+            ArithmeticTarget.H -> registers.h = update(registers.h)
+            ArithmeticTarget.L -> registers.l = update(registers.l)
+        }
     }
 
     private fun getArithmeticTargetValue(

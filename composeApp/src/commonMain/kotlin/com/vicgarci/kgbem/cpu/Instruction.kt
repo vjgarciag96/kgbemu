@@ -48,6 +48,22 @@ sealed interface Instruction {
     data class Cp(
         override val target: ArithmeticTarget,
     ) : Instruction
+
+    /**
+     * Does not perform a full arithmetic operation with carry propagation (i.e., carry flag
+     * mustn't change).
+     */
+    data class Inc(
+        override val target: ArithmeticTarget,
+    ) : Instruction
+
+    /**
+     * Does not perform a full arithmetic operation with carry propagation (i.e., carry flag
+     * mustn't change).
+     */
+    data class Dec(
+        override val target: ArithmeticTarget,
+    ) : Instruction
 }
 
 enum class ArithmeticTarget {

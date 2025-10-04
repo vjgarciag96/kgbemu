@@ -4,6 +4,7 @@ import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toFlagsRegister
 import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toUByte
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CPUTest {
@@ -80,5 +81,45 @@ class CPUTest {
             0xEF.toUByte(),
             registers.a,
         )
+    }
+
+    @Test
+    fun increment() {
+        cpu.execute(Instruction.Inc(ArithmeticTarget.B))
+
+        assertEquals(0x01.toUByte(), registers.b)
+        val flags = registers.f.toFlagsRegister()
+        assertEquals(false, flags.zero)
+        assertFalse(flags.subtract)
+        assertFalse(flags.halfCarry)
+    }
+
+    @Test
+    fun increment_preservesPrevCarry() {
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = true,
+            halfCarry = false,
+            carry = true,
+        ).toUByte()
+
+        cpu.execute(Instruction.Inc(ArithmeticTarget.B))
+
+        assertEquals(0x01.toUByte(), registers.b)
+        val flags = registers.f.toFlagsRegister()
+        assertEquals(false, flags.zero)
+        assertFalse(flags.halfCarry)
+        assertTrue(flags.carry)
+    }
+
+    @Test
+    fun decrement() {
+        cpu.execute(Instruction.Dec(ArithmeticTarget.D))
+
+        assertEquals(0xFE.toUByte(), registers.d)
+        val flags = registers.f.toFlagsRegister()
+        assertEquals(false, flags.zero)
+        assertTrue(flags.subtract)
+        assertFalse(flags.halfCarry)
     }
 }
