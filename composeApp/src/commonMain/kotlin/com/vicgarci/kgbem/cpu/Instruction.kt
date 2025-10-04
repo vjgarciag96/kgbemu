@@ -18,6 +18,10 @@ sealed interface Instruction {
     data class AddC(
         override val target: ArithmeticTarget,
     ) : Instruction
+
+    data class Subtract(
+        override val target: ArithmeticTarget,
+    ) : Instruction
 }
 
 enum class ArithmeticTarget {

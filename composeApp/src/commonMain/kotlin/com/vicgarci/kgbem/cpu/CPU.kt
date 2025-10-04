@@ -11,6 +11,7 @@ class CPU(
             is Instruction.Add -> add(instruction.target)
             is Instruction.AddHl -> addHl(instruction.target)
             is Instruction.AddC -> addC(instruction.target)
+            is Instruction.Subtract -> subtract(instruction.target)
         }
     }
 
@@ -63,6 +64,20 @@ class CPU(
             subtract = false,
             halfCarry = halfCarry,
             carry = carry,
+        )
+        registers.f = flags.toUByte()
+    }
+
+    private fun subtract(target: ArithmeticTarget) {
+        val targetValue = getArithmeticTargetValue(target)
+        val (sub, halfBorrow, borrow) = subtract(registers.a, targetValue)
+
+        registers.a = sub.toUByte()
+        val flags = FlagsRegister(
+            zero = sub == 0.toUShort(),
+            subtract = true,
+            halfCarry = halfBorrow,
+            carry = borrow,
         )
         registers.f = flags.toUByte()
     }
