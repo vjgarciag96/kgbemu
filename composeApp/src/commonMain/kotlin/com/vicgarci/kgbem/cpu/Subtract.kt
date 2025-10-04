@@ -7,6 +7,10 @@ data class SubtractResult(
 )
 
 fun sub(first: UByte, second: UByte): SubtractResult {
+    return sub(first.toUShort(), second.toUShort())
+}
+
+fun sub(first: UShort, second: UShort): SubtractResult {
     val value: UShort = if (second >= first) {
         0x0.toUShort()
     } else {
@@ -15,7 +19,7 @@ fun sub(first: UByte, second: UByte): SubtractResult {
 
     return SubtractResult(
         value = value,
-        halfBorrow = (first and 0x0F.toUByte()) < (second and 0x0F.toUByte()),
+        halfBorrow = (first and 0x0F.toUShort()) < (second and 0x0F.toUShort()),
         borrow = second >= first,
     )
 }

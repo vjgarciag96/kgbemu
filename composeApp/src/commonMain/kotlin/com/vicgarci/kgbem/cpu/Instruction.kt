@@ -22,6 +22,13 @@ sealed interface Instruction {
     data class Sub(
         override val target: ArithmeticTarget,
     ) : Instruction
+
+    /**
+     * Subtract with carry
+     */
+    data class Sbc(
+        override val target: ArithmeticTarget,
+    ) : Instruction
 }
 
 enum class ArithmeticTarget {
