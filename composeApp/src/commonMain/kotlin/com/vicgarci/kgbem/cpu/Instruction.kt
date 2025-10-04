@@ -29,6 +29,18 @@ sealed interface Instruction {
     data class Sbc(
         override val target: ArithmeticTarget,
     ) : Instruction
+
+    data class And(
+        override val target: ArithmeticTarget,
+    ) : Instruction
+
+    data class Or(
+        override val target: ArithmeticTarget,
+    ) : Instruction
+
+    data class Xor(
+        override val target: ArithmeticTarget,
+    ) : Instruction
 }
 
 enum class ArithmeticTarget {

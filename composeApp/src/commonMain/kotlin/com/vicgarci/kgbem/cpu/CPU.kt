@@ -14,6 +14,9 @@ class CPU(
             is Instruction.AddC -> addC(instruction.target)
             is Instruction.Sub -> sub(instruction.target)
             is Instruction.Sbc -> sbc(instruction.target)
+            is Instruction.And -> and(instruction.target)
+            is Instruction.Or -> or(instruction.target)
+            is Instruction.Xor -> xor(instruction.target)
         }
     }
 
@@ -101,6 +104,21 @@ class CPU(
             carry = borrow,
         )
         registers.f = flags.toUByte()
+    }
+
+    private fun and(target: ArithmeticTarget) {
+        val targetValue = getArithmeticTargetValue(target)
+        registers.a = registers.a and targetValue
+    }
+
+    private fun or(target: ArithmeticTarget) {
+        val targetValue = getArithmeticTargetValue(target)
+        registers.a = registers.a or targetValue
+    }
+
+    private fun xor(target: ArithmeticTarget) {
+        val targetValue = getArithmeticTargetValue(target)
+        registers.a = registers.a xor targetValue
     }
 
     private fun getArithmeticTargetValue(
