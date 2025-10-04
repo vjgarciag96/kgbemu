@@ -9,7 +9,7 @@ class SubtractTest {
 
     @Test
     fun subtract_noBorrow() {
-        val result = subtract(0xF1.toUByte(), 0x01.toUByte())
+        val result = sub(0xF1.toUByte(), 0x01.toUByte())
 
         assertEquals(0xF0.toUShort(), result.value)
         assertFalse(result.halfBorrow)
@@ -18,7 +18,7 @@ class SubtractTest {
 
     @Test
     fun subtract_halfBorrow() {
-        val result = subtract(0x10.toUByte(), 0x01.toUByte())
+        val result = sub(0x10.toUByte(), 0x01.toUByte())
 
         assertEquals(0x0F.toUShort(), result.value)
         assertTrue(result.halfBorrow)
@@ -27,7 +27,7 @@ class SubtractTest {
 
     @Test
     fun subtract_borrow() {
-        val result = subtract(0x01.toUByte(), 0xF1.toUByte())
+        val result = sub(0x01.toUByte(), 0xF1.toUByte())
 
         assertEquals(0x0.toUShort(), result.value)
         assertFalse(result.halfBorrow)
@@ -36,7 +36,7 @@ class SubtractTest {
 
     @Test
     fun subtract_halfBorrow_borrow() {
-        val result = subtract(0x00.toUByte(), 0xF1.toUByte())
+        val result = sub(0x00.toUByte(), 0xF1.toUByte())
 
         assertEquals(0x0.toUShort(), result.value)
         assertTrue(result.halfBorrow)

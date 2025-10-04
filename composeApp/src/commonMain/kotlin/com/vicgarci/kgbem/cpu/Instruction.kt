@@ -19,7 +19,7 @@ sealed interface Instruction {
         override val target: ArithmeticTarget,
     ) : Instruction
 
-    data class Subtract(
+    data class Sub(
         override val target: ArithmeticTarget,
     ) : Instruction
 }

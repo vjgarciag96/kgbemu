@@ -6,7 +6,7 @@ data class SubtractResult(
     val borrow: Boolean,
 )
 
-fun subtract(first: UByte, second: UByte): SubtractResult {
+fun sub(first: UByte, second: UByte): SubtractResult {
     val value: UShort = if (second >= first) {
         0x0.toUShort()
     } else {
