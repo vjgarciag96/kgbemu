@@ -73,6 +73,13 @@ sealed interface Instruction {
      * Changes subtract and half carry flags to false, and inverts the carry flag.
      */
     data object Ccf : Instruction
+
+    /**
+     * Set carry flag.
+     *
+     * Changes subtract and half carry flags to false, and sets the carry flag to true.
+     */
+    data object Scf : Instruction
 }
 
 enum class ArithmeticTarget {

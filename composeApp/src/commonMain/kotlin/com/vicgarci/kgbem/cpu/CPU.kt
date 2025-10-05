@@ -21,6 +21,7 @@ class CPU(
             is Instruction.Inc -> inc(instruction.target)
             is Instruction.Dec -> dec(instruction.target)
             Instruction.Ccf -> ccf()
+            Instruction.Scf -> scf()
         }
     }
 
@@ -174,6 +175,15 @@ class CPU(
             subtract = false,
             halfCarry = false,
             carry = !flags.carry,
+        ).toUByte()
+    }
+
+    private fun scf() {
+        val flags = registers.f.toFlagsRegister()
+        registers.f = flags.copy(
+            subtract = false,
+            halfCarry = false,
+            carry = true,
         ).toUByte()
     }
 
