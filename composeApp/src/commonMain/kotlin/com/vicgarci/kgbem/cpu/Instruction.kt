@@ -80,6 +80,14 @@ sealed interface Instruction {
      * Changes subtract and half carry flags to false, and sets the carry flag to true.
      */
     data object Scf : Instruction
+
+    /**
+     * Right-rotate the a register through carry (i.e., carry becomes most significant bit of A,
+     * least significant bit of A becomes carry).
+     *
+     * Zero flag, subtract, and half carry are set to false. Carry is set according to result.
+     */
+    data object Rra : Instruction
 }
 
 enum class ArithmeticTarget {
