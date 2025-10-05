@@ -2,52 +2,54 @@ package com.vicgarci.kgbem.cpu
 
 sealed interface Instruction {
 
-    val target: ArithmeticTarget
+    sealed interface ArithmeticTargetInstruction : Instruction {
+        val target: ArithmeticTarget
+    }
 
     data class Add(
         override val target: ArithmeticTarget,
-    ) : Instruction
+    ) : ArithmeticTargetInstruction
 
     data class AddHl(
         override val target: ArithmeticTarget,
-    ) : Instruction
+    ) : ArithmeticTargetInstruction
 
     /**
      * Add with carry
      */
     data class AddC(
         override val target: ArithmeticTarget,
-    ) : Instruction
+    ) : ArithmeticTargetInstruction
 
     data class Sub(
         override val target: ArithmeticTarget,
-    ) : Instruction
+    ) : ArithmeticTargetInstruction
 
     /**
      * Subtract with carry
      */
     data class Sbc(
         override val target: ArithmeticTarget,
-    ) : Instruction
+    ) : ArithmeticTargetInstruction
 
     data class And(
         override val target: ArithmeticTarget,
-    ) : Instruction
+    ) : ArithmeticTargetInstruction
 
     data class Or(
         override val target: ArithmeticTarget,
-    ) : Instruction
+    ) : ArithmeticTargetInstruction
 
     data class Xor(
         override val target: ArithmeticTarget,
-    ) : Instruction
+    ) : ArithmeticTargetInstruction
 
     /**
      * Compare (like subtract, but discarding the result and only setting the flags)
      */
     data class Cp(
         override val target: ArithmeticTarget,
-    ) : Instruction
+    ) : ArithmeticTargetInstruction
 
     /**
      * Does not perform a full arithmetic operation with carry propagation (i.e., carry flag
@@ -55,7 +57,7 @@ sealed interface Instruction {
      */
     data class Inc(
         override val target: ArithmeticTarget,
-    ) : Instruction
+    ) : ArithmeticTargetInstruction
 
     /**
      * Does not perform a full arithmetic operation with carry propagation (i.e., carry flag
@@ -63,7 +65,14 @@ sealed interface Instruction {
      */
     data class Dec(
         override val target: ArithmeticTarget,
-    ) : Instruction
+    ) : ArithmeticTargetInstruction
+
+    /**
+     * Complement carry flag.
+     *
+     * Changes subtract and half carry flags to false, and inverts the carry flag.
+     */
+    data object Ccf : Instruction
 }
 
 enum class ArithmeticTarget {

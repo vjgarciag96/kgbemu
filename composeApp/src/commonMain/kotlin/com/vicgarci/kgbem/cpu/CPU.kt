@@ -20,6 +20,7 @@ class CPU(
             is Instruction.Cp -> cp(instruction.target)
             is Instruction.Inc -> inc(instruction.target)
             is Instruction.Dec -> dec(instruction.target)
+            Instruction.Ccf -> ccf()
         }
     }
 
@@ -165,6 +166,15 @@ class CPU(
 
             sub.toUByte()
         }
+    }
+
+    private fun ccf() {
+        val flags = registers.f.toFlagsRegister()
+        registers.f = flags.copy(
+            subtract = false,
+            halfCarry = false,
+            carry = !flags.carry,
+        ).toUByte()
     }
 
     private fun updateArithmeticTarget(
