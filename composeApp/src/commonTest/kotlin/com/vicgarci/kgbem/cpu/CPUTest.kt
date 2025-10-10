@@ -186,4 +186,13 @@ class CPUTest {
         assertEquals(0b00011111.toUByte(), registers.a)
         assertFalse(registers.f.toFlagsRegister().carry)
     }
+
+    @Test
+    fun cpl() {
+        registers.a = 0xF0.toUByte()
+
+        cpu.execute(Instruction.Cpl)
+
+        assertEquals(0x0F.toUByte(), registers.a)
+    }
 }

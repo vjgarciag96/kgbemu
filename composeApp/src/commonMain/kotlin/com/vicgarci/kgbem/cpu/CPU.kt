@@ -24,6 +24,7 @@ class CPU(
             Instruction.Scf -> scf()
             Instruction.Rra -> rra()
             Instruction.Rla -> rla()
+            Instruction.Cpl -> cpl()
         }
     }
 
@@ -210,6 +211,10 @@ class CPU(
         registers.f = flags.copy(
             carry = (mostSignificantBit and 0xFF).toUByte() == 0b1.toUByte(),
         ).toUByte()
+    }
+
+    private fun cpl() {
+        registers.a = registers.a.inv()
     }
 
     private fun updateArithmeticTarget(

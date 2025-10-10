@@ -96,6 +96,11 @@ sealed interface Instruction {
      * Zero flag, subtract, and half carry are set to false. Carry is set according to result.
      */
     data object Rla : Instruction
+
+    /**
+     * Toggle every bit of the register A.
+     */
+    data object Cpl: Instruction
 }
 
 enum class ArithmeticTarget {
