@@ -154,4 +154,36 @@ class CPUTest {
         assertEquals(0b11111000.toUByte(), registers.a)
         assertFalse(registers.f.toFlagsRegister().carry)
     }
+
+    @Test
+    fun leftRotateA_carryTrue_mostSignificantBit1() {
+        registers.a = 0xF0.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = false,
+            carry = true,
+        ).toUByte()
+
+        cpu.execute(Instruction.Rla)
+
+        assertEquals(0b11100001.toUByte(), registers.a)
+        assertTrue(registers.f.toFlagsRegister().carry)
+    }
+
+    @Test
+    fun leftRotateA_carryTrue_mostSignificantBit0() {
+        registers.a = 0x0F.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = false,
+            carry = true,
+        ).toUByte()
+
+        cpu.execute(Instruction.Rla)
+
+        assertEquals(0b00011111.toUByte(), registers.a)
+        assertFalse(registers.f.toFlagsRegister().carry)
+    }
 }

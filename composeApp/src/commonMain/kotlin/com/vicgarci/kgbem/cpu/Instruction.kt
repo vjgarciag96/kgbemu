@@ -82,12 +82,20 @@ sealed interface Instruction {
     data object Scf : Instruction
 
     /**
-     * Right-rotate the a register through carry (i.e., carry becomes most significant bit of A,
+     * Right-rotate the A register through carry (i.e., carry becomes most significant bit of A,
      * least significant bit of A becomes carry).
      *
      * Zero flag, subtract, and half carry are set to false. Carry is set according to result.
      */
     data object Rra : Instruction
+
+    /**
+     * Left-rotate the A register through carry (i.e., carry becomes least significant bit of A,
+     * most significant bit of A becomes carry).
+     *
+     * Zero flag, subtract, and half carry are set to false. Carry is set according to result.
+     */
+    data object Rla : Instruction
 }
 
 enum class ArithmeticTarget {
