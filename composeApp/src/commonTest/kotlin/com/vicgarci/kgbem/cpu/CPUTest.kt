@@ -124,7 +124,7 @@ class CPUTest {
     }
 
     @Test
-    fun rightRotateA_carryTrue_leastSignificantBit1() {
+    fun rightRotateAThroughCarry_carryTrue_leastSignificantBit1() {
         registers.a = 0b1.toUByte()
         registers.f = FlagsRegister(
             zero = false,
@@ -140,7 +140,7 @@ class CPUTest {
     }
 
     @Test
-    fun rightRotateA_carryTrue_leastSignificantBit0() {
+    fun rightRotateAThroughCarry_carryTrue_leastSignificantBit0() {
         registers.a = 0xF0.toUByte()
         registers.f = FlagsRegister(
             zero = false,
@@ -156,7 +156,7 @@ class CPUTest {
     }
 
     @Test
-    fun leftRotateA_carryTrue_mostSignificantBit1() {
+    fun leftRotateAThroughCarry_carryTrue_mostSignificantBit1() {
         registers.a = 0xF0.toUByte()
         registers.f = FlagsRegister(
             zero = false,
@@ -172,7 +172,7 @@ class CPUTest {
     }
 
     @Test
-    fun leftRotateA_carryTrue_mostSignificantBit0() {
+    fun leftRotateAThroughCarry_carryTrue_mostSignificantBit0() {
         registers.a = 0x0F.toUByte()
         registers.f = FlagsRegister(
             zero = false,
@@ -185,6 +185,38 @@ class CPUTest {
 
         assertEquals(0b00011111.toUByte(), registers.a)
         assertFalse(registers.f.toFlagsRegister().carry)
+    }
+
+    @Test
+    fun rightRotateA_carryTrue_leastSignificantBit0() {
+        registers.a = 0xF0.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = false,
+            carry = true,
+        ).toUByte()
+
+        cpu.execute(Instruction.Rrca)
+
+        assertEquals(0b01111000.toUByte(), registers.a)
+        assertFalse(registers.f.toFlagsRegister().carry)
+    }
+
+    @Test
+    fun rightRotateA_carryFalse_leastSignificantBit1() {
+        registers.a = 0x0F.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = false,
+            carry = false,
+        ).toUByte()
+
+        cpu.execute(Instruction.Rrca)
+
+        assertEquals(0b10000111.toUByte(), registers.a)
+        assertTrue(registers.f.toFlagsRegister().carry)
     }
 
     @Test

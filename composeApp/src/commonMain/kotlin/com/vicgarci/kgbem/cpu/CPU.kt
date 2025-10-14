@@ -24,6 +24,7 @@ class CPU(
             Instruction.Scf -> scf()
             Instruction.Rra -> rra()
             Instruction.Rla -> rla()
+            Instruction.Rrca -> rrca()
             Instruction.Cpl -> cpl()
         }
     }
@@ -210,6 +211,16 @@ class CPU(
         registers.a = ((rotatedA or carryBit) and 0xFF).toUByte()
         registers.f = flags.copy(
             carry = (mostSignificantBit and 0xFF).toUByte() == 0b1.toUByte(),
+        ).toUByte()
+    }
+
+    private fun rrca() {
+        val leastSignificantBit = registers.a and 0b1.toUByte()
+        val flags = registers.f.toFlagsRegister()
+        val rotatedA = (registers.a.toInt() ushr 1) or (leastSignificantBit.toInt() shl 7)
+        registers.a = (rotatedA and 0xFF).toUByte()
+        registers.f = flags.copy(
+            carry = leastSignificantBit == 0b1.toUByte(),
         ).toUByte()
     }
 
