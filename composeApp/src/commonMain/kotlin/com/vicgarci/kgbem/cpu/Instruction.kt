@@ -104,6 +104,12 @@ sealed interface Instruction {
     data object Rrca : Instruction
 
     /**
+     * Left-rotate the A register (i.e., most significant bit becomes least significant and is
+     * also copied into the carry flag).
+     */
+    data object Rlca : Instruction
+
+    /**
      * Toggle every bit of the register A.
      */
     data object Cpl: Instruction
