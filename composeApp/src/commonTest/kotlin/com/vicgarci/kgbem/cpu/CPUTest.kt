@@ -259,4 +259,50 @@ class CPUTest {
 
         assertEquals(0x0F.toUByte(), registers.a)
     }
+
+    @Test
+    fun bit_bitSet() {
+        registers.d = 0xF0.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = true,
+            halfCarry = false,
+            carry = false,
+        ).toUByte()
+
+        cpu.execute(
+            Instruction.Bit(
+                index = 3,
+                target = ArithmeticTarget.D,
+            )
+        )
+
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.zero)
+        assertFalse(flags.subtract)
+        assertTrue(flags.halfCarry)
+    }
+
+    @Test
+    fun bit_bitNotSet() {
+        registers.e = 0x0F.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = true,
+            halfCarry = false,
+            carry = false,
+        ).toUByte()
+
+        cpu.execute(
+            Instruction.Bit(
+                index = 3,
+                target = ArithmeticTarget.E,
+            )
+        )
+
+        val flags = registers.f.toFlagsRegister()
+        assertFalse(flags.zero)
+        assertFalse(flags.subtract)
+        assertTrue(flags.halfCarry)
+    }
 }

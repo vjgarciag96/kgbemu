@@ -27,6 +27,7 @@ class CPU(
             Instruction.Rrca -> rrca()
             Instruction.Rlca -> rlca()
             Instruction.Cpl -> cpl()
+            is Instruction.Bit -> bit(instruction.index, instruction.target)
         }
     }
 
@@ -238,6 +239,21 @@ class CPU(
 
     private fun cpl() {
         registers.a = registers.a.inv()
+    }
+
+    private fun bit(
+        index: Int,
+        target: ArithmeticTarget,
+    ) {
+        val targetValue = getArithmeticTargetValue(target)
+        val bitSet = (targetValue.toInt() ushr index).toUByte() == 0b1.toUByte()
+        val flags = registers.f.toFlagsRegister()
+        registers.f = flags.copy(
+            zero = !bitSet,
+            subtract = false,
+            halfCarry = true,
+        ).toUByte()
+
     }
 
     private fun updateArithmeticTarget(

@@ -112,7 +112,22 @@ sealed interface Instruction {
     /**
      * Toggle every bit of the register A.
      */
-    data object Cpl: Instruction
+    data object Cpl : Instruction
+
+    /**
+     * Test bit [index] in register [target], set the zero flag if bit not set.
+     *
+     * @param index position of the bit to test in [target]. From 0 to 7.
+     */
+    data class Bit(
+        val index: Int,
+        override val target: ArithmeticTarget,
+    ) : ArithmeticTargetInstruction {
+
+        init {
+            require(index in 0..7)
+        }
+    }
 }
 
 enum class ArithmeticTarget {
