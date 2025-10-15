@@ -118,8 +118,25 @@ sealed interface Instruction {
      * Test bit [index] in register [target], set the zero flag if bit not set.
      *
      * @param index position of the bit to test in [target]. From 0 to 7.
+     * 0 is the least significant bit, 7 the most.
      */
     data class Bit(
+        val index: Int,
+        override val target: ArithmeticTarget,
+    ) : ArithmeticTargetInstruction {
+
+        init {
+            require(index in 0..7)
+        }
+    }
+
+    /**
+     * Set bit [index] in register [target] to 0.
+     *
+     * @param index position of the bit to test in [target]. From 0 to 7.
+     * 0 is the least significant bit, 7 the most.
+     */
+    data class Res(
         val index: Int,
         override val target: ArithmeticTarget,
     ) : ArithmeticTargetInstruction {

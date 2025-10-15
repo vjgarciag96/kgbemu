@@ -28,6 +28,7 @@ class CPU(
             Instruction.Rlca -> rlca()
             Instruction.Cpl -> cpl()
             is Instruction.Bit -> bit(instruction.index, instruction.target)
+            is Instruction.Res -> res(instruction.index, instruction.target)
         }
     }
 
@@ -253,7 +254,16 @@ class CPU(
             subtract = false,
             halfCarry = true,
         ).toUByte()
+    }
 
+    private fun res(
+        index: Int,
+        target: ArithmeticTarget,
+    ) {
+        updateArithmeticTarget(target) { targetValue ->
+            val mask = (0b1 shl index).toUByte().inv()
+            targetValue and mask
+        }
     }
 
     private fun updateArithmeticTarget(

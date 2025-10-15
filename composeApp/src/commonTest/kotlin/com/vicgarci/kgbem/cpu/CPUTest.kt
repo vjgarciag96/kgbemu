@@ -328,4 +328,14 @@ class CPUTest {
         assertFalse(flags.subtract)
         assertTrue(flags.halfCarry)
     }
+
+    @Test
+    fun reset() {
+        registers.c = 0xFF.toUByte()
+
+        cpu.execute(Instruction.Res(index = 7, ArithmeticTarget.C))
+        cpu.execute(Instruction.Res(index = 2, ArithmeticTarget.C))
+
+        assertEquals(0b01111011.toUByte(), registers.c)
+    }
 }
