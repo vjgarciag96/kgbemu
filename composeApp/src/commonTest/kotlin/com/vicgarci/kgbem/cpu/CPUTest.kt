@@ -305,4 +305,27 @@ class CPUTest {
         assertFalse(flags.subtract)
         assertTrue(flags.halfCarry)
     }
+
+    @Test
+    fun bit_incorrectBitCheckBug() {
+        registers.e = 0b10001111.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = true,
+            halfCarry = false,
+            carry = false,
+        ).toUByte()
+
+        cpu.execute(
+            Instruction.Bit(
+                index = 3,
+                target = ArithmeticTarget.E,
+            )
+        )
+
+        val flags = registers.f.toFlagsRegister()
+        assertFalse(flags.zero)
+        assertFalse(flags.subtract)
+        assertTrue(flags.halfCarry)
+    }
 }

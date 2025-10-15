@@ -246,7 +246,7 @@ class CPU(
         target: ArithmeticTarget,
     ) {
         val targetValue = getArithmeticTargetValue(target)
-        val bitSet = (targetValue.toInt() ushr index).toUByte() == 0b1.toUByte()
+        val bitSet = ((targetValue.toInt() ushr index).toUByte() and 0b1.toUByte()) == 0b1.toUByte()
         val flags = registers.f.toFlagsRegister()
         registers.f = flags.copy(
             zero = !bitSet,
