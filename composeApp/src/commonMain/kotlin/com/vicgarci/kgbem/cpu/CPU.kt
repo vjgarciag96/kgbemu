@@ -30,6 +30,7 @@ class CPU(
             is Instruction.Bit -> bit(instruction.index, instruction.target)
             is Instruction.Res -> res(instruction.index, instruction.target)
             is Instruction.Set -> set(instruction.index, instruction.target)
+            is Instruction.Srl -> srl(instruction.target)
         }
     }
 
@@ -274,6 +275,22 @@ class CPU(
         updateArithmeticTarget(target) { targetValue ->
             val mask = (0b1 shl index).toUByte()
             targetValue or mask
+        }
+    }
+
+    private fun srl(
+        target: ArithmeticTarget,
+    ) {
+        updateArithmeticTarget(target) { targetValue ->
+            val leastSignificantBit = targetValue and 0b1.toUByte()
+            val shiftedValue = ((targetValue.toInt() ushr 1) and 0xFF).toUByte()
+
+            registers.f = registers.f.toFlagsRegister().copy(
+                zero = shiftedValue == 0b0.toUByte(),
+                carry = leastSignificantBit == 0b1.toUByte(),
+            ).toUByte()
+
+            shiftedValue
         }
     }
 

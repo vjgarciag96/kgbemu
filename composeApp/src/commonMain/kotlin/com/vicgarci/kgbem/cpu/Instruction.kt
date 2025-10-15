@@ -161,6 +161,13 @@ sealed interface Instruction {
             require(index in 0..7)
         }
     }
+
+    /**
+     * Shift right logically register [target].
+     */
+    data class Srl(
+        override val target: ArithmeticTarget,
+    ) : ArithmeticTargetInstruction
 }
 
 enum class ArithmeticTarget {

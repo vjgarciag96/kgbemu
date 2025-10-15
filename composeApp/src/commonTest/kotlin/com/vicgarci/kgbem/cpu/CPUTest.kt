@@ -348,4 +348,55 @@ class CPUTest {
 
         assertEquals(0b11110001.toUByte(), registers.e)
     }
+
+    @Test
+    fun shiftRightLogically_leastSignificantBit1() {
+        registers.b = 0x0F.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = false,
+            carry = false,
+        ).toUByte()
+
+        cpu.execute(Instruction.Srl(ArithmeticTarget.B))
+
+        assertEquals(0b00000111.toUByte(), registers.b)
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.carry)
+    }
+
+    @Test
+    fun shiftRightLogically_leastSignificantBit0() {
+        registers.b = 0xF0.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = false,
+            carry = false,
+        ).toUByte()
+
+        cpu.execute(Instruction.Srl(ArithmeticTarget.B))
+
+        assertEquals(0b01111000.toUByte(), registers.b)
+        val flags = registers.f.toFlagsRegister()
+        assertFalse(flags.carry)
+    }
+
+    @Test
+    fun shiftRightLogically_shiftsToZero() {
+        registers.b = 0b1.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = false,
+            carry = false,
+        ).toUByte()
+
+        cpu.execute(Instruction.Srl(ArithmeticTarget.B))
+
+        assertEquals(0b0.toUByte(), registers.b)
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.zero)
+    }
 }
