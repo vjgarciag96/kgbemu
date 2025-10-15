@@ -7,6 +7,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+val FLAGS_NOT_SET = FlagsRegister(
+    zero = false,
+    subtract = false,
+    halfCarry = false,
+    carry = false,
+)
+
 class CPUTest {
 
     private val registers = Registers(
@@ -396,6 +403,42 @@ class CPUTest {
         cpu.execute(Instruction.Srl(ArithmeticTarget.B))
 
         assertEquals(0b0.toUByte(), registers.b)
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.zero)
+    }
+
+    @Test
+    fun rotateRight_carryFalse_leastSignificantBit1() {
+        registers.c = 0x0F.toUByte()
+        registers.f = FLAGS_NOT_SET.toUByte()
+
+        cpu.execute(Instruction.Rr(ArithmeticTarget.C))
+
+        assertEquals(0b00000111.toUByte(), registers.c)
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.carry)
+    }
+
+    @Test
+    fun rotateRight_carryTrue_leastSignificantBit0() {
+        registers.c = 0xF0.toUByte()
+        registers.f = FLAGS_NOT_SET.copy(carry = true).toUByte()
+
+        cpu.execute(Instruction.Rr(ArithmeticTarget.C))
+
+        assertEquals(0b11111000.toUByte(), registers.c)
+        val flags = registers.f.toFlagsRegister()
+        assertFalse(flags.carry)
+    }
+
+    @Test
+    fun rotateRight_rotatesToZero() {
+        registers.c = 0b1.toUByte()
+        registers.f = FLAGS_NOT_SET.toUByte()
+
+        cpu.execute(Instruction.Rr(ArithmeticTarget.C))
+
+        assertEquals(0b0.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.zero)
     }

@@ -90,6 +90,16 @@ sealed interface Instruction {
     data object Rra : Instruction
 
     /**
+     * Rotate register [target] right, through carry (i.e., carry becomes most significant bit of
+     * register, least significant bit of register becomes carry)
+     *
+     * Zero and carry flags are set according to result. Subtract and half carry are set to false.
+     */
+    data class Rr(
+        override val target: ArithmeticTarget,
+    ) : ArithmeticTargetInstruction
+
+    /**
      * Left-rotate the A register through carry (i.e., carry becomes least significant bit of A,
      * most significant bit of A becomes carry).
      *

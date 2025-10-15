@@ -2,6 +2,7 @@ package com.vicgarci.kgbem.cpu
 
 import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toFlagsRegister
 import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toUByte
+import kotlin.toUByte
 
 class CPU(
     private val registers: Registers,
@@ -23,6 +24,7 @@ class CPU(
             Instruction.Ccf -> ccf()
             Instruction.Scf -> scf()
             Instruction.Rra -> rra()
+            is Instruction.Rr -> rr(instruction.target)
             Instruction.Rla -> rla()
             Instruction.Rrca -> rrca()
             Instruction.Rlca -> rlca()
@@ -206,6 +208,25 @@ class CPU(
         registers.f = flags.copy(
             carry = leastSignificantBit == 0b1.toUByte(),
         ).toUByte()
+    }
+
+    private fun rr(target: ArithmeticTarget) {
+        updateArithmeticTarget(target) { targetValue ->
+            val leastSignificantBit = targetValue and 0b1.toUByte()
+            val flags = registers.f.toFlagsRegister()
+            val carryBit = if (flags.carry) 0b1 else 0b0
+            val rotatedValue = targetValue.toInt() ushr 1
+            val rotatedCarry = carryBit shl 7
+            val result = ((rotatedValue or rotatedCarry) and 0xFF).toUByte()
+            registers.f = FlagsRegister(
+                zero = result == 0b0.toUByte(),
+                subtract = false,
+                halfCarry = false,
+                carry = leastSignificantBit == 0b1.toUByte(),
+            ).toUByte()
+
+            result
+        }
     }
 
     private fun rla() {
