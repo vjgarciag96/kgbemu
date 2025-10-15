@@ -338,4 +338,14 @@ class CPUTest {
 
         assertEquals(0b01111011.toUByte(), registers.c)
     }
+
+    @Test
+    fun set() {
+        registers.e = 0xF0.toUByte()
+
+        cpu.execute(Instruction.Set(index = 0, ArithmeticTarget.E))
+        cpu.execute(Instruction.Set(index = 6, ArithmeticTarget.E))
+
+        assertEquals(0b11110001.toUByte(), registers.e)
+    }
 }

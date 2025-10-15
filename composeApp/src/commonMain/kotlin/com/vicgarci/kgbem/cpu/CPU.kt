@@ -29,6 +29,7 @@ class CPU(
             Instruction.Cpl -> cpl()
             is Instruction.Bit -> bit(instruction.index, instruction.target)
             is Instruction.Res -> res(instruction.index, instruction.target)
+            is Instruction.Set -> set(instruction.index, instruction.target)
         }
     }
 
@@ -263,6 +264,16 @@ class CPU(
         updateArithmeticTarget(target) { targetValue ->
             val mask = (0b1 shl index).toUByte().inv()
             targetValue and mask
+        }
+    }
+
+    private fun set(
+        index: Int,
+        target: ArithmeticTarget,
+    ) {
+        updateArithmeticTarget(target) { targetValue ->
+            val mask = (0b1 shl index).toUByte()
+            targetValue or mask
         }
     }
 

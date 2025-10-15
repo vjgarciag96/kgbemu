@@ -145,6 +145,22 @@ sealed interface Instruction {
             require(index in 0..7)
         }
     }
+
+    /**
+     * Set bit [index] in register [target] to 1.
+     *
+     * @param index position of the bit to test in [target]. From 0 to 7.
+     * 0 is the least significant bit, 7 the most.
+     */
+    data class Set(
+        val index: Int,
+        override val target: ArithmeticTarget,
+    ) : ArithmeticTargetInstruction {
+
+        init {
+            require(index in 0..7)
+        }
+    }
 }
 
 enum class ArithmeticTarget {
