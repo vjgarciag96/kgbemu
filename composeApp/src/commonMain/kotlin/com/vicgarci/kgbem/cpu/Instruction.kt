@@ -208,6 +208,17 @@ sealed interface Instruction {
     data class Srl(
         override val target: ArithmeticTarget,
     ) : ArithmeticTargetInstruction
+
+    /**
+     * Shift right arithmetically register [target].
+     *
+     * Most significant bit (sign bit) is preserved, rest is shifted.
+     *
+     * Zero and carry flags are set according to result. Subtract and half carry are set to false.
+     */
+    data class Sra(
+        override val target: ArithmeticTarget,
+    ) : ArithmeticTargetInstruction
 }
 
 enum class ArithmeticTarget {
