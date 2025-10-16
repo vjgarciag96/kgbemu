@@ -100,6 +100,16 @@ sealed interface Instruction {
     ) : ArithmeticTargetInstruction
 
     /**
+     * Rotate register [target] right circularly (i.e., least significant bit wraps around to most
+     * significant bit, and becomes the new carry).
+     *
+     * Zero and carry flags are set according to result. Subtract and half carry are set to false.
+     */
+    data class Rrc(
+        override val target: ArithmeticTarget,
+    ) : ArithmeticTargetInstruction
+
+    /**
      * Left-rotate the A register through carry (i.e., carry becomes least significant bit of A,
      * most significant bit of A becomes carry).
      *

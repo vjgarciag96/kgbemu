@@ -25,6 +25,7 @@ class CPU(
             Instruction.Scf -> scf()
             Instruction.Rra -> rra()
             is Instruction.Rr -> rr(instruction.target)
+            is Instruction.Rrc -> rrc(instruction.target)
             Instruction.Rla -> rla()
             is Instruction.Rl -> rl(instruction.target)
             Instruction.Rrca -> rrca()
@@ -219,6 +220,23 @@ class CPU(
             val rotatedValue = targetValue.toInt() ushr 1
             val rotatedCarry = carryBit shl 7
             val result = ((rotatedValue or rotatedCarry) and 0xFF).toUByte()
+            registers.f = FlagsRegister(
+                zero = result == 0b0.toUByte(),
+                subtract = false,
+                halfCarry = false,
+                carry = leastSignificantBit == 0b1.toUByte(),
+            ).toUByte()
+
+            result
+        }
+    }
+
+    private fun rrc(target: ArithmeticTarget) {
+        updateArithmeticTarget(target) { targetValue ->
+            val leastSignificantBit = targetValue and 0b1.toUByte()
+            val bitToWrapAround = leastSignificantBit.toInt() shl 7
+            val rotatedValue = targetValue.toInt() ushr 1
+            val result = ((rotatedValue or bitToWrapAround) and 0xFF).toUByte()
             registers.f = FlagsRegister(
                 zero = result == 0b0.toUByte(),
                 subtract = false,

@@ -478,4 +478,40 @@ class CPUTest {
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.zero)
     }
+
+    @Test
+    fun rotateRightCircularly_leastSignificantBit1() {
+        registers.c = 0x0F.toUByte()
+        registers.f = FLAGS_NOT_SET.toUByte()
+
+        cpu.execute(Instruction.Rrc(ArithmeticTarget.C))
+
+        assertEquals(0b10000111.toUByte(), registers.c)
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.carry)
+    }
+
+    @Test
+    fun rotateRightCircularly_leastSignificantBit0() {
+        registers.c = 0xF0.toUByte()
+        registers.f = FLAGS_NOT_SET.copy(carry = true).toUByte()
+
+        cpu.execute(Instruction.Rrc(ArithmeticTarget.C))
+
+        assertEquals(0b01111000.toUByte(), registers.c)
+        val flags = registers.f.toFlagsRegister()
+        assertFalse(flags.carry)
+    }
+
+    @Test
+    fun rotateRightCircularly_rotatesToZero() {
+        registers.c = 0b0.toUByte()
+        registers.f = FLAGS_NOT_SET.toUByte()
+
+        cpu.execute(Instruction.Rrc(ArithmeticTarget.C))
+
+        assertEquals(0b0.toUByte(), registers.c)
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.zero)
+    }
 }
