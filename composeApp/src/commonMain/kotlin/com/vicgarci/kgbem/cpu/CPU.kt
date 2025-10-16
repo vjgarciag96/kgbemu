@@ -28,6 +28,7 @@ class CPU(
             is Instruction.Rrc -> rrc(instruction.target)
             Instruction.Rla -> rla()
             is Instruction.Rl -> rl(instruction.target)
+            is Instruction.Rlc -> rlc(instruction.target)
             Instruction.Rrca -> rrca()
             Instruction.Rlca -> rlca()
             Instruction.Cpl -> cpl()
@@ -266,6 +267,22 @@ class CPU(
             val carryBit = if (flags.carry) 0b1 else 0b0
             val rotatedValue = targetValue.toInt() shl 1
             val result = ((rotatedValue or carryBit) and 0xFF).toUByte()
+            registers.f = FlagsRegister(
+                zero = result == 0b0.toUByte(),
+                subtract = false,
+                halfCarry = false,
+                carry = (mostSignificantBit and 0xFF).toUByte() == 0b1.toUByte(),
+            ).toUByte()
+
+            result
+        }
+    }
+
+    private fun rlc(target: ArithmeticTarget) {
+        updateArithmeticTarget(target) { targetValue ->
+            val mostSignificantBit = (targetValue and (0b1 shl 7).toUByte()).toInt() ushr 7
+            val rotatedValue = targetValue.toInt() shl 1
+            val result = ((rotatedValue or mostSignificantBit) and 0xFF).toUByte()
             registers.f = FlagsRegister(
                 zero = result == 0b0.toUByte(),
                 subtract = false,
