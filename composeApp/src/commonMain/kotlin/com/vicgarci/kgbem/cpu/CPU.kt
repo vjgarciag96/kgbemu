@@ -37,6 +37,7 @@ class CPU(
             is Instruction.Set -> set(instruction.index, instruction.target)
             is Instruction.Srl -> srl(instruction.target)
             is Instruction.Sra -> sra(instruction.target)
+            is Instruction.Sla -> sla(instruction.target)
         }
     }
 
@@ -383,6 +384,24 @@ class CPU(
                 subtract = false,
                 halfCarry = false,
                 carry = leastSignificantBit == 0b1.toUByte(),
+            ).toUByte()
+
+            shiftedValue
+        }
+    }
+
+    private fun sla(
+        target: ArithmeticTarget,
+    ) {
+        updateArithmeticTarget(target) { targetValue ->
+            val mostSignificantBit = targetValue and (0b1 shl 7).toUByte()
+            val shiftedValue = ((targetValue.toInt() shl 1) and 0xFF).toUByte()
+
+            registers.f = FlagsRegister(
+                zero = shiftedValue == 0b0.toUByte(),
+                subtract = false,
+                halfCarry = false,
+                carry = ((mostSignificantBit.toInt() ushr 7) and 0xFF).toUByte() == 0b1.toUByte(),
             ).toUByte()
 
             shiftedValue

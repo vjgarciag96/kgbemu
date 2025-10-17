@@ -219,6 +219,17 @@ sealed interface Instruction {
     data class Sra(
         override val target: ArithmeticTarget,
     ) : ArithmeticTargetInstruction
+
+    /**
+     * Shift left arithmetically register [target].
+     *
+     * Most significant bit moves into carry flag, least significant bit becomes zero.
+     *
+     * Zero and carry flags are set according to result. Subtract and half carry are set to false.
+     */
+    data class Sla(
+        override val target: ArithmeticTarget,
+    ) : ArithmeticTargetInstruction
 }
 
 enum class ArithmeticTarget {
