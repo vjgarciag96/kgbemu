@@ -230,6 +230,13 @@ sealed interface Instruction {
     data class Sla(
         override val target: ArithmeticTarget,
     ) : ArithmeticTargetInstruction
+
+    /**
+     * Switch upper and lower nibble (most and least significant 4 bits) of a specific register.
+     */
+    data class Swap(
+        override val target: ArithmeticTarget,
+    ) : ArithmeticTargetInstruction
 }
 
 enum class ArithmeticTarget {

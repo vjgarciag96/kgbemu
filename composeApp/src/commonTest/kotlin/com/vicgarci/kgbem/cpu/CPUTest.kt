@@ -620,4 +620,19 @@ class CPUTest {
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.zero)
     }
+
+    @Test
+    fun swap() {
+        registers.a = 0x0F.toUByte()
+        registers.b = 0xF0.toUByte()
+        registers.c = 0b01010010.toUByte()
+
+        cpu.execute(Instruction.Swap(ArithmeticTarget.A))
+        cpu.execute(Instruction.Swap(ArithmeticTarget.B))
+        cpu.execute(Instruction.Swap(ArithmeticTarget.C))
+
+        assertEquals(0xF0.toUByte(), registers.a)
+        assertEquals(0x0F.toUByte(), registers.b)
+        assertEquals(0b00100101.toUByte(), registers.c)
+    }
 }

@@ -38,6 +38,7 @@ class CPU(
             is Instruction.Srl -> srl(instruction.target)
             is Instruction.Sra -> sra(instruction.target)
             is Instruction.Sla -> sla(instruction.target)
+            is Instruction.Swap -> swap(instruction.target)
         }
     }
 
@@ -405,6 +406,29 @@ class CPU(
             ).toUByte()
 
             shiftedValue
+        }
+    }
+
+    private fun swap(
+        target: ArithmeticTarget,
+    ) {
+        updateArithmeticTarget(target) { targetValue ->
+            val upperNibble = targetValue and 0xF0.toUByte()
+            val lowerNibble = targetValue and 0x0F.toUByte()
+
+            val shiftedUpperNibble = ((upperNibble.toInt() ushr 4) and 0xFF).toUByte()
+            val shiftedLowerNibble = ((lowerNibble.toInt() shl 4) and 0xFF).toUByte()
+
+            val result = shiftedUpperNibble or shiftedLowerNibble
+
+            registers.f = FlagsRegister(
+                zero = result == 0b0.toUByte(),
+                subtract = false,
+                halfCarry = false,
+                carry = false,
+            ).toUByte()
+
+            result
         }
     }
 
