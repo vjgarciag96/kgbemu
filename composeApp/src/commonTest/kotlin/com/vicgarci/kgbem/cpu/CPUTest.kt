@@ -27,7 +27,11 @@ class CPUTest {
         0.toUByte(),
     )
 
-    private val cpu = CPU(registers)
+    private val cpu = CPU(
+        registers,
+        0.toUShort(),
+        MemoryBus(),
+    )
 
     @Test
     fun addWithCarry_carryFalse() {

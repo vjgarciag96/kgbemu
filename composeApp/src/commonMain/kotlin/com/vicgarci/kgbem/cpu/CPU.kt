@@ -6,9 +6,20 @@ import kotlin.toUByte
 
 class CPU(
     private val registers: Registers,
+    private var programCounter: UShort,
+    private val memoryBus: MemoryBus,
 ) {
 
-    fun execute(instruction: Instruction) {
+    fun step() {
+        val instructionByte = memoryBus.readByte(programCounter)
+
+        programCounter = when (val instruction = Instruction.fromByte(instructionByte)) {
+            is Instruction -> execute(instruction)
+            null -> error("Invalid instruction $instructionByte")
+        }
+    }
+
+    fun execute(instruction: Instruction): UShort {
         when (instruction) {
             is Instruction.Add -> add(instruction.target)
             is Instruction.AddHl -> addHl(instruction.target)
@@ -39,7 +50,11 @@ class CPU(
             is Instruction.Sra -> sra(instruction.target)
             is Instruction.Sla -> sla(instruction.target)
             is Instruction.Swap -> swap(instruction.target)
+            Instruction.Nop -> Unit
         }
+
+        // TODO increase program counter according to instruction
+        return programCounter
     }
 
     private fun add(target: ArithmeticTarget) {
