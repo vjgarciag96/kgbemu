@@ -11,7 +11,11 @@ class CPU(
 ) {
 
     fun step() {
-        val instructionByte = memoryBus.readByte(programCounter)
+        var instructionByte = memoryBus.readByte(programCounter)
+        val prefixed = instructionByte == 0xCB.toUByte()
+        if (prefixed) {
+            instructionByte = memoryBus.readByte((programCounter.inc()))
+        }
 
         programCounter = when (val instruction = Instruction.fromByte(instructionByte)) {
             is Instruction -> execute(instruction)

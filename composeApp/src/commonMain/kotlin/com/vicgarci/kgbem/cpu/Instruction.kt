@@ -242,7 +242,24 @@ sealed interface Instruction {
 
     companion object {
 
-        fun fromByte(instructionByte: UByte): Instruction? {
+        fun fromByte(
+            instructionByte: UByte,
+            prefixed: Boolean,
+        ): Instruction? {
+            return if (prefixed) {
+                fromBytePrefixed(instructionByte)
+            } else {
+                fromByteNotPrefixed(instructionByte)
+            }
+        }
+
+        private fun fromBytePrefixed(instructionByte: UByte): Instruction? {
+            return null
+        }
+
+        private fun fromByteNotPrefixed(
+            instructionByte: UByte,
+        ): Instruction? {
             return when (instructionByte.toInt()) {
                 0x3C,
                 0x04,
@@ -263,8 +280,6 @@ sealed interface Instruction {
                 0x2D,
                 0x35,
                     -> Dec(getRegister(instructionByte))
-
-
 
                 else -> null
             }
