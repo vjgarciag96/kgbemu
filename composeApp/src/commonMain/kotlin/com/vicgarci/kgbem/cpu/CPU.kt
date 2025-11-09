@@ -17,7 +17,7 @@ class CPU(
             instructionByte = memoryBus.readByte((programCounter.inc()))
         }
 
-        programCounter = when (val instruction = Instruction.fromByte(instructionByte)) {
+        programCounter = when (val instruction = Instruction.fromByte(instructionByte, prefixed)) {
             is Instruction -> execute(instruction)
             null -> error("Invalid instruction $instructionByte")
         }
