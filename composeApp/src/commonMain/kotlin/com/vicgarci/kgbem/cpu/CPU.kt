@@ -17,7 +17,7 @@ class CPU(
             instructionByte = memoryBus.readByte((programCounter.next()))
         }
 
-        val address = when (val instruction = Instruction.fromByte(instructionByte, prefixed)) {
+        val address = when (val instruction = InstructionDecoder.decode(instructionByte, prefixed)) {
             is Instruction -> execute(instruction)
             null -> error("Invalid instruction $instructionByte")
         }
