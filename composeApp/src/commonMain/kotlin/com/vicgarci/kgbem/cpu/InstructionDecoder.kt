@@ -25,6 +25,13 @@ object InstructionDecoder {
         instructionByte: UByte,
     ): Instruction? {
         return when (instructionByte.toInt()) {
+            0x06 -> Instruction.Ld(ArithmeticTarget.B)
+            0x0E -> Instruction.Ld(ArithmeticTarget.C)
+            0x16 -> Instruction.Ld(ArithmeticTarget.D)
+            0x1E -> Instruction.Ld(ArithmeticTarget.E)
+            0x26 -> Instruction.Ld(ArithmeticTarget.H)
+            0x2E -> Instruction.Ld(ArithmeticTarget.L)
+            0x3E -> Instruction.Ld(ArithmeticTarget.A)
             0x3C,
             0x04,
             0x0C,

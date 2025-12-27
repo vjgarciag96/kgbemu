@@ -59,6 +59,7 @@ class CPU(
             is Instruction.Sla -> sla(instruction.target)
             is Instruction.Swap -> swap(instruction.target)
             is Instruction.Jp -> return jump(instruction.condition)
+            is Instruction.Ld -> load(instruction.target)
             Instruction.Nop -> Unit
         }
 
@@ -474,6 +475,11 @@ class CPU(
             programCounter.increaseBy(stepSize = 2)
             null
         }
+    }
+
+    private fun load(target: ArithmeticTarget) {
+        val byteToLoad = memoryBus.readByte(programCounter.next())
+        updateArithmeticTarget(target) { byteToLoad }
     }
 
     private fun updateArithmeticTarget(

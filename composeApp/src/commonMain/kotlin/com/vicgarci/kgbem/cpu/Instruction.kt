@@ -247,6 +247,14 @@ sealed interface Instruction {
     data class Jp(
         val condition: JumpCondition,
     ) : Instruction
+
+    /**
+     * Load a byte constant into an arithmetic register [target]. The byte constant to load is
+     * located in the byte following the instruction identifier.
+     */
+    data class Ld(
+        override val target: ArithmeticTarget,
+    ) : ArithmeticTargetInstruction
 }
 
 enum class ArithmeticTarget {
