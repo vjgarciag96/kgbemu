@@ -6,24 +6,28 @@ import kotlin.toUByte
 
 class CPU(
     private val registers: Registers,
-    private var programCounter: UShort,
+    private var programCounter: ProgramCounter,
     private val memoryBus: MemoryBus,
 ) {
 
     fun step() {
-        var instructionByte = memoryBus.readByte(programCounter)
+        var instructionByte = memoryBus.readByte(programCounter.next())
         val prefixed = instructionByte == 0xCB.toUByte()
         if (prefixed) {
-            instructionByte = memoryBus.readByte((programCounter.inc()))
+            instructionByte = memoryBus.readByte((programCounter.next()))
         }
 
-        programCounter = when (val instruction = Instruction.fromByte(instructionByte, prefixed)) {
+        val address = when (val instruction = Instruction.fromByte(instructionByte, prefixed)) {
             is Instruction -> execute(instruction)
             null -> error("Invalid instruction $instructionByte")
         }
+
+        if (address != null) {
+            programCounter.setTo(address)
+        }
     }
 
-    fun execute(instruction: Instruction): UShort {
+    fun execute(instruction: Instruction): UShort? {
         when (instruction) {
             is Instruction.Add -> add(instruction.target)
             is Instruction.AddHl -> addHl(instruction.target)
@@ -54,11 +58,11 @@ class CPU(
             is Instruction.Sra -> sra(instruction.target)
             is Instruction.Sla -> sla(instruction.target)
             is Instruction.Swap -> swap(instruction.target)
+            is Instruction.Jp -> return jump(instruction.condition)
             Instruction.Nop -> Unit
         }
 
-        // TODO increase program counter according to instruction
-        return programCounter
+        return null
     }
 
     private fun add(target: ArithmeticTarget) {
@@ -448,6 +452,27 @@ class CPU(
             ).toUByte()
 
             result
+        }
+    }
+
+    private fun jump(condition: JumpCondition): UShort? {
+        val flags = registers.f.toFlagsRegister()
+        val jump = when (condition) {
+            JumpCondition.NOT_ZERO -> !flags.zero
+            JumpCondition.ZERO -> flags.zero
+            JumpCondition.CARRY -> flags.carry
+            JumpCondition.NOT_CARRY -> !flags.carry
+            JumpCondition.ALWAYS -> true
+        }
+
+        return if (jump) {
+            val leastSignificantByte = memoryBus.readByte(programCounter.next())
+            val mostSignificantByte = memoryBus.readByte(programCounter.next())
+            ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
+        } else {
+            // even if we don't need to jump, we need to "consume" the jump's 16 bit address
+            programCounter.increaseBy(stepSize = 2)
+            null
         }
     }
 

@@ -240,6 +240,14 @@ sealed interface Instruction {
 
     data object Nop : Instruction
 
+    /**
+     * Jump to a particular address dependent on one [condition]. The address to jump to is
+     * located in the 2 bytes following the instruction identifier.
+     */
+    data class Jp(
+        val condition: JumpCondition,
+    ) : Instruction
+
     companion object {
 
         fun fromByte(
@@ -280,6 +288,12 @@ sealed interface Instruction {
                 0x2D,
                 0x35,
                     -> Dec(getRegister(instructionByte))
+
+                0xC3 -> Jp(JumpCondition.ALWAYS)
+                0xC2 -> Jp(JumpCondition.NOT_ZERO)
+                0xCA -> Jp(JumpCondition.ZERO)
+                0xD2 -> Jp(JumpCondition.NOT_CARRY)
+                0xDA -> Jp(JumpCondition.CARRY)
 
                 else -> null
             }

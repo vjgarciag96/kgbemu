@@ -7,13 +7,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-val FLAGS_NOT_SET = FlagsRegister(
-    zero = false,
-    subtract = false,
-    halfCarry = false,
-    carry = false,
-)
-
 class CPUTest {
 
     private val registers = Registers(
@@ -27,10 +20,13 @@ class CPUTest {
         0.toUByte(),
     )
 
+    private var programCounter = ProgramCounter(0.toUShort())
+    private val memoryBus = MemoryBus()
+
     private val cpu = CPU(
         registers,
-        0.toUShort(),
-        MemoryBus(),
+        programCounter,
+        memoryBus,
     )
 
     @Test
@@ -414,7 +410,7 @@ class CPUTest {
     @Test
     fun rotateRight_carryFalse_leastSignificantBit1() {
         registers.c = 0x0F.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Rr(ArithmeticTarget.C))
 
@@ -426,7 +422,7 @@ class CPUTest {
     @Test
     fun rotateRight_carryTrue_leastSignificantBit0() {
         registers.c = 0xF0.toUByte()
-        registers.f = FLAGS_NOT_SET.copy(carry = true).toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
 
         cpu.execute(Instruction.Rr(ArithmeticTarget.C))
 
@@ -438,7 +434,7 @@ class CPUTest {
     @Test
     fun rotateRight_rotatesToZero() {
         registers.c = 0b1.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Rr(ArithmeticTarget.C))
 
@@ -450,7 +446,7 @@ class CPUTest {
     @Test
     fun rotateLeft_carryFalse_mostSignificantBit1() {
         registers.c = 0xF0.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Rl(ArithmeticTarget.C))
 
@@ -462,7 +458,7 @@ class CPUTest {
     @Test
     fun rotateLeft_carryTrue_mostSignificantBit0() {
         registers.c = 0x0F.toUByte()
-        registers.f = FLAGS_NOT_SET.copy(carry = true).toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
 
         cpu.execute(Instruction.Rl(ArithmeticTarget.C))
 
@@ -474,7 +470,7 @@ class CPUTest {
     @Test
     fun rotateLeft_rotatesToZero() {
         registers.c = 0b10000000.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Rl(ArithmeticTarget.C))
 
@@ -486,7 +482,7 @@ class CPUTest {
     @Test
     fun rotateRightCircularly_leastSignificantBit1() {
         registers.c = 0x0F.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Rrc(ArithmeticTarget.C))
 
@@ -498,7 +494,7 @@ class CPUTest {
     @Test
     fun rotateRightCircularly_leastSignificantBit0() {
         registers.c = 0xF0.toUByte()
-        registers.f = FLAGS_NOT_SET.copy(carry = true).toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
 
         cpu.execute(Instruction.Rrc(ArithmeticTarget.C))
 
@@ -510,7 +506,7 @@ class CPUTest {
     @Test
     fun rotateRightCircularly_rotatesToZero() {
         registers.c = 0b0.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Rrc(ArithmeticTarget.C))
 
@@ -522,7 +518,7 @@ class CPUTest {
     @Test
     fun rotateLeftCircularly_mostSignificantBit1() {
         registers.c = 0xF0.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Rlc(ArithmeticTarget.C))
 
@@ -534,7 +530,7 @@ class CPUTest {
     @Test
     fun rotateLeftCircularly_mostSignificantBit0() {
         registers.c = 0x0F.toUByte()
-        registers.f = FLAGS_NOT_SET.copy(carry = true).toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
 
         cpu.execute(Instruction.Rlc(ArithmeticTarget.C))
 
@@ -546,7 +542,7 @@ class CPUTest {
     @Test
     fun rotateLeftCircularly_rotatesToZero() {
         registers.c = 0b0.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Rlc(ArithmeticTarget.C))
 
@@ -558,7 +554,7 @@ class CPUTest {
     @Test
     fun shiftRightArithmetically_leastSignificantBit0_signBit1() {
         registers.d = 0b10010100.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Sra(ArithmeticTarget.D))
 
@@ -570,7 +566,7 @@ class CPUTest {
     @Test
     fun shiftRightArithmetically_leastSignificantBit1_signBit0() {
         registers.d = 0b00010101.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Sra(ArithmeticTarget.D))
 
@@ -582,7 +578,7 @@ class CPUTest {
     @Test
     fun shiftRightArithmetically_shiftsToZero() {
         registers.d = 0b00000001.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Sra(ArithmeticTarget.D))
 
@@ -593,7 +589,7 @@ class CPUTest {
     @Test
     fun shiftLeftArithmetically_mostSignificantBit0() {
         registers.b = 0x0F.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Sla(ArithmeticTarget.B))
 
@@ -605,7 +601,7 @@ class CPUTest {
     @Test
     fun shiftLeftArithmetically_mostSignificantBit1() {
         registers.b = 0xF0.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Sla(ArithmeticTarget.B))
 
@@ -617,7 +613,7 @@ class CPUTest {
     @Test
     fun shiftLeftArithmetically_shiftsToZero() {
         registers.b = 0b100000000.toUByte()
-        registers.f = FLAGS_NOT_SET.toUByte()
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
         cpu.execute(Instruction.Sla(ArithmeticTarget.B))
 
