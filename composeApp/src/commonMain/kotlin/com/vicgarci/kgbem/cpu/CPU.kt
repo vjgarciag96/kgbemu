@@ -6,7 +6,7 @@ import kotlin.toUByte
 
 class CPU(
     private val registers: Registers,
-    private var programCounter: ProgramCounter,
+    private val programCounter: ProgramCounter,
     private val memoryBus: MemoryBus,
 ) {
 
