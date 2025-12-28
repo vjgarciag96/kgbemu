@@ -65,6 +65,7 @@ class CPU(
             is Instruction.Push -> push(instruction.target)
             is Instruction.Call -> return call(instruction.condition)
             is Instruction.Ret -> return ret(instruction.condition)
+            is Instruction.Jr -> jumpRelative(instruction.condition)
             Instruction.Nop -> Unit
         }
 
@@ -462,14 +463,7 @@ class CPU(
     }
 
     private fun jump(condition: JumpCondition): UShort? {
-        val flags = registers.f.toFlagsRegister()
-        val jump = when (condition) {
-            JumpCondition.NOT_ZERO -> !flags.zero
-            JumpCondition.ZERO -> flags.zero
-            JumpCondition.CARRY -> flags.carry
-            JumpCondition.NOT_CARRY -> !flags.carry
-            JumpCondition.ALWAYS -> true
-        }
+        val jump = evaluateJumpCondition(condition)
 
         return if (jump) {
             val leastSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
@@ -479,6 +473,19 @@ class CPU(
             // even if we don't need to jump, we need to "consume" the jump's 16 bit address
             programCounter.increaseBy(stepSize = 2)
             null
+        }
+    }
+
+    private fun jumpRelative(condition: JumpCondition) {
+        val jump = evaluateJumpCondition(condition)
+
+        return if (jump) {
+            val offset = memoryBus.readByte(programCounter.getAndIncrement())
+            val signedOffset = offset.toByte().toInt()
+            programCounter.increaseBy(stepSize = signedOffset)
+        } else {
+            // even if we don't need to jump, we need to "consume" the jump's 8 bit address
+            programCounter.increaseBy(stepSize = 1)
         }
     }
 
@@ -533,14 +540,7 @@ class CPU(
     }
 
     private fun call(condition: JumpCondition): UShort? {
-        val flags = registers.f.toFlagsRegister()
-        val call = when (condition) {
-            JumpCondition.NOT_ZERO -> !flags.zero
-            JumpCondition.ZERO -> flags.zero
-            JumpCondition.CARRY -> flags.carry
-            JumpCondition.NOT_CARRY -> !flags.carry
-            JumpCondition.ALWAYS -> true
-        }
+        val call = evaluateJumpCondition(condition)
 
         return if (call) {
             // read address to call
@@ -562,14 +562,7 @@ class CPU(
     }
 
     private fun ret(condition: JumpCondition): UShort? {
-        val flags = registers.f.toFlagsRegister()
-        val ret = when (condition) {
-            JumpCondition.NOT_ZERO -> !flags.zero
-            JumpCondition.ZERO -> flags.zero
-            JumpCondition.CARRY -> flags.carry
-            JumpCondition.NOT_CARRY -> !flags.carry
-            JumpCondition.ALWAYS -> true
-        }
+        val ret = evaluateJumpCondition(condition)
 
         return if (ret) {
             val leastSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
@@ -606,6 +599,17 @@ class CPU(
             ArithmeticTarget.E -> registers.e
             ArithmeticTarget.H -> registers.h
             ArithmeticTarget.L -> registers.l
+        }
+    }
+
+    private fun evaluateJumpCondition(condition: JumpCondition): Boolean {
+        val flags = registers.f.toFlagsRegister()
+        return when (condition) {
+            JumpCondition.NOT_ZERO -> !flags.zero
+            JumpCondition.ZERO -> flags.zero
+            JumpCondition.CARRY -> flags.carry
+            JumpCondition.NOT_CARRY -> !flags.carry
+            JumpCondition.ALWAYS -> true
         }
     }
 }

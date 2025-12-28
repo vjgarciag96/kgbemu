@@ -277,6 +277,10 @@ sealed interface Instruction {
     data class Ret(
         val condition: JumpCondition,
     ) : Instruction
+
+    data class Jr(
+        val condition: JumpCondition,
+    ) : Instruction
 }
 
 enum class ArithmeticTarget {

@@ -142,4 +142,114 @@ class CPUJumpTest {
 
         assertEquals(0xABCD.toUShort(), currentPc)
     }
+
+    @Test
+    fun jumpRelative_unconditional_positive() {
+        memory[0] = 0x18.toUByte() // JR n opcode
+        memory[1] = 0x05.toUByte() // +5
+
+        cpu.step()
+
+        val programCounter = programCounter.get()
+        assertEquals(0x0007.toUShort(), programCounter)
+    }
+
+    @Test
+    fun jumpRelative_unconditional_negative() {
+        memory[0] = 0x18.toUByte() // JR n opcode
+        memory[1] = 0xFB.toUByte() // -5
+
+        cpu.step()
+
+        val programCounter = programCounter.get()
+        assertEquals(0xFFFD.toUShort(), programCounter)
+    }
+
+    @Test
+    fun jumpRelative_notZero_met() {
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = false).toUByte()
+        memory[0] = 0x20.toUByte() // JR NZ opcode
+        memory[1] = 0x05.toUByte() // +5
+
+        cpu.step()
+
+        assertEquals(0x0007.toUShort(), programCounter.get())
+    }
+
+    @Test
+    fun jumpRelative_notZero_notMet() {
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = true).toUByte()
+        memory[0] = 0x20.toUByte() // JR NZ opcode
+        memory[1] = 0x05.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x0002.toUShort(), programCounter.get())
+    }
+
+    @Test
+    fun jumpRelative_zero_met() {
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = true).toUByte()
+        memory[0] = 0x28.toUByte() // JR Z opcode
+        memory[1] = 0x05.toUByte() // +5
+
+        cpu.step()
+
+        assertEquals(0x0007.toUShort(), programCounter.get())
+    }
+
+    @Test
+    fun jumpRelative_zero_notMet() {
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = false).toUByte()
+        memory[0] = 0x28.toUByte() // JR Z opcode
+        memory[1] = 0x05.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x0002.toUShort(), programCounter.get())
+    }
+
+    @Test
+    fun jumpRelative_notCarry_met() {
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = false).toUByte()
+        memory[0] = 0x30.toUByte() // JR NC opcode
+        memory[1] = 0x05.toUByte() // +5
+
+        cpu.step()
+
+        assertEquals(0x0007.toUShort(), programCounter.get())
+    }
+
+    @Test
+    fun jumpRelative_notCarry_notMet() {
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
+        memory[0] = 0x30.toUByte() // JR NC opcode
+        memory[1] = 0x05.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x0002.toUShort(), programCounter.get())
+    }
+
+    @Test
+    fun jumpRelative_carry_met() {
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
+        memory[0] = 0x38.toUByte() // JR C opcode
+        memory[1] = 0x05.toUByte() // +5
+
+        cpu.step()
+
+        assertEquals(0x0007.toUShort(), programCounter.get())
+    }
+
+    @Test
+    fun jumpRelative_carry_notMet() {
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = false).toUByte()
+        memory[0] = 0x38.toUByte() // JR C opcode
+        memory[1] = 0x05.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x0002.toUShort(), programCounter.get())
+    }
 }
