@@ -61,6 +61,15 @@ object InstructionDecoder {
             0x30 -> Instruction.Jr(JumpCondition.NOT_CARRY)
             0x38 -> Instruction.Jr(JumpCondition.CARRY)
 
+            0xC7 -> Instruction.Rst(0x00.toUByte())
+            0xCF -> Instruction.Rst(0x08.toUByte())
+            0xD7 -> Instruction.Rst(0x10.toUByte())
+            0xDF -> Instruction.Rst(0x18.toUByte())
+            0xE7 -> Instruction.Rst(0x20.toUByte())
+            0xEF -> Instruction.Rst(0x28.toUByte())
+            0xF7 -> Instruction.Rst(0x30.toUByte())
+            0xFF -> Instruction.Rst(0x38.toUByte())
+
             0x3C,
             0x04,
             0x0C,

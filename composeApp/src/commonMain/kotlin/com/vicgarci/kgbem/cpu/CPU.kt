@@ -66,6 +66,7 @@ class CPU(
             is Instruction.Call -> return call(instruction.condition)
             is Instruction.Ret -> return ret(instruction.condition)
             is Instruction.Jr -> jumpRelative(instruction.condition)
+            is Instruction.Rst -> rst(instruction.address)
             Instruction.Nop -> Unit
         }
 
@@ -547,11 +548,8 @@ class CPU(
             val leastSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
             val mostSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
             val address = ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
-
-            // push current PC to stack
-            val pc = programCounter.get()
-            memoryBus.writeByte(stackPointer.decrementAndGet(), ((pc.toInt() and 0xFF00) ushr 8).toUByte())
-            memoryBus.writeByte(stackPointer.decrementAndGet(), (pc.toInt() and 0x00FF).toUByte())
+            
+            pushProgramCounterToStack()
 
             address
         } else {
@@ -571,6 +569,11 @@ class CPU(
         } else {
             null
         }
+    }
+
+    private fun rst(address: UByte) {
+        pushProgramCounterToStack()
+        programCounter.setTo(address.toUShort())
     }
 
     private fun updateArithmeticTarget(
@@ -611,5 +614,11 @@ class CPU(
             JumpCondition.NOT_CARRY -> !flags.carry
             JumpCondition.ALWAYS -> true
         }
+    }
+
+    private fun pushProgramCounterToStack() {
+        val pc = programCounter.get()
+        memoryBus.writeByte(stackPointer.decrementAndGet(), ((pc.toInt() and 0xFF00) ushr 8).toUByte())
+        memoryBus.writeByte(stackPointer.decrementAndGet(), (pc.toInt() and 0x00FF).toUByte())
     }
 }
