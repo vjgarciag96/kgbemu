@@ -7,10 +7,18 @@ class StackPointer(
     /**
      * Return the current stack pointer and increase it by one.
      */
-    fun increment(): UShort {
+    fun getAndIncrement(): UShort {
         val currValue = value
         value = (value.toInt() + 1).toUShort()
         return currValue
+    }
+
+    /**
+     * Decrease the stack pointer by one and return its value.
+     */
+    fun decrementAndGet(): UShort {
+        value = (value.toInt() - 1).toUShort()
+        return value
     }
 
     private companion object {

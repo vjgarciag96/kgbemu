@@ -62,6 +62,7 @@ class CPU(
             is Instruction.Jp -> return jump(instruction.condition)
             is Instruction.Ld -> load(instruction.target)
             is Instruction.Pop -> pop(instruction.target)
+            is Instruction.Push -> push(instruction.target)
             Instruction.Nop -> Unit
         }
 
@@ -485,8 +486,8 @@ class CPU(
     }
 
     private fun pop(target: StackTarget) {
-        val leastSignificantByte = memoryBus.readByte(stackPointer.increment())
-        val mostSignificantByte = memoryBus.readByte(stackPointer.increment())
+        val leastSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
+        val mostSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
 
         when (target) {
             StackTarget.BC -> {
@@ -504,6 +505,27 @@ class CPU(
             StackTarget.AF -> {
                 registers.a = mostSignificantByte
                 registers.f = leastSignificantByte and 0xF0.toUByte() // lower nibble of F is always 0
+            }
+        }
+    }
+
+    private fun push(target: StackTarget) {
+        when (target) {
+            StackTarget.BC -> {
+                memoryBus.writeByte(stackPointer.decrementAndGet(), registers.b)
+                memoryBus.writeByte(stackPointer.decrementAndGet(), registers.c)
+            }
+            StackTarget.DE -> {
+                memoryBus.writeByte(stackPointer.decrementAndGet(), registers.d)
+                memoryBus.writeByte(stackPointer.decrementAndGet(), registers.e)
+            }
+            StackTarget.HL -> {
+                memoryBus.writeByte(stackPointer.decrementAndGet(), registers.h)
+                memoryBus.writeByte(stackPointer.decrementAndGet(), registers.l)
+            }
+            StackTarget.AF -> {
+                memoryBus.writeByte(stackPointer.decrementAndGet(), registers.a)
+                memoryBus.writeByte(stackPointer.decrementAndGet(), registers.f)
             }
         }
     }

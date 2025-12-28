@@ -7,4 +7,8 @@ class MemoryBus(
     fun readByte(address: UShort): UByte {
         return memory[address.toInt()]
     }
+
+    fun writeByte(address: UShort, value: UByte) {
+        memory[address.toInt()] = value
+    }
 }

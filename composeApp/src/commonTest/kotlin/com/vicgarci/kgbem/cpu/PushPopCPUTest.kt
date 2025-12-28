@@ -73,4 +73,52 @@ class PushPopCPUTest {
         // F low byte should always be 0
         assertEquals(0x1230.toUShort(), registers.af)
     }
+
+    @Test
+    fun pushBC() {
+        memory[0] = 0xC5.toUByte() // PUSH BC opcode
+        registers.b = 0x12.toUByte()
+        registers.c = 0x34.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x34.toUByte(), memory[6]) // low byte
+        assertEquals(0x12.toUByte(), memory[7]) // high byte
+    }
+
+    @Test
+    fun pushDE() {
+        memory[0] = 0xD5.toUByte() // PUSH DE opcode
+        registers.d = 0x12.toUByte()
+        registers.e = 0x34.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x34.toUByte(), memory[6]) // low byte
+        assertEquals(0x12.toUByte(), memory[7]) // high byte
+    }
+
+    @Test
+    fun pushHL() {
+        memory[0] = 0xE5.toUByte() // PUSH HL opcode
+        registers.h = 0x12.toUByte()
+        registers.l = 0x34.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x34.toUByte(), memory[6]) // low byte
+        assertEquals(0x12.toUByte(), memory[7]) // high byte
+    }
+
+    @Test
+    fun pushAF() {
+        memory[0] = 0xF5.toUByte() // PUSH AF opcode
+        registers.a = 0x12.toUByte()
+        registers.f = 0x34.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x34.toUByte(), memory[6]) // low byte
+        assertEquals(0x12.toUByte(), memory[7]) // high byte
+    }
 }

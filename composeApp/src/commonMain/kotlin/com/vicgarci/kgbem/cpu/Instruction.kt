@@ -262,6 +262,13 @@ sealed interface Instruction {
     data class Pop(
         val target: StackTarget,
     ) : Instruction
+
+    /**
+     * Push a value from a 16-bit register [target] onto the stack.
+     */
+    data class Push(
+        val target: StackTarget,
+    ) : Instruction
 }
 
 enum class ArithmeticTarget {

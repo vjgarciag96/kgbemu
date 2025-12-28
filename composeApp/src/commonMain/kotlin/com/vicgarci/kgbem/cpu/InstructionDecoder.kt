@@ -38,6 +38,11 @@ object InstructionDecoder {
             0xE1 -> Instruction.Pop(StackTarget.HL)
             0xF1 -> Instruction.Pop(StackTarget.AF)
 
+            0xC5 -> Instruction.Push(StackTarget.BC)
+            0xD5 -> Instruction.Push(StackTarget.DE)
+            0xE5 -> Instruction.Push(StackTarget.HL)
+            0xF5 -> Instruction.Push(StackTarget.AF)
+
             0x3C,
             0x04,
             0x0C,
