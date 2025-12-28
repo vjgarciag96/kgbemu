@@ -8,6 +8,7 @@ class CPU(
     private val registers: Registers,
     private val programCounter: ProgramCounter,
     private val memoryBus: MemoryBus,
+    private val stackPointer: StackPointer = StackPointer(),
 ) {
 
     fun step() {
@@ -60,6 +61,7 @@ class CPU(
             is Instruction.Swap -> swap(instruction.target)
             is Instruction.Jp -> return jump(instruction.condition)
             is Instruction.Ld -> load(instruction.target)
+            is Instruction.Pop -> pop(instruction.target)
             Instruction.Nop -> Unit
         }
 
@@ -480,6 +482,30 @@ class CPU(
     private fun load(target: ArithmeticTarget) {
         val byteToLoad = memoryBus.readByte(programCounter.next())
         updateArithmeticTarget(target) { byteToLoad }
+    }
+
+    private fun pop(target: StackTarget) {
+        val leastSignificantByte = memoryBus.readByte(stackPointer.increment())
+        val mostSignificantByte = memoryBus.readByte(stackPointer.increment())
+
+        when (target) {
+            StackTarget.BC -> {
+                registers.b = mostSignificantByte
+                registers.c = leastSignificantByte
+            }
+            StackTarget.DE -> {
+                registers.d = mostSignificantByte
+                registers.e = leastSignificantByte
+            }
+            StackTarget.HL -> {
+                registers.h = mostSignificantByte
+                registers.l = leastSignificantByte
+            }
+            StackTarget.AF -> {
+                registers.a = mostSignificantByte
+                registers.f = leastSignificantByte and 0xF0.toUByte() // lower nibble of F is always 0
+            }
+        }
     }
 
     private fun updateArithmeticTarget(

@@ -32,6 +32,12 @@ object InstructionDecoder {
             0x26 -> Instruction.Ld(ArithmeticTarget.H)
             0x2E -> Instruction.Ld(ArithmeticTarget.L)
             0x3E -> Instruction.Ld(ArithmeticTarget.A)
+
+            0xC1 -> Instruction.Pop(StackTarget.BC)
+            0xD1 -> Instruction.Pop(StackTarget.DE)
+            0xE1 -> Instruction.Pop(StackTarget.HL)
+            0xF1 -> Instruction.Pop(StackTarget.AF)
+
             0x3C,
             0x04,
             0x0C,

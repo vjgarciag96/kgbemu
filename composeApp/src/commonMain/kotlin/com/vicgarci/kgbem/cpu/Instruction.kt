@@ -255,8 +255,19 @@ sealed interface Instruction {
     data class Ld(
         override val target: ArithmeticTarget,
     ) : ArithmeticTargetInstruction
+
+    /**
+     * Pop a value from the stack into a 16-bit register [target].
+     */
+    data class Pop(
+        val target: StackTarget,
+    ) : Instruction
 }
 
 enum class ArithmeticTarget {
     A, B, C, D, E, H, L,
+}
+
+enum class StackTarget {
+    AF, BC, DE, HL,
 }
