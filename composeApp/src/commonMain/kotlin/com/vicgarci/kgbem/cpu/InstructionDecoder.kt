@@ -49,6 +49,12 @@ object InstructionDecoder {
             0xD4 -> Instruction.Call(JumpCondition.NOT_CARRY)
             0xDC -> Instruction.Call(JumpCondition.CARRY)
 
+            0xC9 -> Instruction.Ret(JumpCondition.ALWAYS)
+            0xC0 -> Instruction.Ret(JumpCondition.NOT_ZERO)
+            0xC8 -> Instruction.Ret(JumpCondition.ZERO)
+            0xD0 -> Instruction.Ret(JumpCondition.NOT_CARRY)
+            0xD8 -> Instruction.Ret(JumpCondition.CARRY)
+
             0x3C,
             0x04,
             0x0C,

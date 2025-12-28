@@ -64,6 +64,7 @@ class CPU(
             is Instruction.Pop -> pop(instruction.target)
             is Instruction.Push -> push(instruction.target)
             is Instruction.Call -> return call(instruction.condition)
+            is Instruction.Ret -> return ret(instruction.condition)
             Instruction.Nop -> Unit
         }
 
@@ -556,6 +557,25 @@ class CPU(
         } else {
             // even if we don't need to call, we need to "consume" the call's 16 bit address
             programCounter.increaseBy(stepSize = 2)
+            null
+        }
+    }
+
+    private fun ret(condition: JumpCondition): UShort? {
+        val flags = registers.f.toFlagsRegister()
+        val ret = when (condition) {
+            JumpCondition.NOT_ZERO -> !flags.zero
+            JumpCondition.ZERO -> flags.zero
+            JumpCondition.CARRY -> flags.carry
+            JumpCondition.NOT_CARRY -> !flags.carry
+            JumpCondition.ALWAYS -> true
+        }
+
+        return if (ret) {
+            val leastSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
+            val mostSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
+            ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
+        } else {
             null
         }
     }
