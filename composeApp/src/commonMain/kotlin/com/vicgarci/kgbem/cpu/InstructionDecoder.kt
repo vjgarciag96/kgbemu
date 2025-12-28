@@ -1,7 +1,5 @@
 package com.vicgarci.kgbem.cpu
 
-import com.vicgarci.kgbem.cpu.Instruction.Dec
-import com.vicgarci.kgbem.cpu.Instruction.Inc
 import com.vicgarci.kgbem.cpu.Instruction.Jp
 
 object InstructionDecoder {
@@ -70,25 +68,39 @@ object InstructionDecoder {
             0xF7 -> Instruction.Rst(0x30.toUByte())
             0xFF -> Instruction.Rst(0x38.toUByte())
 
-            0x3C,
-            0x04,
-            0x0C,
-            0x14,
-            0x1C,
-            0x24,
-            0x34,
-            0x2C,
-                -> Inc(getRegister(instructionByte))
+            in 0x80..0xBF -> {
+                val opGroup = (instructionByte.toInt() shr 3) and 0x07
+                val target = instructionByte.toInt() and 0x07
 
-            0x3D,
-            0x05,
-            0x0D,
-            0x15,
-            0x1D,
-            0x25,
-            0x2D,
-            0x35,
-                -> Dec(getRegister(instructionByte))
+                val register = when (target) {
+                    0b111 -> ArithmeticTarget.A
+                    0b000 -> ArithmeticTarget.B
+                    0b001 -> ArithmeticTarget.C
+                    0b010 -> ArithmeticTarget.D
+                    0b011 -> ArithmeticTarget.E
+                    0b100 -> ArithmeticTarget.H
+                    0b101 -> ArithmeticTarget.L
+                    else -> error("Invalid register $target")
+                }
+
+                when (opGroup) {
+                    0b000 -> Instruction.Add(register)
+                    0b001 -> Instruction.AddC(register)
+                    0b010 -> Instruction.Sub(register)
+                    0b011 -> Instruction.Sbc(register)
+                    0b100 -> Instruction.And(register)
+                    0b101 -> Instruction.Xor(register)
+                    0b110 -> Instruction.Or(register)
+                    0b111 -> Instruction.Cp(register)
+                    else -> error("Invalid operation group $opGroup")
+                }
+            }
+            0xA8 -> Instruction.Xor(ArithmeticTarget.B)
+            0xA9 -> Instruction.Xor(ArithmeticTarget.C)
+            0xAA -> Instruction.Xor(ArithmeticTarget.D)
+            0xAB -> Instruction.Xor(ArithmeticTarget.E)
+            0xAC -> Instruction.Xor(ArithmeticTarget.H)
+            0xAD -> Instruction.Xor(ArithmeticTarget.L)
 
             0xC3 -> Jp(JumpCondition.ALWAYS)
             0xC2 -> Jp(JumpCondition.NOT_ZERO)
@@ -97,23 +109,6 @@ object InstructionDecoder {
             0xDA -> Jp(JumpCondition.CARRY)
 
             else -> null
-        }
-    }
-
-    private fun getRegister(
-        instructionByte: UByte,
-    ): ArithmeticTarget {
-        val register = (instructionByte.toInt() shr 3) and 0b111
-
-        return when (register) {
-            0b111 -> ArithmeticTarget.A
-            0b000 -> ArithmeticTarget.B
-            0b001 -> ArithmeticTarget.C
-            0b010 -> ArithmeticTarget.D
-            0b011 -> ArithmeticTarget.E
-            0b100 -> ArithmeticTarget.H
-            0b101 -> ArithmeticTarget.L
-            else -> error("Invalid register value $register")
         }
     }
 }
