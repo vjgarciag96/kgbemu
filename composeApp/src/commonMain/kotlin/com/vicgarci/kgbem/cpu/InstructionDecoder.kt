@@ -43,6 +43,12 @@ object InstructionDecoder {
             0xE5 -> Instruction.Push(StackTarget.HL)
             0xF5 -> Instruction.Push(StackTarget.AF)
 
+            0xCD -> Instruction.Call(JumpCondition.ALWAYS)
+            0xC4 -> Instruction.Call(JumpCondition.NOT_ZERO)
+            0xCC -> Instruction.Call(JumpCondition.ZERO)
+            0xD4 -> Instruction.Call(JumpCondition.NOT_CARRY)
+            0xDC -> Instruction.Call(JumpCondition.CARRY)
+
             0x3C,
             0x04,
             0x0C,

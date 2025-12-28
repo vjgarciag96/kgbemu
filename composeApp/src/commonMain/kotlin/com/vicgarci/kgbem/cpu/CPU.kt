@@ -63,6 +63,7 @@ class CPU(
             is Instruction.Ld -> load(instruction.target)
             is Instruction.Pop -> pop(instruction.target)
             is Instruction.Push -> push(instruction.target)
+            is Instruction.Call -> return call(instruction.condition)
             Instruction.Nop -> Unit
         }
 
@@ -527,6 +528,35 @@ class CPU(
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.a)
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.f)
             }
+        }
+    }
+
+    private fun call(condition: JumpCondition): UShort? {
+        val flags = registers.f.toFlagsRegister()
+        val call = when (condition) {
+            JumpCondition.NOT_ZERO -> !flags.zero
+            JumpCondition.ZERO -> flags.zero
+            JumpCondition.CARRY -> flags.carry
+            JumpCondition.NOT_CARRY -> !flags.carry
+            JumpCondition.ALWAYS -> true
+        }
+
+        return if (call) {
+            // read address to call
+            val leastSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
+            val mostSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
+            val address = ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
+
+            // push current PC to stack
+            val pc = programCounter.get()
+            memoryBus.writeByte(stackPointer.decrementAndGet(), ((pc.toInt() and 0xFF00) ushr 8).toUByte())
+            memoryBus.writeByte(stackPointer.decrementAndGet(), (pc.toInt() and 0x00FF).toUByte())
+
+            address
+        } else {
+            // even if we don't need to call, we need to "consume" the call's 16 bit address
+            programCounter.increaseBy(stepSize = 2)
+            null
         }
     }
 

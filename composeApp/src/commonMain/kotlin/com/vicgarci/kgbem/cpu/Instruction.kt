@@ -269,6 +269,10 @@ sealed interface Instruction {
     data class Push(
         val target: StackTarget,
     ) : Instruction
+
+    data class Call(
+        val condition: JumpCondition,
+    ) : Instruction
 }
 
 enum class ArithmeticTarget {
