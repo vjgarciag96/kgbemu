@@ -12,10 +12,10 @@ class CPU(
 ) {
 
     fun step() {
-        var instructionByte = memoryBus.readByte(programCounter.next())
+        var instructionByte = memoryBus.readByte(programCounter.getAndIncrement())
         val prefixed = instructionByte == 0xCB.toUByte()
         if (prefixed) {
-            instructionByte = memoryBus.readByte((programCounter.next()))
+            instructionByte = memoryBus.readByte((programCounter.getAndIncrement()))
         }
 
         val address = when (val instruction = InstructionDecoder.decode(instructionByte, prefixed)) {
@@ -470,8 +470,8 @@ class CPU(
         }
 
         return if (jump) {
-            val leastSignificantByte = memoryBus.readByte(programCounter.next())
-            val mostSignificantByte = memoryBus.readByte(programCounter.next())
+            val leastSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
+            val mostSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
             ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
         } else {
             // even if we don't need to jump, we need to "consume" the jump's 16 bit address
@@ -481,7 +481,7 @@ class CPU(
     }
 
     private fun load(target: ArithmeticTarget) {
-        val byteToLoad = memoryBus.readByte(programCounter.next())
+        val byteToLoad = memoryBus.readByte(programCounter.getAndIncrement())
         updateArithmeticTarget(target) { byteToLoad }
     }
 

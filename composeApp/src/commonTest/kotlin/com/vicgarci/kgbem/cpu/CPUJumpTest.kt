@@ -35,7 +35,7 @@ class CPUJumpTest {
         memory[2] = 0xAB.toUByte()
 
         cpu.step()
-        val currentPc = programCounter.next()
+        val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0xABCD.toUShort(), currentPc)
     }
@@ -48,7 +48,7 @@ class CPUJumpTest {
         memory[2] = 0xAB.toUByte()
 
         cpu.step()
-        val currentPc = programCounter.next()
+        val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0x0003.toUShort(), currentPc)
     }
@@ -61,7 +61,7 @@ class CPUJumpTest {
         memory[2] = 0xAB.toUByte()
 
         cpu.step()
-        val currentPc = programCounter.next()
+        val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0xABCD.toUShort(), currentPc)
     }
@@ -74,7 +74,7 @@ class CPUJumpTest {
         memory[2] = 0xAB.toUByte()
 
         cpu.step()
-        val currentPc = programCounter.next()
+        val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0x0003.toUShort(), currentPc)
     }
@@ -87,7 +87,7 @@ class CPUJumpTest {
         memory[2] = 0xAB.toUByte()
 
         cpu.step()
-        val currentPc = programCounter.next()
+        val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0xABCD.toUShort(), currentPc)
     }
@@ -100,7 +100,7 @@ class CPUJumpTest {
         memory[2] = 0xAB.toUByte()
 
         cpu.step()
-        val currentPc = programCounter.next()
+        val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0x0003.toUShort(), currentPc)
     }
@@ -113,7 +113,7 @@ class CPUJumpTest {
         memory[2] = 0xAB.toUByte()
 
         cpu.step()
-        val currentPc = programCounter.next()
+        val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0xABCD.toUShort(), currentPc)
     }
@@ -126,7 +126,7 @@ class CPUJumpTest {
         memory[2] = 0xAB.toUByte()
 
         cpu.step()
-        val currentPc = programCounter.next()
+        val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0x0003.toUShort(), currentPc)
     }
@@ -138,7 +138,7 @@ class CPUJumpTest {
         memory[2] = 0xAB.toUByte()
 
         cpu.step()
-        val currentPc = programCounter.next()
+        val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0xABCD.toUShort(), currentPc)
     }
