@@ -4,9 +4,14 @@ import com.vicgarci.kgbem.cpu.Instruction.Jp
 
 object InstructionDecoder {
 
-    private val INC_DEC_OPCODES = setOf(
+    private val INC_DEC_R8_OPCODES = setOf(
         0x04, 0x0C, 0x14, 0x1C, 0x24, 0x2C, 0x3C, // INC
         0x05, 0x0D, 0x15, 0x1D, 0x25, 0x2D, 0x3D, // DEC
+    )
+
+    private val INC_DEC_R16_OPCODES = setOf(
+        0x03, 0x13, 0x23, 0x33, // INC
+        0x0B, 0x1B, 0x2B, 0x3B, // DEC
     )
 
     fun decode(
@@ -101,7 +106,7 @@ object InstructionDecoder {
                 }
             }
 
-            in INC_DEC_OPCODES -> {
+            in INC_DEC_R8_OPCODES -> {
                 val opGroup = instructionByte.toInt() and 0xC7
                 val target = when (val register = instructionByte.toInt() ushr 3) {
                     0b000 -> Register8.B
@@ -110,12 +115,30 @@ object InstructionDecoder {
                     0b011 -> Register8.E
                     0b100 -> Register8.H
                     0b101 -> Register8.L
+                    0b111 -> Register8.A
                     else -> error("Invalid register for INC/DEC: $register")
                 }
 
                 when (opGroup) {
                     0x04 -> Instruction.Inc(target)
                     0x05 -> Instruction.Dec(target)
+                    else -> error("Invalid INC/DEC op group: $instructionByte")
+                }
+            }
+
+            in INC_DEC_R16_OPCODES -> {
+                val opGroup = instructionByte.toInt() and 0xCF
+                val target = when (val register = (instructionByte.toInt() ushr 4) and 0x03) {
+                    0b00 -> Register16.BC
+                    0b01 -> Register16.DE
+                    0b10 -> Register16.HL
+                    0b11 -> Register16.SP
+                    else -> error("Invalid register for INC/DEC: $register")
+                }
+
+                when (opGroup) {
+                    0x03 -> Instruction.Inc(target)
+                    0x0B -> Instruction.Dec(target)
                     else -> error("Invalid INC/DEC op group: $instructionByte")
                 }
             }

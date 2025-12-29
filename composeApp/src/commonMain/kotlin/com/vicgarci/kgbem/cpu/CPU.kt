@@ -110,18 +110,15 @@ class CPU(
         target: Register8
     ) {
         val targetValue = getRegisterValue(target)
-        val carryToAdd = if (registers.f.toFlagsRegister().carry) 0b1.toUByte() else 0b0.toUByte()
-        val (sum, carry, halfCarry) = overflowAdd(
-            registers.a.toUShort(),
-            (targetValue + carryToAdd).toUShort(),
-        )
+        val carry = if (registers.f.toFlagsRegister().carry) 0x01.toUByte() else 0x00.toUByte()
+        val (sum, carryOut, halfCarry) = overflowAdd(registers.a, targetValue, carry)
 
         registers.a = sum.toUByte()
         val flags = FlagsRegister(
             zero = sum == 0.toUShort(),
             subtract = false,
             halfCarry = halfCarry,
-            carry = carry,
+            carry = carryOut,
         )
         registers.f = flags.toUByte()
     }
@@ -142,16 +139,12 @@ class CPU(
 
     private fun sbc(target: Register8) {
         val targetValue = getRegisterValue(target)
-        val carryToAdd = if (registers.f.toFlagsRegister().carry) 0b1.toUByte() else 0b0.toUByte()
+        val carry = if (registers.f.toFlagsRegister().carry) 0x01.toUByte() else 0x00.toUByte()
+        val (result, halfBorrow, borrow) = sub(registers.a, targetValue, carry)
 
-        val (sub, halfBorrow, borrow) = sub(
-            registers.a.toUShort(),
-            (targetValue + carryToAdd).toUShort(),
-        )
-
-        registers.a = sub.toUByte()
+        registers.a = result.toUByte()
         val flags = FlagsRegister(
-            zero = sub == 0.toUShort(),
+            zero = result == 0.toUShort(),
             subtract = true,
             halfCarry = halfBorrow,
             carry = borrow,
@@ -187,18 +180,38 @@ class CPU(
         registers.f = flags.toUByte()
     }
 
+    private fun inc(target: OpDestination) {
+        when (target) {
+            is Register16 -> inc(target)
+            is Register8 -> inc(target)
+        }
+    }
+
     private fun inc(target: Register8) {
         updateRegister(target) { register ->
             val (sum, _, halfCarry) = overflowAdd(register, 0x1.toUByte())
 
             val flags = registers.f.toFlagsRegister().copy(
-                zero = sum == 0x0.toUShort(),
+                zero = sum == 0.toUShort(),
                 subtract = false,
                 halfCarry = halfCarry,
             )
             registers.f = flags.toUByte()
 
             sum.toUByte()
+        }
+    }
+
+    private fun inc(target: Register16) {
+        updateRegister(target) { value ->
+            (value.toInt() + 1).toUShort()
+        }
+    }
+
+    private fun dec(target: OpDestination) {
+        when (target) {
+            is Register16 -> dec(target)
+            is Register8 -> dec(target)
         }
     }
 
@@ -214,6 +227,12 @@ class CPU(
             registers.f = flags.toUByte()
 
             sub.toUByte()
+        }
+    }
+
+    private fun dec(target: Register16) {
+        updateRegister(target) { value ->
+            (value.toInt() - 1).toUShort()
         }
     }
 
@@ -516,6 +535,7 @@ class CPU(
                 registers.a = mostSignificantByte
                 registers.f = leastSignificantByte and 0xF0.toUByte() // lower nibble of F is always 0
             }
+            else -> error("Invalid pop target: $target")
         }
     }
 
@@ -537,6 +557,7 @@ class CPU(
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.a)
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.f)
             }
+            else -> error("Invalid push target: $target")
         }
     }
 
@@ -588,6 +609,19 @@ class CPU(
             Register8.E -> registers.e = update(registers.e)
             Register8.H -> registers.h = update(registers.h)
             Register8.L -> registers.l = update(registers.l)
+        }
+    }
+
+    private fun updateRegister(
+        target: Register16,
+        update: (UShort) -> UShort,
+    ) {
+        when (target) {
+            Register16.BC -> registers.bc = update(registers.bc)
+            Register16.DE -> registers.de = update(registers.de)
+            Register16.HL -> registers.hl = update(registers.hl)
+            Register16.AF -> registers.af = update(registers.af)
+            Register16.SP -> stackPointer.setTo(update(stackPointer.get()))
         }
     }
 

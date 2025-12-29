@@ -5,6 +5,13 @@ class StackPointer(
 ) {
 
     /**
+     * Return the current program counter.
+     */
+    fun get(): UShort {
+        return value
+    }
+
+    /**
      * Return the current stack pointer and increase it by one.
      */
     fun getAndIncrement(): UShort {
@@ -19,6 +26,13 @@ class StackPointer(
     fun decrementAndGet(): UShort {
         value = (value.toInt() - 1).toUShort()
         return value
+    }
+
+    /**
+     * Set the stack pointer to the given [address].
+     */
+    fun setTo(address: UShort) {
+        value = address
     }
 
     private companion object {

@@ -11,24 +11,46 @@ data class Registers(
     var l: UByte,
 ) {
 
-    val af: UShort
+    var af: UShort
         get() = getVirtual16BitRegister(a, f)
+        set(value) {
+            val (high, low) = value.toByteValues()
+            a = high
+            f = low and 0xF0.toUByte() // lower nibble of F is always 0
+        }
 
-    val bc: UShort
+    var bc: UShort
         get() = getVirtual16BitRegister(b, c)
+        set(value) {
+            val (high, low) = value.toByteValues()
+            b = high
+            c = low
+        }
 
-    val de: UShort
+    var de: UShort
         get() = getVirtual16BitRegister(d, e)
+        set(value) {
+            val (high, low) = value.toByteValues()
+            d = high
+            e = low
+        }
 
     var hl: UShort
         get() = getVirtual16BitRegister(h, l)
         set(value) {
-            h = ((value.toInt() and 0xFF00) ushr 8).toUByte()
-            l = ((value.toInt() and 0xFF)).toUByte()
+            val (high, low) = value.toByteValues()
+            h = high
+            l = low
         }
 
     private fun getVirtual16BitRegister(left: UByte, right: UByte): UShort {
         return ((left.toInt().shl(8)) or (right.toInt())).and(0xFFFF).toUShort()
+    }
+
+    private fun UShort.toByteValues(): Pair<UByte, UByte> {
+        val high = ((this.toInt() and 0xFF00) ushr 8).toUByte()
+        val low = (this.toInt() and 0x00FF).toUByte()
+        return high to low
     }
 }
 

@@ -6,20 +6,20 @@ data class SubtractResult(
     val borrow: Boolean,
 )
 
-fun sub(first: UByte, second: UByte): SubtractResult {
-    return sub(first.toUShort(), second.toUShort())
+fun sub(first: UByte, second: UByte, carry: UByte = 0u): SubtractResult {
+    val result = first.toInt() - second.toInt() - carry.toInt()
+    return SubtractResult(
+        value = result.toUByte().toUShort(),
+        halfBorrow = (first and 0x0F.toUByte()) < (second and 0x0F.toUByte()) + carry,
+        borrow = result < 0,
+    )
 }
 
-fun sub(first: UShort, second: UShort): SubtractResult {
-    val value: UShort = if (second >= first) {
-        0x0.toUShort()
-    } else {
-        (first - second).toUShort()
-    }
-
+fun sub(first: UShort, second: UShort, carry: UShort = 0u): SubtractResult {
+    val result = first.toInt() - second.toInt() - carry.toInt()
     return SubtractResult(
-        value = value,
-        halfBorrow = (first and 0x0F.toUShort()) < (second and 0x0F.toUShort()),
-        borrow = second >= first,
+        value = result.toUShort(),
+        halfBorrow = (first and 0x0FFF.toUShort()) < (second and 0x0FFF.toUShort()) + carry,
+        borrow = result < 0,
     )
 }

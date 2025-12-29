@@ -52,7 +52,7 @@ sealed interface Instruction {
      * mustn't change).
      */
     data class Inc(
-        val target: Register8,
+        val target: OpDestination,
     ) : Instruction
 
     /**
@@ -60,7 +60,7 @@ sealed interface Instruction {
      * mustn't change).
      */
     data class Dec(
-        val target: Register8,
+        val target: OpDestination,
     ) : Instruction
 
     /**
@@ -290,5 +290,6 @@ enum class Register8 : OpDestination {
 }
 
 enum class Register16 : OpDestination {
-    AF, BC, DE, HL
+    AF, BC, DE, HL,
+    SP,
 }
