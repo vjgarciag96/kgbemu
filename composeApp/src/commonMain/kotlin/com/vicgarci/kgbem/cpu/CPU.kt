@@ -73,8 +73,8 @@ class CPU(
         return null
     }
 
-    private fun add(target: ArithmeticTarget) {
-        val targetValue = getArithmeticTargetValue(target)
+    private fun add(target: Register8) {
+        val targetValue = getRegisterValue(target)
         val (sum, carry, halfCarry) = overflowAdd(
             registers.a,
             targetValue,
@@ -89,8 +89,8 @@ class CPU(
         registers.f = flags.toUByte()
     }
 
-    private fun addHl(target: ArithmeticTarget) {
-        val targetValue = getArithmeticTargetValue(target)
+    private fun addHl(target: Register8) {
+        val targetValue = getRegisterValue(target)
         val (sum, carry, halfCarry) = overflowAdd(
             registers.hl,
             targetValue.toUShort(),
@@ -107,9 +107,9 @@ class CPU(
     }
 
     private fun addC(
-        target: ArithmeticTarget
+        target: Register8
     ) {
-        val targetValue = getArithmeticTargetValue(target)
+        val targetValue = getRegisterValue(target)
         val carryToAdd = if (registers.f.toFlagsRegister().carry) 0b1.toUByte() else 0b0.toUByte()
         val (sum, carry, halfCarry) = overflowAdd(
             registers.a.toUShort(),
@@ -126,8 +126,8 @@ class CPU(
         registers.f = flags.toUByte()
     }
 
-    private fun sub(target: ArithmeticTarget) {
-        val targetValue = getArithmeticTargetValue(target)
+    private fun sub(target: Register8) {
+        val targetValue = getRegisterValue(target)
         val (sub, halfBorrow, borrow) = sub(registers.a, targetValue)
 
         registers.a = sub.toUByte()
@@ -140,8 +140,8 @@ class CPU(
         registers.f = flags.toUByte()
     }
 
-    private fun sbc(target: ArithmeticTarget) {
-        val targetValue = getArithmeticTargetValue(target)
+    private fun sbc(target: Register8) {
+        val targetValue = getRegisterValue(target)
         val carryToAdd = if (registers.f.toFlagsRegister().carry) 0b1.toUByte() else 0b0.toUByte()
 
         val (sub, halfBorrow, borrow) = sub(
@@ -159,23 +159,23 @@ class CPU(
         registers.f = flags.toUByte()
     }
 
-    private fun and(target: ArithmeticTarget) {
-        val targetValue = getArithmeticTargetValue(target)
+    private fun and(target: Register8) {
+        val targetValue = getRegisterValue(target)
         registers.a = registers.a and targetValue
     }
 
-    private fun or(target: ArithmeticTarget) {
-        val targetValue = getArithmeticTargetValue(target)
+    private fun or(target: Register8) {
+        val targetValue = getRegisterValue(target)
         registers.a = registers.a or targetValue
     }
 
-    private fun xor(target: ArithmeticTarget) {
-        val targetValue = getArithmeticTargetValue(target)
+    private fun xor(target: Register8) {
+        val targetValue = getRegisterValue(target)
         registers.a = registers.a xor targetValue
     }
 
-    private fun cp(target: ArithmeticTarget) {
-        val targetValue = getArithmeticTargetValue(target)
+    private fun cp(target: Register8) {
+        val targetValue = getRegisterValue(target)
 
         val (sub, halfBorrow, borrow) = sub(registers.a, targetValue)
         val flags = FlagsRegister(
@@ -187,8 +187,8 @@ class CPU(
         registers.f = flags.toUByte()
     }
 
-    private fun inc(target: ArithmeticTarget) {
-        updateArithmeticTarget(target) { register ->
+    private fun inc(target: Register8) {
+        updateRegister(target) { register ->
             val (sum, _, halfCarry) = overflowAdd(register, 0x1.toUByte())
 
             val flags = registers.f.toFlagsRegister().copy(
@@ -202,8 +202,8 @@ class CPU(
         }
     }
 
-    private fun dec(target: ArithmeticTarget) {
-        updateArithmeticTarget(target) { register ->
+    private fun dec(target: Register8) {
+        updateRegister(target) { register ->
             val (sub, halfBorrow, _) = sub(register, 0x1.toUByte())
 
             val flags = registers.f.toFlagsRegister().copy(
@@ -247,8 +247,8 @@ class CPU(
         ).toUByte()
     }
 
-    private fun rr(target: ArithmeticTarget) {
-        updateArithmeticTarget(target) { targetValue ->
+    private fun rr(target: Register8) {
+        updateRegister(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
             val flags = registers.f.toFlagsRegister()
             val carryBit = if (flags.carry) 0b1 else 0b0
@@ -266,8 +266,8 @@ class CPU(
         }
     }
 
-    private fun rrc(target: ArithmeticTarget) {
-        updateArithmeticTarget(target) { targetValue ->
+    private fun rrc(target: Register8) {
+        updateRegister(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
             val bitToWrapAround = leastSignificantBit.toInt() shl 7
             val rotatedValue = targetValue.toInt() ushr 1
@@ -294,8 +294,8 @@ class CPU(
         ).toUByte()
     }
 
-    private fun rl(target: ArithmeticTarget) {
-        updateArithmeticTarget(target) { targetValue ->
+    private fun rl(target: Register8) {
+        updateRegister(target) { targetValue ->
             val mostSignificantBit = (targetValue and (0b1 shl 7).toUByte()).toInt() ushr 7
             val flags = registers.f.toFlagsRegister()
             val carryBit = if (flags.carry) 0b1 else 0b0
@@ -312,8 +312,8 @@ class CPU(
         }
     }
 
-    private fun rlc(target: ArithmeticTarget) {
-        updateArithmeticTarget(target) { targetValue ->
+    private fun rlc(target: Register8) {
+        updateRegister(target) { targetValue ->
             val mostSignificantBit = (targetValue and (0b1 shl 7).toUByte()).toInt() ushr 7
             val rotatedValue = targetValue.toInt() shl 1
             val result = ((rotatedValue or mostSignificantBit) and 0xFF).toUByte()
@@ -355,9 +355,9 @@ class CPU(
 
     private fun bit(
         index: Int,
-        target: ArithmeticTarget,
+        target: Register8,
     ) {
-        val targetValue = getArithmeticTargetValue(target)
+        val targetValue = getRegisterValue(target)
         val bitSet = ((targetValue.toInt() ushr index).toUByte() and 0b1.toUByte()) == 0b1.toUByte()
         val flags = registers.f.toFlagsRegister()
         registers.f = flags.copy(
@@ -369,9 +369,9 @@ class CPU(
 
     private fun res(
         index: Int,
-        target: ArithmeticTarget,
+        target: Register8,
     ) {
-        updateArithmeticTarget(target) { targetValue ->
+        updateRegister(target) { targetValue ->
             val mask = (0b1 shl index).toUByte().inv()
             targetValue and mask
         }
@@ -379,18 +379,18 @@ class CPU(
 
     private fun set(
         index: Int,
-        target: ArithmeticTarget,
+        target: Register8,
     ) {
-        updateArithmeticTarget(target) { targetValue ->
+        updateRegister(target) { targetValue ->
             val mask = (0b1 shl index).toUByte()
             targetValue or mask
         }
     }
 
     private fun srl(
-        target: ArithmeticTarget,
+        target: Register8,
     ) {
-        updateArithmeticTarget(target) { targetValue ->
+        updateRegister(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
             val shiftedValue = ((targetValue.toInt() ushr 1) and 0xFF).toUByte()
 
@@ -404,9 +404,9 @@ class CPU(
     }
 
     private fun sra(
-        target: ArithmeticTarget,
+        target: Register8,
     ) {
-        updateArithmeticTarget(target) { targetValue ->
+        updateRegister(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
             val mostSignificantBit = targetValue and (0b1 shl 7).toUByte()
             val shiftedValue = ((targetValue.toInt() ushr 1) and 0xFF).toUByte() or mostSignificantBit
@@ -423,9 +423,9 @@ class CPU(
     }
 
     private fun sla(
-        target: ArithmeticTarget,
+        target: Register8,
     ) {
-        updateArithmeticTarget(target) { targetValue ->
+        updateRegister(target) { targetValue ->
             val mostSignificantBit = targetValue and (0b1 shl 7).toUByte()
             val shiftedValue = ((targetValue.toInt() shl 1) and 0xFF).toUByte()
 
@@ -441,9 +441,9 @@ class CPU(
     }
 
     private fun swap(
-        target: ArithmeticTarget,
+        target: Register8,
     ) {
-        updateArithmeticTarget(target) { targetValue ->
+        updateRegister(target) { targetValue ->
             val upperNibble = targetValue and 0xF0.toUByte()
             val lowerNibble = targetValue and 0x0F.toUByte()
 
@@ -490,50 +490,50 @@ class CPU(
         }
     }
 
-    private fun load(target: ArithmeticTarget) {
+    private fun load(target: Register8) {
         val byteToLoad = memoryBus.readByte(programCounter.getAndIncrement())
-        updateArithmeticTarget(target) { byteToLoad }
+        updateRegister(target) { byteToLoad }
     }
 
-    private fun pop(target: StackTarget) {
+    private fun pop(target: Register16) {
         val leastSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
         val mostSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
 
         when (target) {
-            StackTarget.BC -> {
+            Register16.BC -> {
                 registers.b = mostSignificantByte
                 registers.c = leastSignificantByte
             }
-            StackTarget.DE -> {
+            Register16.DE -> {
                 registers.d = mostSignificantByte
                 registers.e = leastSignificantByte
             }
-            StackTarget.HL -> {
+            Register16.HL -> {
                 registers.h = mostSignificantByte
                 registers.l = leastSignificantByte
             }
-            StackTarget.AF -> {
+            Register16.AF -> {
                 registers.a = mostSignificantByte
                 registers.f = leastSignificantByte and 0xF0.toUByte() // lower nibble of F is always 0
             }
         }
     }
 
-    private fun push(target: StackTarget) {
+    private fun push(target: Register16) {
         when (target) {
-            StackTarget.BC -> {
+            Register16.BC -> {
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.b)
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.c)
             }
-            StackTarget.DE -> {
+            Register16.DE -> {
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.d)
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.e)
             }
-            StackTarget.HL -> {
+            Register16.HL -> {
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.h)
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.l)
             }
-            StackTarget.AF -> {
+            Register16.AF -> {
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.a)
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.f)
             }
@@ -576,32 +576,32 @@ class CPU(
         programCounter.setTo(address.toUShort())
     }
 
-    private fun updateArithmeticTarget(
-        target: ArithmeticTarget,
+    private fun updateRegister(
+        target: Register8,
         update: (UByte) -> UByte,
     ) {
         when (target) {
-            ArithmeticTarget.A -> registers.a = update(registers.a)
-            ArithmeticTarget.B -> registers.b = update(registers.b)
-            ArithmeticTarget.C -> registers.c = update(registers.c)
-            ArithmeticTarget.D -> registers.d = update(registers.d)
-            ArithmeticTarget.E -> registers.e = update(registers.e)
-            ArithmeticTarget.H -> registers.h = update(registers.h)
-            ArithmeticTarget.L -> registers.l = update(registers.l)
+            Register8.A -> registers.a = update(registers.a)
+            Register8.B -> registers.b = update(registers.b)
+            Register8.C -> registers.c = update(registers.c)
+            Register8.D -> registers.d = update(registers.d)
+            Register8.E -> registers.e = update(registers.e)
+            Register8.H -> registers.h = update(registers.h)
+            Register8.L -> registers.l = update(registers.l)
         }
     }
 
-    private fun getArithmeticTargetValue(
-        target: ArithmeticTarget,
+    private fun getRegisterValue(
+        target: Register8,
     ): UByte {
         return when (target) {
-            ArithmeticTarget.A -> registers.a
-            ArithmeticTarget.B -> registers.b
-            ArithmeticTarget.C -> registers.c
-            ArithmeticTarget.D -> registers.d
-            ArithmeticTarget.E -> registers.e
-            ArithmeticTarget.H -> registers.h
-            ArithmeticTarget.L -> registers.l
+            Register8.A -> registers.a
+            Register8.B -> registers.b
+            Register8.C -> registers.c
+            Register8.D -> registers.d
+            Register8.E -> registers.e
+            Register8.H -> registers.h
+            Register8.L -> registers.l
         }
     }
 

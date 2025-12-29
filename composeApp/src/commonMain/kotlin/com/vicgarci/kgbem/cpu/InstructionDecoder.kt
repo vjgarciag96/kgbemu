@@ -28,23 +28,23 @@ object InstructionDecoder {
         instructionByte: UByte,
     ): Instruction? {
         return when (instructionByte.toInt()) {
-            0x06 -> Instruction.Ld(ArithmeticTarget.B)
-            0x0E -> Instruction.Ld(ArithmeticTarget.C)
-            0x16 -> Instruction.Ld(ArithmeticTarget.D)
-            0x1E -> Instruction.Ld(ArithmeticTarget.E)
-            0x26 -> Instruction.Ld(ArithmeticTarget.H)
-            0x2E -> Instruction.Ld(ArithmeticTarget.L)
-            0x3E -> Instruction.Ld(ArithmeticTarget.A)
+            0x06 -> Instruction.Ld(Register8.B)
+            0x0E -> Instruction.Ld(Register8.C)
+            0x16 -> Instruction.Ld(Register8.D)
+            0x1E -> Instruction.Ld(Register8.E)
+            0x26 -> Instruction.Ld(Register8.H)
+            0x2E -> Instruction.Ld(Register8.L)
+            0x3E -> Instruction.Ld(Register8.A)
 
-            0xC1 -> Instruction.Pop(StackTarget.BC)
-            0xD1 -> Instruction.Pop(StackTarget.DE)
-            0xE1 -> Instruction.Pop(StackTarget.HL)
-            0xF1 -> Instruction.Pop(StackTarget.AF)
+            0xC1 -> Instruction.Pop(Register16.BC)
+            0xD1 -> Instruction.Pop(Register16.DE)
+            0xE1 -> Instruction.Pop(Register16.HL)
+            0xF1 -> Instruction.Pop(Register16.AF)
 
-            0xC5 -> Instruction.Push(StackTarget.BC)
-            0xD5 -> Instruction.Push(StackTarget.DE)
-            0xE5 -> Instruction.Push(StackTarget.HL)
-            0xF5 -> Instruction.Push(StackTarget.AF)
+            0xC5 -> Instruction.Push(Register16.BC)
+            0xD5 -> Instruction.Push(Register16.DE)
+            0xE5 -> Instruction.Push(Register16.HL)
+            0xF5 -> Instruction.Push(Register16.AF)
 
             0xCD -> Instruction.Call(JumpCondition.ALWAYS)
             0xC4 -> Instruction.Call(JumpCondition.NOT_ZERO)
@@ -78,13 +78,13 @@ object InstructionDecoder {
                 val target = instructionByte.toInt() and 0x07
 
                 val register = when (target) {
-                    0b111 -> ArithmeticTarget.A
-                    0b000 -> ArithmeticTarget.B
-                    0b001 -> ArithmeticTarget.C
-                    0b010 -> ArithmeticTarget.D
-                    0b011 -> ArithmeticTarget.E
-                    0b100 -> ArithmeticTarget.H
-                    0b101 -> ArithmeticTarget.L
+                    0b111 -> Register8.A
+                    0b000 -> Register8.B
+                    0b001 -> Register8.C
+                    0b010 -> Register8.D
+                    0b011 -> Register8.E
+                    0b100 -> Register8.H
+                    0b101 -> Register8.L
                     else -> error("Invalid register $target")
                 }
 
@@ -104,12 +104,12 @@ object InstructionDecoder {
             in INC_DEC_OPCODES -> {
                 val opGroup = instructionByte.toInt() and 0xC7
                 val target = when (val register = instructionByte.toInt() ushr 3) {
-                    0b000 -> ArithmeticTarget.B
-                    0b001 -> ArithmeticTarget.C
-                    0b010 -> ArithmeticTarget.D
-                    0b011 -> ArithmeticTarget.E
-                    0b100 -> ArithmeticTarget.H
-                    0b101 -> ArithmeticTarget.L
+                    0b000 -> Register8.B
+                    0b001 -> Register8.C
+                    0b010 -> Register8.D
+                    0b011 -> Register8.E
+                    0b100 -> Register8.H
+                    0b101 -> Register8.L
                     else -> error("Invalid register for INC/DEC: $register")
                 }
 

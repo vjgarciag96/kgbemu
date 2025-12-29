@@ -2,70 +2,66 @@ package com.vicgarci.kgbem.cpu
 
 sealed interface Instruction {
 
-    sealed interface ArithmeticTargetInstruction : Instruction {
-        val target: ArithmeticTarget
-    }
-
     data class Add(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     data class AddHl(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Add with carry
      */
     data class AddC(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     data class Sub(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Subtract with carry
      */
     data class Sbc(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     data class And(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     data class Or(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     data class Xor(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Compare (like subtract, but discarding the result and only setting the flags)
      */
     data class Cp(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Does not perform a full arithmetic operation with carry propagation (i.e., carry flag
      * mustn't change).
      */
     data class Inc(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Does not perform a full arithmetic operation with carry propagation (i.e., carry flag
      * mustn't change).
      */
     data class Dec(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Complement carry flag.
@@ -96,8 +92,8 @@ sealed interface Instruction {
      * Zero and carry flags are set according to result. Subtract and half carry are set to false.
      */
     data class Rr(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Rotate register [target] right circularly (i.e., least significant bit wraps around to most
@@ -106,8 +102,8 @@ sealed interface Instruction {
      * Zero and carry flags are set according to result. Subtract and half carry are set to false.
      */
     data class Rrc(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Left-rotate the A register through carry (i.e., carry becomes least significant bit of A,
@@ -124,8 +120,8 @@ sealed interface Instruction {
      * Zero and carry flags are set according to result. Subtract and half carry are set to false.
      */
     data class Rl(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Rotate register [target] left circularly (i.e., most significant bit wraps around to least
@@ -134,8 +130,8 @@ sealed interface Instruction {
      * Zero and carry flags are set according to result. Subtract and half carry are set to false.
      */
     data class Rlc(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Right-rotate the A register (i.e., least significant bit becomes most significant and is
@@ -162,8 +158,8 @@ sealed interface Instruction {
      */
     data class Bit(
         val index: Int,
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction {
+        val target: Register8,
+    ) : Instruction {
 
         init {
             require(index in 0..7)
@@ -178,8 +174,8 @@ sealed interface Instruction {
      */
     data class Res(
         val index: Int,
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction {
+        val target: Register8,
+    ) : Instruction {
 
         init {
             require(index in 0..7)
@@ -194,8 +190,8 @@ sealed interface Instruction {
      */
     data class Set(
         val index: Int,
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction {
+        val target: Register8,
+    ) : Instruction {
 
         init {
             require(index in 0..7)
@@ -206,8 +202,8 @@ sealed interface Instruction {
      * Shift right logically register [target].
      */
     data class Srl(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Shift right arithmetically register [target].
@@ -217,8 +213,8 @@ sealed interface Instruction {
      * Zero and carry flags are set according to result. Subtract and half carry are set to false.
      */
     data class Sra(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Shift left arithmetically register [target].
@@ -228,15 +224,15 @@ sealed interface Instruction {
      * Zero and carry flags are set according to result. Subtract and half carry are set to false.
      */
     data class Sla(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Switch upper and lower nibble (most and least significant 4 bits) of a specific register.
      */
     data class Swap(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     data object Nop : Instruction
 
@@ -249,25 +245,25 @@ sealed interface Instruction {
     ) : Instruction
 
     /**
-     * Load a byte constant into an arithmetic register [target]. The byte constant to load is
+     * Load a byte constant into an 8-bit register [target]. The byte constant to load is
      * located in the byte following the instruction identifier.
      */
     data class Ld(
-        override val target: ArithmeticTarget,
-    ) : ArithmeticTargetInstruction
+        val target: Register8,
+    ) : Instruction
 
     /**
      * Pop a value from the stack into a 16-bit register [target].
      */
     data class Pop(
-        val target: StackTarget,
+        val target: Register16,
     ) : Instruction
 
     /**
      * Push a value from a 16-bit register [target] onto the stack.
      */
     data class Push(
-        val target: StackTarget,
+        val target: Register16,
     ) : Instruction
 
     data class Call(
@@ -287,10 +283,12 @@ sealed interface Instruction {
     ) : Instruction
 }
 
-enum class ArithmeticTarget {
-    A, B, C, D, E, H, L,
+sealed interface OpDestination
+
+enum class Register8 : OpDestination {
+    A, B, C, D, E, H, L
 }
 
-enum class StackTarget {
-    AF, BC, DE, HL,
+enum class Register16 : OpDestination {
+    AF, BC, DE, HL
 }

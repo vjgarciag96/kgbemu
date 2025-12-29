@@ -12,7 +12,7 @@ class InstructionDecoderTest {
             prefixed = false,
         )
 
-        val expectedInstruction = Instruction.Add(ArithmeticTarget.B)
+        val expectedInstruction = Instruction.Add(Register8.B)
         assertEquals(expectedInstruction, instructions)
     }
 
@@ -23,7 +23,7 @@ class InstructionDecoderTest {
             prefixed = false,
         )
 
-        val expectedInstruction = Instruction.AddC(ArithmeticTarget.C)
+        val expectedInstruction = Instruction.AddC(Register8.C)
         assertEquals(expectedInstruction, instructions)
     }
 
@@ -34,7 +34,7 @@ class InstructionDecoderTest {
             prefixed = false,
         )
 
-        val expectedInstruction = Instruction.Sub(ArithmeticTarget.D)
+        val expectedInstruction = Instruction.Sub(Register8.D)
         assertEquals(expectedInstruction, instructions)
     }
 
@@ -45,7 +45,7 @@ class InstructionDecoderTest {
             prefixed = false,
         )
 
-        val expectedInstruction = Instruction.Sbc(ArithmeticTarget.E)
+        val expectedInstruction = Instruction.Sbc(Register8.E)
         assertEquals(expectedInstruction, instructions)
     }
 
@@ -56,7 +56,7 @@ class InstructionDecoderTest {
             prefixed = false,
         )
 
-        val expectedInstruction = Instruction.And(ArithmeticTarget.H)
+        val expectedInstruction = Instruction.And(Register8.H)
         assertEquals(expectedInstruction, instructions)
     }
 
@@ -67,7 +67,7 @@ class InstructionDecoderTest {
             prefixed = false,
         )
 
-        val expectedInstruction = Instruction.Xor(ArithmeticTarget.L)
+        val expectedInstruction = Instruction.Xor(Register8.L)
         assertEquals(expectedInstruction, instructions)
     }
 
@@ -78,7 +78,7 @@ class InstructionDecoderTest {
             prefixed = false,
         )
 
-        val expectedInstruction = Instruction.Or(ArithmeticTarget.A)
+        val expectedInstruction = Instruction.Or(Register8.A)
         assertEquals(expectedInstruction, instructions)
     }
 
@@ -89,7 +89,7 @@ class InstructionDecoderTest {
             prefixed = false,
         )
 
-        val expectedInstruction = Instruction.Cp(ArithmeticTarget.B)
+        val expectedInstruction = Instruction.Cp(Register8.B)
         assertEquals(expectedInstruction, instructions)
     }
 
@@ -102,12 +102,12 @@ class InstructionDecoderTest {
             )
         }
 
-        assertEquals(Instruction.Inc(ArithmeticTarget.B), instructions[0])
-        assertEquals(Instruction.Inc(ArithmeticTarget.C), instructions[1])
-        assertEquals(Instruction.Inc(ArithmeticTarget.D), instructions[2])
-        assertEquals(Instruction.Inc(ArithmeticTarget.E), instructions[3])
-        assertEquals(Instruction.Inc(ArithmeticTarget.H), instructions[4])
-        assertEquals(Instruction.Inc(ArithmeticTarget.L), instructions[5])
+        assertEquals(Instruction.Inc(Register8.B), instructions[0])
+        assertEquals(Instruction.Inc(Register8.C), instructions[1])
+        assertEquals(Instruction.Inc(Register8.D), instructions[2])
+        assertEquals(Instruction.Inc(Register8.E), instructions[3])
+        assertEquals(Instruction.Inc(Register8.H), instructions[4])
+        assertEquals(Instruction.Inc(Register8.L), instructions[5])
     }
 
     @Test
@@ -119,11 +119,11 @@ class InstructionDecoderTest {
             )
         }
 
-        assertEquals(Instruction.Dec(ArithmeticTarget.B), instructions[0])
-        assertEquals(Instruction.Dec(ArithmeticTarget.C), instructions[1])
-        assertEquals(Instruction.Dec(ArithmeticTarget.D), instructions[2])
-        assertEquals(Instruction.Dec(ArithmeticTarget.E), instructions[3])
-        assertEquals(Instruction.Dec(ArithmeticTarget.H), instructions[4])
-        assertEquals(Instruction.Dec(ArithmeticTarget.L), instructions[5])
+        assertEquals(Instruction.Dec(Register8.B), instructions[0])
+        assertEquals(Instruction.Dec(Register8.C), instructions[1])
+        assertEquals(Instruction.Dec(Register8.D), instructions[2])
+        assertEquals(Instruction.Dec(Register8.E), instructions[3])
+        assertEquals(Instruction.Dec(Register8.H), instructions[4])
+        assertEquals(Instruction.Dec(Register8.L), instructions[5])
     }
 }

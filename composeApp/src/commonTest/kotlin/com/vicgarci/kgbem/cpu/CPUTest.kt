@@ -31,7 +31,7 @@ class CPUTest {
 
     @Test
     fun addWithCarry_carryFalse() {
-        cpu.execute(Instruction.AddC(ArithmeticTarget.D))
+        cpu.execute(Instruction.AddC(Register8.D))
 
         assertEquals(
             0x00.toUByte(),
@@ -49,7 +49,7 @@ class CPUTest {
             carry = true,
         ).toUByte()
 
-        cpu.execute(Instruction.AddC(ArithmeticTarget.D))
+        cpu.execute(Instruction.AddC(Register8.D))
 
         assertEquals(
             0x01.toUByte(),
@@ -63,7 +63,7 @@ class CPUTest {
         registers.a = 0xFF.toUByte()
         registers.d = 0x0F.toUByte()
 
-        cpu.execute(Instruction.Sbc(ArithmeticTarget.D))
+        cpu.execute(Instruction.Sbc(Register8.D))
 
         assertEquals(
             0xF0.toUByte(),
@@ -82,7 +82,7 @@ class CPUTest {
             carry = true,
         ).toUByte()
 
-        cpu.execute(Instruction.Sbc(ArithmeticTarget.D))
+        cpu.execute(Instruction.Sbc(Register8.D))
 
         assertEquals(
             0xEF.toUByte(),
@@ -92,7 +92,7 @@ class CPUTest {
 
     @Test
     fun increment() {
-        cpu.execute(Instruction.Inc(ArithmeticTarget.B))
+        cpu.execute(Instruction.Inc(Register8.B))
 
         assertEquals(0x01.toUByte(), registers.b)
         val flags = registers.f.toFlagsRegister()
@@ -110,7 +110,7 @@ class CPUTest {
             carry = true,
         ).toUByte()
 
-        cpu.execute(Instruction.Inc(ArithmeticTarget.B))
+        cpu.execute(Instruction.Inc(Register8.B))
 
         assertEquals(0x01.toUByte(), registers.b)
         val flags = registers.f.toFlagsRegister()
@@ -121,7 +121,7 @@ class CPUTest {
 
     @Test
     fun decrement() {
-        cpu.execute(Instruction.Dec(ArithmeticTarget.D))
+        cpu.execute(Instruction.Dec(Register8.D))
 
         assertEquals(0xFE.toUByte(), registers.d)
         val flags = registers.f.toFlagsRegister()
@@ -280,7 +280,7 @@ class CPUTest {
         cpu.execute(
             Instruction.Bit(
                 index = 3,
-                target = ArithmeticTarget.D,
+                target = Register8.D,
             )
         )
 
@@ -303,7 +303,7 @@ class CPUTest {
         cpu.execute(
             Instruction.Bit(
                 index = 3,
-                target = ArithmeticTarget.E,
+                target = Register8.E,
             )
         )
 
@@ -326,7 +326,7 @@ class CPUTest {
         cpu.execute(
             Instruction.Bit(
                 index = 3,
-                target = ArithmeticTarget.E,
+                target = Register8.E,
             )
         )
 
@@ -340,8 +340,8 @@ class CPUTest {
     fun reset() {
         registers.c = 0xFF.toUByte()
 
-        cpu.execute(Instruction.Res(index = 7, ArithmeticTarget.C))
-        cpu.execute(Instruction.Res(index = 2, ArithmeticTarget.C))
+        cpu.execute(Instruction.Res(index = 7, Register8.C))
+        cpu.execute(Instruction.Res(index = 2, Register8.C))
 
         assertEquals(0b01111011.toUByte(), registers.c)
     }
@@ -350,8 +350,8 @@ class CPUTest {
     fun set() {
         registers.e = 0xF0.toUByte()
 
-        cpu.execute(Instruction.Set(index = 0, ArithmeticTarget.E))
-        cpu.execute(Instruction.Set(index = 6, ArithmeticTarget.E))
+        cpu.execute(Instruction.Set(index = 0, Register8.E))
+        cpu.execute(Instruction.Set(index = 6, Register8.E))
 
         assertEquals(0b11110001.toUByte(), registers.e)
     }
@@ -366,7 +366,7 @@ class CPUTest {
             carry = false,
         ).toUByte()
 
-        cpu.execute(Instruction.Srl(ArithmeticTarget.B))
+        cpu.execute(Instruction.Srl(Register8.B))
 
         assertEquals(0b00000111.toUByte(), registers.b)
         val flags = registers.f.toFlagsRegister()
@@ -383,7 +383,7 @@ class CPUTest {
             carry = false,
         ).toUByte()
 
-        cpu.execute(Instruction.Srl(ArithmeticTarget.B))
+        cpu.execute(Instruction.Srl(Register8.B))
 
         assertEquals(0b01111000.toUByte(), registers.b)
         val flags = registers.f.toFlagsRegister()
@@ -400,7 +400,7 @@ class CPUTest {
             carry = false,
         ).toUByte()
 
-        cpu.execute(Instruction.Srl(ArithmeticTarget.B))
+        cpu.execute(Instruction.Srl(Register8.B))
 
         assertEquals(0b0.toUByte(), registers.b)
         val flags = registers.f.toFlagsRegister()
@@ -412,7 +412,7 @@ class CPUTest {
         registers.c = 0x0F.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Rr(ArithmeticTarget.C))
+        cpu.execute(Instruction.Rr(Register8.C))
 
         assertEquals(0b00000111.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
@@ -424,7 +424,7 @@ class CPUTest {
         registers.c = 0xF0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
 
-        cpu.execute(Instruction.Rr(ArithmeticTarget.C))
+        cpu.execute(Instruction.Rr(Register8.C))
 
         assertEquals(0b11111000.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
@@ -436,7 +436,7 @@ class CPUTest {
         registers.c = 0b1.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Rr(ArithmeticTarget.C))
+        cpu.execute(Instruction.Rr(Register8.C))
 
         assertEquals(0b0.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
@@ -448,7 +448,7 @@ class CPUTest {
         registers.c = 0xF0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Rl(ArithmeticTarget.C))
+        cpu.execute(Instruction.Rl(Register8.C))
 
         assertEquals(0b11100000.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
@@ -460,7 +460,7 @@ class CPUTest {
         registers.c = 0x0F.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
 
-        cpu.execute(Instruction.Rl(ArithmeticTarget.C))
+        cpu.execute(Instruction.Rl(Register8.C))
 
         assertEquals(0b00011111.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
@@ -472,7 +472,7 @@ class CPUTest {
         registers.c = 0b10000000.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Rl(ArithmeticTarget.C))
+        cpu.execute(Instruction.Rl(Register8.C))
 
         assertEquals(0b0.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
@@ -484,7 +484,7 @@ class CPUTest {
         registers.c = 0x0F.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Rrc(ArithmeticTarget.C))
+        cpu.execute(Instruction.Rrc(Register8.C))
 
         assertEquals(0b10000111.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
@@ -496,7 +496,7 @@ class CPUTest {
         registers.c = 0xF0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
 
-        cpu.execute(Instruction.Rrc(ArithmeticTarget.C))
+        cpu.execute(Instruction.Rrc(Register8.C))
 
         assertEquals(0b01111000.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
@@ -508,7 +508,7 @@ class CPUTest {
         registers.c = 0b0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Rrc(ArithmeticTarget.C))
+        cpu.execute(Instruction.Rrc(Register8.C))
 
         assertEquals(0b0.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
@@ -520,7 +520,7 @@ class CPUTest {
         registers.c = 0xF0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Rlc(ArithmeticTarget.C))
+        cpu.execute(Instruction.Rlc(Register8.C))
 
         assertEquals(0b11100001.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
@@ -532,7 +532,7 @@ class CPUTest {
         registers.c = 0x0F.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
 
-        cpu.execute(Instruction.Rlc(ArithmeticTarget.C))
+        cpu.execute(Instruction.Rlc(Register8.C))
 
         assertEquals(0b00011110.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
@@ -544,7 +544,7 @@ class CPUTest {
         registers.c = 0b0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Rlc(ArithmeticTarget.C))
+        cpu.execute(Instruction.Rlc(Register8.C))
 
         assertEquals(0b0.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
@@ -556,7 +556,7 @@ class CPUTest {
         registers.d = 0b10010100.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Sra(ArithmeticTarget.D))
+        cpu.execute(Instruction.Sra(Register8.D))
 
         assertEquals(0b11001010.toUByte(), registers.d)
         val flags = registers.f.toFlagsRegister()
@@ -568,7 +568,7 @@ class CPUTest {
         registers.d = 0b00010101.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Sra(ArithmeticTarget.D))
+        cpu.execute(Instruction.Sra(Register8.D))
 
         assertEquals(0b00001010.toUByte(), registers.d)
         val flags = registers.f.toFlagsRegister()
@@ -580,7 +580,7 @@ class CPUTest {
         registers.d = 0b00000001.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Sra(ArithmeticTarget.D))
+        cpu.execute(Instruction.Sra(Register8.D))
 
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.zero)
@@ -591,7 +591,7 @@ class CPUTest {
         registers.b = 0x0F.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Sla(ArithmeticTarget.B))
+        cpu.execute(Instruction.Sla(Register8.B))
 
         assertEquals(0b00011110.toUByte(), registers.b)
         val flags = registers.f.toFlagsRegister()
@@ -603,7 +603,7 @@ class CPUTest {
         registers.b = 0xF0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Sla(ArithmeticTarget.B))
+        cpu.execute(Instruction.Sla(Register8.B))
 
         assertEquals(0b11100000.toUByte(), registers.b)
         val flags = registers.f.toFlagsRegister()
@@ -615,7 +615,7 @@ class CPUTest {
         registers.b = 0b100000000.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
 
-        cpu.execute(Instruction.Sla(ArithmeticTarget.B))
+        cpu.execute(Instruction.Sla(Register8.B))
 
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.zero)
@@ -627,9 +627,9 @@ class CPUTest {
         registers.b = 0xF0.toUByte()
         registers.c = 0b01010010.toUByte()
 
-        cpu.execute(Instruction.Swap(ArithmeticTarget.A))
-        cpu.execute(Instruction.Swap(ArithmeticTarget.B))
-        cpu.execute(Instruction.Swap(ArithmeticTarget.C))
+        cpu.execute(Instruction.Swap(Register8.A))
+        cpu.execute(Instruction.Swap(Register8.B))
+        cpu.execute(Instruction.Swap(Register8.C))
 
         assertEquals(0xF0.toUByte(), registers.a)
         assertEquals(0x0F.toUByte(), registers.b)
