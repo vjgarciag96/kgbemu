@@ -92,4 +92,38 @@ class InstructionDecoderTest {
         val expectedInstruction = Instruction.Cp(ArithmeticTarget.B)
         assertEquals(expectedInstruction, instructions)
     }
+
+    @Test
+    fun decode_inc() {
+        val instructions = listOf(0x04, 0x0C, 0x14, 0x1C, 0x24, 0x2C).map { opcode ->
+            InstructionDecoder.decode(
+                instructionByte = opcode.toUByte(),
+                prefixed = false,
+            )
+        }
+
+        assertEquals(Instruction.Inc(ArithmeticTarget.B), instructions[0])
+        assertEquals(Instruction.Inc(ArithmeticTarget.C), instructions[1])
+        assertEquals(Instruction.Inc(ArithmeticTarget.D), instructions[2])
+        assertEquals(Instruction.Inc(ArithmeticTarget.E), instructions[3])
+        assertEquals(Instruction.Inc(ArithmeticTarget.H), instructions[4])
+        assertEquals(Instruction.Inc(ArithmeticTarget.L), instructions[5])
+    }
+
+    @Test
+    fun decode_dec() {
+        val instructions = listOf(0x05, 0x0D, 0x15, 0x1D, 0x25, 0x2D).map { opcode ->
+            InstructionDecoder.decode(
+                instructionByte = opcode.toUByte(),
+                prefixed = false,
+            )
+        }
+
+        assertEquals(Instruction.Dec(ArithmeticTarget.B), instructions[0])
+        assertEquals(Instruction.Dec(ArithmeticTarget.C), instructions[1])
+        assertEquals(Instruction.Dec(ArithmeticTarget.D), instructions[2])
+        assertEquals(Instruction.Dec(ArithmeticTarget.E), instructions[3])
+        assertEquals(Instruction.Dec(ArithmeticTarget.H), instructions[4])
+        assertEquals(Instruction.Dec(ArithmeticTarget.L), instructions[5])
+    }
 }

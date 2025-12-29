@@ -4,6 +4,11 @@ import com.vicgarci.kgbem.cpu.Instruction.Jp
 
 object InstructionDecoder {
 
+    private val INC_DEC_OPCODES = setOf(
+        0x04, 0x0C, 0x14, 0x1C, 0x24, 0x2C, 0x3C, // INC
+        0x05, 0x0D, 0x15, 0x1D, 0x25, 0x2D, 0x3D, // DEC
+    )
+
     fun decode(
         instructionByte: UByte,
         prefixed: Boolean,
@@ -93,6 +98,25 @@ object InstructionDecoder {
                     0b110 -> Instruction.Or(register)
                     0b111 -> Instruction.Cp(register)
                     else -> error("Invalid operation group $opGroup")
+                }
+            }
+
+            in INC_DEC_OPCODES -> {
+                val opGroup = instructionByte.toInt() and 0xC7
+                val target = when (val register = instructionByte.toInt() ushr 3) {
+                    0b000 -> ArithmeticTarget.B
+                    0b001 -> ArithmeticTarget.C
+                    0b010 -> ArithmeticTarget.D
+                    0b011 -> ArithmeticTarget.E
+                    0b100 -> ArithmeticTarget.H
+                    0b101 -> ArithmeticTarget.L
+                    else -> error("Invalid register for INC/DEC: $register")
+                }
+
+                when (opGroup) {
+                    0x04 -> Instruction.Inc(target)
+                    0x05 -> Instruction.Dec(target)
+                    else -> error("Invalid INC/DEC op group: $instructionByte")
                 }
             }
 
