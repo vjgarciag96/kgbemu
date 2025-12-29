@@ -95,12 +95,6 @@ object InstructionDecoder {
                     else -> error("Invalid operation group $opGroup")
                 }
             }
-            0xA8 -> Instruction.Xor(ArithmeticTarget.B)
-            0xA9 -> Instruction.Xor(ArithmeticTarget.C)
-            0xAA -> Instruction.Xor(ArithmeticTarget.D)
-            0xAB -> Instruction.Xor(ArithmeticTarget.E)
-            0xAC -> Instruction.Xor(ArithmeticTarget.H)
-            0xAD -> Instruction.Xor(ArithmeticTarget.L)
 
             0xC3 -> Jp(JumpCondition.ALWAYS)
             0xC2 -> Jp(JumpCondition.NOT_ZERO)
