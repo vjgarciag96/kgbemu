@@ -18,10 +18,11 @@ class CPU(
             instructionByte = memoryBus.readByte((programCounter.getAndIncrement()))
         }
 
-        val address = when (val instruction = InstructionDecoder.decode(instructionByte, prefixed)) {
-            is Instruction -> execute(instruction)
-            null -> error("Invalid instruction $instructionByte")
-        }
+        val address =
+            when (val instruction = InstructionDecoder.decode(instructionByte, prefixed)) {
+                is Instruction -> execute(instruction)
+                null -> error("Invalid instruction $instructionByte")
+            }
 
         if (address != null) {
             programCounter.setTo(address)
@@ -432,7 +433,8 @@ class CPU(
         updateRegister(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
             val mostSignificantBit = targetValue and (0b1 shl 7).toUByte()
-            val shiftedValue = ((targetValue.toInt() ushr 1) and 0xFF).toUByte() or mostSignificantBit
+            val shiftedValue =
+                ((targetValue.toInt() ushr 1) and 0xFF).toUByte() or mostSignificantBit
 
             registers.f = FlagsRegister(
                 zero = shiftedValue == 0b0.toUByte(),
@@ -528,7 +530,8 @@ class CPU(
     private fun load(target: Register16) {
         val leastSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
         val mostSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
-        val value = ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
+        val value =
+            ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
         updateRegister(target) { value }
     }
 
@@ -541,18 +544,23 @@ class CPU(
                 registers.b = mostSignificantByte
                 registers.c = leastSignificantByte
             }
+
             Register16.DE -> {
                 registers.d = mostSignificantByte
                 registers.e = leastSignificantByte
             }
+
             Register16.HL -> {
                 registers.h = mostSignificantByte
                 registers.l = leastSignificantByte
             }
+
             Register16.AF -> {
                 registers.a = mostSignificantByte
-                registers.f = leastSignificantByte and 0xF0.toUByte() // lower nibble of F is always 0
+                registers.f =
+                    leastSignificantByte and 0xF0.toUByte() // lower nibble of F is always 0
             }
+
             else -> error("Invalid pop target: $target")
         }
     }
@@ -563,18 +571,22 @@ class CPU(
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.b)
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.c)
             }
+
             Register16.DE -> {
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.d)
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.e)
             }
+
             Register16.HL -> {
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.h)
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.l)
             }
+
             Register16.AF -> {
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.a)
                 memoryBus.writeByte(stackPointer.decrementAndGet(), registers.f)
             }
+
             else -> error("Invalid push target: $target")
         }
     }
@@ -586,8 +598,9 @@ class CPU(
             // read address to call
             val leastSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
             val mostSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
-            val address = ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
-            
+            val address =
+                ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
+
             pushProgramCounterToStack()
 
             address
@@ -690,7 +703,10 @@ class CPU(
 
     private fun pushProgramCounterToStack() {
         val pc = programCounter.get()
-        memoryBus.writeByte(stackPointer.decrementAndGet(), ((pc.toInt() and 0xFF00) ushr 8).toUByte())
+        memoryBus.writeByte(
+            stackPointer.decrementAndGet(),
+            ((pc.toInt() and 0xFF00) ushr 8).toUByte()
+        )
         memoryBus.writeByte(stackPointer.decrementAndGet(), (pc.toInt() and 0x00FF).toUByte())
     }
 }
