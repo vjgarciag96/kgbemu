@@ -192,6 +192,8 @@ object InstructionDecoder {
             0x32 -> Instruction.LdDecHLA
             0x3A -> Instruction.LdDecAHL
 
+            0x2F -> Instruction.Cpl
+
             else -> null
         }
     }

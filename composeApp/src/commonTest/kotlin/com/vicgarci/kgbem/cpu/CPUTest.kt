@@ -21,7 +21,8 @@ class CPUTest {
     )
 
     private var programCounter = ProgramCounter(0.toUShort())
-    private val memoryBus = MemoryBus()
+    private val memory = Array(0x1) { 0.toUByte() }
+    private val memoryBus = MemoryBus(memory)
 
     private val cpu = CPU(
         registers,
@@ -222,8 +223,9 @@ class CPUTest {
     @Test
     fun cpl() {
         registers.a = 0xF0.toUByte()
+        memory[0] = 0x2F.toUByte() // CPL opcode
 
-        cpu.execute(Instruction.Cpl)
+        cpu.step()
 
         assertEquals(0x0F.toUByte(), registers.a)
     }
