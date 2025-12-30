@@ -231,6 +231,40 @@ class CPUTest {
     }
 
     @Test
+    fun scf() {
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(
+            carry = false,
+            subtract = true,
+            halfCarry = true,
+        ).toUByte()
+        memory[0] = 0x37.toUByte() // SCF opcode
+
+        cpu.step()
+
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.carry)
+        assertFalse(flags.subtract)
+        assertFalse(flags.halfCarry)
+    }
+
+    @Test
+    fun ccf() {
+        registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(
+            carry = true,
+            subtract = true,
+            halfCarry = true,
+        ).toUByte()
+        memory[0] = 0x3F.toUByte() // CCF opcode
+
+        cpu.step()
+
+        val flags = registers.f.toFlagsRegister()
+        assertFalse(flags.carry)
+        assertFalse(flags.subtract)
+        assertFalse(flags.halfCarry)
+    }
+
+    @Test
     fun bit_bitSet() {
         registers.d = 0xF0.toUByte()
         registers.f = FlagsRegister(
