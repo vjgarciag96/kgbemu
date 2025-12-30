@@ -61,7 +61,7 @@ class CPU(
             is Instruction.Sla -> sla(instruction.target)
             is Instruction.Swap -> swap(instruction.target)
             is Instruction.Jp -> return jump(instruction.condition)
-            is Instruction.Ld -> load(instruction.target)
+            is Instruction.Ld -> load(instruction.source, instruction.target)
             is Instruction.Pop -> pop(instruction.target)
             is Instruction.Push -> push(instruction.target)
             is Instruction.Call -> return call(instruction.condition)
@@ -185,7 +185,7 @@ class CPU(
         registers.f = flags.toUByte()
     }
 
-    private fun inc(target: OpDestination) {
+    private fun inc(target: Register) {
         when (target) {
             is Register16 -> inc(target)
             is Register8 -> inc(target)
@@ -193,7 +193,7 @@ class CPU(
     }
 
     private fun inc(target: Register8) {
-        updateRegister(target) { register ->
+        updateOperand(target) { register ->
             val (sum, _, halfCarry) = overflowAdd(register, 0x1.toUByte())
 
             val flags = registers.f.toFlagsRegister().copy(
@@ -208,12 +208,12 @@ class CPU(
     }
 
     private fun inc(target: Register16) {
-        updateRegister(target) { value ->
+        updateOperand(target) { value ->
             (value.toInt() + 1).toUShort()
         }
     }
 
-    private fun dec(target: OpDestination) {
+    private fun dec(target: Register) {
         when (target) {
             is Register16 -> dec(target)
             is Register8 -> dec(target)
@@ -221,7 +221,7 @@ class CPU(
     }
 
     private fun dec(target: Register8) {
-        updateRegister(target) { register ->
+        updateOperand(target) { register ->
             val (sub, halfBorrow, _) = sub(register, 0x1.toUByte())
 
             val flags = registers.f.toFlagsRegister().copy(
@@ -236,7 +236,7 @@ class CPU(
     }
 
     private fun dec(target: Register16) {
-        updateRegister(target) { value ->
+        updateOperand(target) { value ->
             (value.toInt() - 1).toUShort()
         }
     }
@@ -272,7 +272,7 @@ class CPU(
     }
 
     private fun rr(target: Register8) {
-        updateRegister(target) { targetValue ->
+        updateOperand(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
             val flags = registers.f.toFlagsRegister()
             val carryBit = if (flags.carry) 0b1 else 0b0
@@ -291,7 +291,7 @@ class CPU(
     }
 
     private fun rrc(target: Register8) {
-        updateRegister(target) { targetValue ->
+        updateOperand(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
             val bitToWrapAround = leastSignificantBit.toInt() shl 7
             val rotatedValue = targetValue.toInt() ushr 1
@@ -319,7 +319,7 @@ class CPU(
     }
 
     private fun rl(target: Register8) {
-        updateRegister(target) { targetValue ->
+        updateOperand(target) { targetValue ->
             val mostSignificantBit = (targetValue and (0b1 shl 7).toUByte()).toInt() ushr 7
             val flags = registers.f.toFlagsRegister()
             val carryBit = if (flags.carry) 0b1 else 0b0
@@ -337,7 +337,7 @@ class CPU(
     }
 
     private fun rlc(target: Register8) {
-        updateRegister(target) { targetValue ->
+        updateOperand(target) { targetValue ->
             val mostSignificantBit = (targetValue and (0b1 shl 7).toUByte()).toInt() ushr 7
             val rotatedValue = targetValue.toInt() shl 1
             val result = ((rotatedValue or mostSignificantBit) and 0xFF).toUByte()
@@ -395,7 +395,7 @@ class CPU(
         index: Int,
         target: Register8,
     ) {
-        updateRegister(target) { targetValue ->
+        updateOperand(target) { targetValue ->
             val mask = (0b1 shl index).toUByte().inv()
             targetValue and mask
         }
@@ -405,7 +405,7 @@ class CPU(
         index: Int,
         target: Register8,
     ) {
-        updateRegister(target) { targetValue ->
+        updateOperand(target) { targetValue ->
             val mask = (0b1 shl index).toUByte()
             targetValue or mask
         }
@@ -414,7 +414,7 @@ class CPU(
     private fun srl(
         target: Register8,
     ) {
-        updateRegister(target) { targetValue ->
+        updateOperand(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
             val shiftedValue = ((targetValue.toInt() ushr 1) and 0xFF).toUByte()
 
@@ -430,7 +430,7 @@ class CPU(
     private fun sra(
         target: Register8,
     ) {
-        updateRegister(target) { targetValue ->
+        updateOperand(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
             val mostSignificantBit = targetValue and (0b1 shl 7).toUByte()
             val shiftedValue =
@@ -450,7 +450,7 @@ class CPU(
     private fun sla(
         target: Register8,
     ) {
-        updateRegister(target) { targetValue ->
+        updateOperand(target) { targetValue ->
             val mostSignificantBit = targetValue and (0b1 shl 7).toUByte()
             val shiftedValue = ((targetValue.toInt() shl 1) and 0xFF).toUByte()
 
@@ -468,7 +468,7 @@ class CPU(
     private fun swap(
         target: Register8,
     ) {
-        updateRegister(target) { targetValue ->
+        updateOperand(target) { targetValue ->
             val upperNibble = targetValue and 0xF0.toUByte()
             val lowerNibble = targetValue and 0x0F.toUByte()
 
@@ -515,24 +515,43 @@ class CPU(
         }
     }
 
-    private fun load(target: Register) {
+    private fun load(source: Operand, target: Operand) {
         when (target) {
-            is Register16 -> load(target)
-            is Register8 -> load(target)
+            is Register16 -> load(source, target)
+            is Operand8 -> load(source, target)
+            else -> error("Invalid load target: $target")
         }
     }
 
-    private fun load(target: Register8) {
-        val byteToLoad = memoryBus.readByte(programCounter.getAndIncrement())
-        updateRegister(target) { byteToLoad }
+    private fun load(
+        source: Operand,
+        target: Operand8,
+    ) {
+        require(source is Operand8) { "Invalid load source for 8-bit register: $source" }
+        val byteToLoad = when (source) {
+            MemoryAtHl -> memoryBus.readByte(registers.hl)
+            Data8 -> memoryBus.readByte(programCounter.getAndIncrement())
+            Register8.A -> registers.a
+            Register8.B -> registers.b
+            Register8.C -> registers.c
+            Register8.D -> registers.d
+            Register8.E -> registers.e
+            Register8.H -> registers.h
+            Register8.L -> registers.l
+        }
+        updateOperand(target) { byteToLoad }
     }
 
-    private fun load(target: Register16) {
+    private fun load(
+        source: Operand,
+        target: Register16,
+    ) {
+        require(source is Data16) { "Invalid load source for 16-bit register: $source" }
         val leastSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
         val mostSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
         val value =
             ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
-        updateRegister(target) { value }
+        updateOperand(target) { value }
     }
 
     private fun pop(target: Register16) {
@@ -648,8 +667,8 @@ class CPU(
         registers.hl = (registers.hl.toInt() + 1).toUShort()
     }
 
-    private fun updateRegister(
-        target: Register8,
+    private fun updateOperand(
+        target: Operand8,
         update: (UByte) -> UByte,
     ) {
         when (target) {
@@ -660,10 +679,15 @@ class CPU(
             Register8.E -> registers.e = update(registers.e)
             Register8.H -> registers.h = update(registers.h)
             Register8.L -> registers.l = update(registers.l)
+            MemoryAtHl -> memoryBus.writeByte(
+                registers.hl,
+                update(memoryBus.readByte(registers.hl))
+            )
+            Data8 -> error("Cannot update value of Data8 operand")
         }
     }
 
-    private fun updateRegister(
+    private fun updateOperand(
         target: Register16,
         update: (UShort) -> UShort,
     ) {

@@ -14,6 +14,8 @@ object InstructionDecoder {
         0x0B, 0x1B, 0x2B, 0x3B, // DEC
     )
 
+    private val LD_R8HL_R8_OPCODES = (0x40..0x7F).toSet().minus(0x76)
+
     fun decode(
         instructionByte: UByte,
         prefixed: Boolean,
@@ -33,13 +35,13 @@ object InstructionDecoder {
         instructionByte: UByte,
     ): Instruction? {
         return when (instructionByte.toInt()) {
-            0x06 -> Instruction.Ld(Register8.B)
-            0x0E -> Instruction.Ld(Register8.C)
-            0x16 -> Instruction.Ld(Register8.D)
-            0x1E -> Instruction.Ld(Register8.E)
-            0x26 -> Instruction.Ld(Register8.H)
-            0x2E -> Instruction.Ld(Register8.L)
-            0x3E -> Instruction.Ld(Register8.A)
+            0x06 -> Instruction.Ld(Data8, Register8.B)
+            0x0E -> Instruction.Ld(Data8, Register8.C)
+            0x16 -> Instruction.Ld(Data8, Register8.D)
+            0x1E -> Instruction.Ld(Data8, Register8.E)
+            0x26 -> Instruction.Ld(Data8, Register8.H)
+            0x2E -> Instruction.Ld(Data8, Register8.L)
+            0x3E -> Instruction.Ld(Data8, Register8.A)
 
             0xC1 -> Instruction.Pop(Register16.BC)
             0xD1 -> Instruction.Pop(Register16.DE)
@@ -149,10 +151,41 @@ object InstructionDecoder {
             0xD2 -> Jp(JumpCondition.NOT_CARRY)
             0xDA -> Jp(JumpCondition.CARRY)
 
-            0x01 -> Instruction.Ld(Register16.BC)
-            0x11 -> Instruction.Ld(Register16.DE)
-            0x21 -> Instruction.Ld(Register16.HL)
-            0x31 -> Instruction.Ld(Register16.SP)
+            0x01 -> Instruction.Ld(Data16, Register16.BC)
+            0x11 -> Instruction.Ld(Data16, Register16.DE)
+            0x21 -> Instruction.Ld(Data16, Register16.HL)
+            0x31 -> Instruction.Ld(Data16, Register16.SP)
+
+            in LD_R8HL_R8_OPCODES -> {
+                val source = instructionByte.toInt() and 0x07
+                val target = (instructionByte.toInt() ushr 3) and 0x07
+
+                val sourceRegister = when (source) {
+                    0b111 -> Register8.A
+                    0b000 -> Register8.B
+                    0b001 -> Register8.C
+                    0b010 -> Register8.D
+                    0b011 -> Register8.E
+                    0b100 -> Register8.H
+                    0b101 -> Register8.L
+                    0b110 -> MemoryAtHl
+                    else -> error("Invalid source register $source")
+                }
+
+                val targetRegister = when (target) {
+                    0b111 -> Register8.A
+                    0b000 -> Register8.B
+                    0b001 -> Register8.C
+                    0b010 -> Register8.D
+                    0b011 -> Register8.E
+                    0b100 -> Register8.H
+                    0b101 -> Register8.L
+                    0b110 -> MemoryAtHl
+                    else -> error("Invalid target register $target")
+                }
+
+                Instruction.Ld(sourceRegister, targetRegister)
+            }
 
             0x22 -> Instruction.LdIncHLA
             0x2A -> Instruction.LdIncAHL

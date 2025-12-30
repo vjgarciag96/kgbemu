@@ -209,4 +209,117 @@ class LoadCPUTest {
 
         assertEquals(0xFFFF.toUShort(), registers.hl)
     }
+
+    @Test
+    fun load_registerB_into_registerA() {
+        registers.b = 0x45.toUByte()
+        memory[0] = 0x78.toUByte() // LD A, B opcode
+
+        cpu.step()
+
+        assertEquals(0x45.toUByte(), registers.a) // Value from B should be loaded into A
+    }
+
+    @Test
+    fun load_registerC_into_registerB() {
+        registers.c = 0x42.toUByte()
+        memory[0] = 0x41.toUByte() // LD B, C opcode
+
+        cpu.step()
+
+        assertEquals(0x42.toUByte(), registers.b) // Value from C should be loaded into B
+    }
+
+    @Test
+    fun load_registerD_into_registerB() {
+        registers.d = 0x50.toUByte()
+        memory[0] = 0x42.toUByte() // LD B, D opcode
+
+        cpu.step()
+
+        assertEquals(0x50.toUByte(), registers.b) // Value from D should be loaded into B
+    }
+
+    @Test
+    fun load_registerE_into_registerD() {
+        registers.e = 0x43.toUByte()
+        memory[0] = 0x53.toUByte() // LD D, E opcode
+
+        cpu.step()
+
+        assertEquals(0x43.toUByte(), registers.d) // Value from E should be loaded into D
+    }
+    @Test
+    fun load_registerH_into_registerE() {
+        registers.h = 0x47.toUByte()
+        memory[0] = 0x5C.toUByte() // LD E, H opcode
+
+        cpu.step()
+
+        assertEquals(0x47.toUByte(), registers.e) // Value from H should be loaded into E
+    }
+
+    @Test
+    fun load_registerL_into_registerH() {
+        registers.l = 0x44.toUByte()
+        memory[0] = 0x65.toUByte() // LD H, L opcode
+
+        cpu.step()
+
+        assertEquals(0x44.toUByte(), registers.h) // Value from L should be loaded into H
+    }
+
+    @Test
+    fun load_registerA_into_registerC() {
+        registers.a = 0x46.toUByte()
+        memory[0] = 0x4F.toUByte() // LD C, A opcode
+
+        cpu.step()
+
+        assertEquals(0x46.toUByte(), registers.c) // Value from A should be loaded into C
+    }
+
+    @Test
+    fun load_memoryAtHL_into_registerA() {
+        registers.hl = 0x1000.toUShort()
+        memory[0x1000] = 0x42.toUByte() // Value at HL
+        memory[0] = 0x7E.toUByte() // LD A, (HL) opcode
+
+        cpu.step()
+
+        assertEquals(0x42.toUByte(), registers.a) // Value at HL should be loaded into A
+    }
+
+    @Test
+    fun load_registerA_into_memoryAtHL() {
+        registers.hl = 0x1000.toUShort()
+        registers.a = 0x42.toUByte() // Value in A
+        memory[0] = 0x77.toUByte() // LD (HL), A opcode
+
+        cpu.step()
+
+        assertEquals(0x42.toUByte(), memory[0x1000]) // Value in A should be stored at HL
+    }
+
+    @Test
+    fun load_memoryAtHL_into_registerB() {
+        registers.hl = 0x2000.toUShort()
+        memory[0x2000] = 0x55.toUByte() // Value at HL
+        memory[0] = 0x46.toUByte() // LD B, (HL) opcode
+
+        cpu.step()
+
+        assertEquals(0x55.toUByte(), registers.b) // Value at HL should be loaded into B
+    }
+
+    @Test
+    fun load_registerC_into_memoryAtHL() {
+        registers.hl = 0x2000.toUShort()
+        registers.c = 0x66.toUByte() // Value in C
+        memory[0] = 0x71.toUByte() // LD (HL), C opcode
+
+        cpu.step()
+
+        assertEquals(0x66.toUByte(), memory[0x2000]) // Value in C should be stored at HL
+    }
 }

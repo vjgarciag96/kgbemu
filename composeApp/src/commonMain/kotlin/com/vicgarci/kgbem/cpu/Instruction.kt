@@ -245,11 +245,11 @@ sealed interface Instruction {
     ) : Instruction
 
     /**
-     * Load a byte constant into a register [target]. The byte(s) constant to load is
-     * located in the byte(s) following the instruction identifier.
+     * Load a byte [source] into a register [target].
      */
     data class Ld(
-        val target: Register,
+        val source: Operand,
+        val target: Operand,
     ) : Instruction
 
     /**
@@ -301,15 +301,40 @@ sealed interface Instruction {
     ) : Instruction
 }
 
-sealed interface OpDestination
+sealed interface Operand
 
-sealed interface Register : OpDestination
+/**
+ * An operand that is 8 bits wide.
+ */
+sealed interface Operand8 : Operand
 
-enum class Register8 : Register {
+/**
+ * An operand that is 16 bits wide.
+ */
+sealed interface Operand16 : Operand
+
+sealed interface Register : Operand
+
+enum class Register8 : Register, Operand8 {
     A, B, C, D, E, H, L
 }
 
-enum class Register16 : Register {
+enum class Register16 : Register, Operand16 {
     AF, BC, DE, HL,
     SP,
 }
+
+/**
+ * Represents an 8-bit constant located in the byte following the instruction.
+ */
+data object Data8 : Operand8
+
+/**
+ * Represents a 16-bit constant located in the two bytes following the instruction.
+ */
+data object Data16 : Operand16
+
+/**
+ * Represents the memory address pointed by the HL register pair.
+ */
+data object MemoryAtHl : Operand8
