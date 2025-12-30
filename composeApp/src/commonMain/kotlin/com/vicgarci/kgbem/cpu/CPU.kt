@@ -11,7 +11,25 @@ class CPU(
     private val stackPointer: StackPointer = StackPointer(),
 ) {
 
+    private var globalInterruptEnabled = true
+    private var enableGlobalInterruptPending = false
+    private var halted = false
+
     fun step() {
+        val pending = anyInterruptPending()
+        if (globalInterruptEnabled && pending) {
+            halted = false
+            serviceInterrupt()
+            return
+        }
+
+        if (halted) {
+            if (pending) {
+                halted = false
+            }
+            return
+        }
+
         var instructionByte = memoryBus.readByte(programCounter.getAndIncrement())
         val prefixed = instructionByte == 0xCB.toUByte()
         if (prefixed) {
@@ -26,6 +44,11 @@ class CPU(
 
         if (address != null) {
             programCounter.setTo(address)
+        }
+
+        if (enableGlobalInterruptPending) {
+            globalInterruptEnabled = true
+            enableGlobalInterruptPending = false
         }
     }
 
@@ -73,6 +96,9 @@ class CPU(
             Instruction.LdDecHLA -> loadDecHla()
             Instruction.LdIncHLA -> loadIncHla()
             Instruction.Daa -> daa()
+            Instruction.Halt -> halt()
+            Instruction.DisableInterrupts -> disableGlobalInterrupt()
+            Instruction.EnableInterrupts -> enableGlobalInterrupt()
             Instruction.Nop -> Unit
         }
 
@@ -383,7 +409,8 @@ class CPU(
         target: Register8,
     ) {
         val targetValue = getRegisterValue(target)
-        val bitSet = ((targetValue.toInt() ushr index).toUByte() and 0b1.toUByte()) == 0b1.toUByte()
+        val bitSet =
+            ((targetValue.toInt() ushr index).toUByte() and 0b1.toUByte()) == 0b1.toUByte()
         val flags = registers.f.toFlagsRegister()
         registers.f = flags.copy(
             zero = !bitSet,
@@ -754,6 +781,41 @@ class CPU(
             JumpCondition.NOT_CARRY -> !flags.carry
             JumpCondition.ALWAYS -> true
         }
+    }
+
+    private fun halt() {
+        halted = true
+    }
+
+    private fun disableGlobalInterrupt() {
+        globalInterruptEnabled = false
+        enableGlobalInterruptPending = false
+    }
+
+    private fun enableGlobalInterrupt() {
+        enableGlobalInterruptPending = true
+    }
+
+    private fun anyInterruptPending(): Boolean {
+        return memoryBus.anyInterruptPending()
+    }
+
+    private fun serviceInterrupt() {
+        val pending = memoryBus.interruptPendingMask
+        val highestPriorityInterrupt = pending.countTrailingZeroBits()
+        globalInterruptEnabled = false
+        memoryBus.setInterruptFlagBit(highestPriorityInterrupt, false)
+        pushProgramCounterToStack()
+        programCounter.setTo(
+            when (highestPriorityInterrupt) {
+                0 -> 0x40.toUShort() // V-Blank
+                1 -> 0x48.toUShort() // LCD STAT
+                2 -> 0x50.toUShort() // Timer
+                3 -> 0x58.toUShort() // Serial
+                4 -> 0x60.toUShort() // Joypad
+                else -> error("Invalid interrupt bit: $highestPriorityInterrupt")
+            }
+        )
     }
 
     private fun pushProgramCounterToStack() {

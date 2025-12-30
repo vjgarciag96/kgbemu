@@ -199,6 +199,12 @@ object InstructionDecoder {
 
             0x27 -> Instruction.Daa
 
+            0x76 -> Instruction.Halt
+            0xF3 -> Instruction.DisableInterrupts
+            0xFB -> Instruction.EnableInterrupts
+
+            0x00 -> Instruction.Nop
+
             else -> null
         }
     }

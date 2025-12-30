@@ -21,7 +21,7 @@ class CPUTest {
     )
 
     private var programCounter = ProgramCounter(0.toUShort())
-    private val memory = Array(0x1) { 0.toUByte() }
+    private val memory = Array(0x10000) { 0.toUByte() }
     private val memoryBus = MemoryBus(memory)
 
     private val cpu = CPU(
@@ -731,5 +731,86 @@ class CPUTest {
         assertTrue(flags.carry)
         assertTrue(flags.zero)
         assertFalse(flags.halfCarry)
+    }
+
+    @Test
+    fun halt_stopsExecution() {
+        memory[0] = 0x76.toUByte() // HALT opcode
+
+        cpu.step()
+        cpu.step()
+        cpu.step()
+
+        assertEquals(0x01.toUShort(), programCounter.get())
+    }
+
+    @Test
+    fun halt_stopsExecutionUntilInterrupt() {
+        memory[0] = 0x76.toUByte() // HALT opcode
+        memory[1] = 0x00.toUByte() // NOP opcode
+
+        cpu.step()
+        assertEquals(0x01.toUShort(), programCounter.get())
+        cpu.step()
+        assertEquals(0x01.toUShort(), programCounter.get())
+
+        memoryBus.setInterruptFlagBit(0, true) // V-Blank interrupt
+        memoryBus.setInterruptEnableBit(0, true)
+        cpu.step()
+
+        // PC jumps to V-Blank handler
+        assertEquals(0x40.toUShort(), programCounter.get())
+    }
+
+    @Test
+    fun disableInterrupts() {
+        memory[0] = 0xF3.toUByte() // DI opcode
+        memory[1] = 0x76.toUByte() // HALT opcode
+        memory[2] = 0x00.toUByte() // NOP opcode
+
+        cpu.step()
+
+        memoryBus.setInterruptFlagBit(0, true) // V-Blank interrupt
+        memoryBus.setInterruptEnableBit(0, true)
+        cpu.step()
+
+        assertEquals(0x2.toUShort(), programCounter.get())
+    }
+
+    @Test
+    fun enableInterrupts() {
+        memory[0] = 0xF3.toUByte() // DI opcode
+        memory[1] = 0xFB.toUByte() // EI opcode
+        memory[2] = 0x00.toUByte() // NOP opcode
+
+        // disable interrupts
+        cpu.step()
+        // V-Blank interrupt
+        memoryBus.setInterruptFlagBit(0, true)
+        memoryBus.setInterruptEnableBit(0, true)
+
+        // enable interrupts
+        cpu.step()
+        assertEquals(0x2.toUShort(), programCounter.get())
+
+        // PC jumps to V-Blank handler
+        cpu.step()
+        assertEquals(0x40.toUShort(), programCounter.get())
+    }
+
+    @Test
+    fun interrupt_servicesHighestPriorityInterrupt() {
+        memory[0] = 0x00.toUByte() // NOP opcode
+        // Timer interrupt
+        memoryBus.setInterruptFlagBit(2, true)
+        memoryBus.setInterruptEnableBit(2, true)
+        // V-Blank interrupt (higher priority)
+        memoryBus.setInterruptFlagBit(0, true)
+        memoryBus.setInterruptEnableBit(0, true)
+
+        cpu.step()
+
+        // PC jumps to V-Blank handler
+        assertEquals(0x40.toUShort(), programCounter.get())
     }
 }

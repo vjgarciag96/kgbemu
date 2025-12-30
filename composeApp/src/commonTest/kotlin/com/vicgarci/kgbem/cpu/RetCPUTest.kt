@@ -18,7 +18,7 @@ class RetCPUTest {
     )
 
     private var programCounter = ProgramCounter(0.toUShort())
-    private val memory = Array(10) { 0.toUByte() }
+    private val memory = Array(0x10000) { 0.toUByte() }
     private val memoryBus = MemoryBus(memory)
     private val stackPointer = StackPointer(8.toUShort())
 

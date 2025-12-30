@@ -307,6 +307,13 @@ sealed interface Instruction {
      * For more information, see: https://en.wikipedia.org/wiki/Binary-coded_decimal
      */
     data object Daa : Instruction
+
+    /**
+     * Halt the CPU until an interrupt occurs.
+     */
+    data object Halt : Instruction
+    data object DisableInterrupts : Instruction
+    data object EnableInterrupts : Instruction
 }
 
 sealed interface Operand
