@@ -149,6 +149,11 @@ object InstructionDecoder {
             0xD2 -> Jp(JumpCondition.NOT_CARRY)
             0xDA -> Jp(JumpCondition.CARRY)
 
+            0x01 -> Instruction.Ld(Register16.BC)
+            0x11 -> Instruction.Ld(Register16.DE)
+            0x21 -> Instruction.Ld(Register16.HL)
+            0x31 -> Instruction.Ld(Register16.SP)
+
             else -> null
         }
     }

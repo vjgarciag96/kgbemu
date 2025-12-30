@@ -509,9 +509,23 @@ class CPU(
         }
     }
 
+    private fun load(target: Register) {
+        when (target) {
+            is Register16 -> load(target)
+            is Register8 -> load(target)
+        }
+    }
+
     private fun load(target: Register8) {
         val byteToLoad = memoryBus.readByte(programCounter.getAndIncrement())
         updateRegister(target) { byteToLoad }
+    }
+
+    private fun load(target: Register16) {
+        val leastSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
+        val mostSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
+        val value = ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
+        updateRegister(target) { value }
     }
 
     private fun pop(target: Register16) {

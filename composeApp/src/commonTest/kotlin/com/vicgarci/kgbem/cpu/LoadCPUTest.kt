@@ -17,13 +17,15 @@ class LoadCPUTest {
     )
 
     private var programCounter = ProgramCounter(0.toUShort())
-    private val memory = Array(2) { 0.toUByte() }
+    private val memory = Array(3) { 0.toUByte() }
     private val memoryBus = MemoryBus(memory)
+    private val stackPointer = StackPointer(0x3.toUShort())
 
     private val cpu = CPU(
         registers,
         programCounter,
         memoryBus,
+        stackPointer,
     )
 
     @Test
@@ -94,5 +96,49 @@ class LoadCPUTest {
         cpu.step()
 
         assertEquals(0x48.toUByte(), registers.a)
+    }
+
+    @Test
+    fun load_constant_intoRegisterBC() {
+        memory[0] = 0x01.toUByte() // LD BC, nn opcode
+        memory[1] = 0x34.toUByte() // low byte
+        memory[2] = 0x12.toUByte() // high byte
+
+        cpu.step()
+
+        assertEquals(0x1234.toUShort(), registers.bc)
+    }
+
+    @Test
+    fun load_constant_intoRegisterDE() {
+        memory[0] = 0x11.toUByte() // LD DE, nn opcode
+        memory[1] = 0x56.toUByte() // low byte
+        memory[2] = 0x34.toUByte() // high byte
+
+        cpu.step()
+
+        assertEquals(0x3456.toUShort(), registers.de)
+    }
+
+    @Test
+    fun load_constant_intoRegisterHL() {
+        memory[0] = 0x21.toUByte() // LD HL, nn opcode
+        memory[1] = 0x78.toUByte() // low byte
+        memory[2] = 0x56.toUByte() // high byte
+
+        cpu.step()
+
+        assertEquals(0x5678.toUShort(), registers.hl)
+    }
+
+    @Test
+    fun load_constant_intoRegisterSP() {
+        memory[0] = 0x31.toUByte() // LD SP, nn opcode
+        memory[1] = 0x9A.toUByte() // low byte
+        memory[2] = 0x78.toUByte() // high byte
+
+        cpu.step()
+
+        assertEquals(0x789A.toUShort(), stackPointer.get())
     }
 }

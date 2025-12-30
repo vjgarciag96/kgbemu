@@ -52,7 +52,7 @@ sealed interface Instruction {
      * mustn't change).
      */
     data class Inc(
-        val target: OpDestination,
+        val target: Register,
     ) : Instruction
 
     /**
@@ -60,7 +60,7 @@ sealed interface Instruction {
      * mustn't change).
      */
     data class Dec(
-        val target: OpDestination,
+        val target: Register,
     ) : Instruction
 
     /**
@@ -245,11 +245,11 @@ sealed interface Instruction {
     ) : Instruction
 
     /**
-     * Load a byte constant into an 8-bit register [target]. The byte constant to load is
-     * located in the byte following the instruction identifier.
+     * Load a byte constant into a register [target]. The byte(s) constant to load is
+     * located in the byte(s) following the instruction identifier.
      */
     data class Ld(
-        val target: Register8,
+        val target: Register,
     ) : Instruction
 
     /**
@@ -285,11 +285,13 @@ sealed interface Instruction {
 
 sealed interface OpDestination
 
-enum class Register8 : OpDestination {
+sealed interface Register : OpDestination
+
+enum class Register8 : Register {
     A, B, C, D, E, H, L
 }
 
-enum class Register16 : OpDestination {
+enum class Register16 : Register {
     AF, BC, DE, HL,
     SP,
 }
