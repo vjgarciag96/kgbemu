@@ -197,6 +197,8 @@ object InstructionDecoder {
             0x3F -> Instruction.Ccf
             0x37 -> Instruction.Scf
 
+            0x27 -> Instruction.Daa
+
             else -> null
         }
     }

@@ -72,6 +72,7 @@ class CPU(
             Instruction.LdIncAHL -> loadIncAhl()
             Instruction.LdDecHLA -> loadDecHla()
             Instruction.LdIncHLA -> loadIncHla()
+            Instruction.Daa -> daa()
             Instruction.Nop -> Unit
         }
 
@@ -667,6 +668,35 @@ class CPU(
         registers.hl = (registers.hl.toInt() + 1).toUShort()
     }
 
+    private fun daa() {
+        var correction = 0
+        val flags = registers.f.toFlagsRegister()
+
+        if (flags.subtract) {
+            if (flags.halfCarry) {
+                correction = correction or 0x06
+            }
+            if (flags.carry) {
+                correction = correction or 0x60
+            }
+            registers.a = (registers.a.toInt() - correction).toUByte()
+        } else {
+            if (flags.carry || registers.a > 0x99.toUByte()) {
+                correction = correction or 0x60
+                registers.f = registers.f.toFlagsRegister().copy(carry = true).toUByte()
+            }
+            if (flags.halfCarry || (registers.a and 0x0F.toUByte()) > 0x09.toUByte()) {
+                correction = correction or 0x06
+            }
+            registers.a = (registers.a.toInt() + correction).toUByte()
+        }
+
+        registers.f = registers.f.toFlagsRegister().copy(
+            zero = registers.a == 0.toUByte(),
+            halfCarry = false,
+        ).toUByte()
+    }
+
     private fun updateOperand(
         target: Operand8,
         update: (UByte) -> UByte,
@@ -683,6 +713,7 @@ class CPU(
                 registers.hl,
                 update(memoryBus.readByte(registers.hl))
             )
+
             Data8 -> error("Cannot update value of Data8 operand")
         }
     }

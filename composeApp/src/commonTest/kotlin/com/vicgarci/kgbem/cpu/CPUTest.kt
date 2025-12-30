@@ -632,4 +632,104 @@ class CPUTest {
         assertEquals(0x0F.toUByte(), registers.b)
         assertEquals(0b00100101.toUByte(), registers.c)
     }
+
+    @Test
+    fun daa_noAdjustmentsNeeded() {
+        registers.a = 0x45.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = false,
+            carry = false,
+        ).toUByte()
+        memory[0] = 0x27.toUByte() // DAA opcode
+
+        cpu.step()
+
+        assertEquals(0x45.toUByte(), registers.a) // No adjustments needed
+        val flags = registers.f.toFlagsRegister()
+        assertFalse(flags.carry)
+        assertFalse(flags.halfCarry)
+        assertFalse(flags.zero)
+    }
+
+    @Test
+    fun daa_adjustForLowerNibble() {
+        registers.a = 0x0A.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = true,
+            carry = false,
+        ).toUByte()
+        memory[0] = 0x27.toUByte() // DAA opcode
+
+        cpu.step()
+
+        assertEquals(0x10.toUByte(), registers.a) // Adjusted for lower nibble
+        val flags = registers.f.toFlagsRegister()
+        assertFalse(flags.carry)
+        assertFalse(flags.halfCarry)
+        assertFalse(flags.zero)
+    }
+
+    @Test
+    fun daa_adjustForUpperNibble() {
+        registers.a = 0x9A.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = false,
+            carry = true,
+        ).toUByte()
+        memory[0] = 0x27.toUByte() // DAA opcode
+
+        cpu.step()
+
+        assertEquals(0x00.toUByte(), registers.a) // Adjusted for upper nibble
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.carry)
+        assertTrue(flags.zero)
+        assertFalse(flags.halfCarry)
+    }
+
+    @Test
+    fun daa_adjustForBothNibbles() {
+        registers.a = 0x9A.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = true,
+            carry = true,
+        ).toUByte()
+        memory[0] = 0x27.toUByte() // DAA opcode
+
+        cpu.step()
+
+        assertEquals(0x00.toUByte(), registers.a) // Adjusted for both nibbles
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.carry)
+        assertTrue(flags.zero)
+        assertFalse(flags.halfCarry)
+    }
+
+    @Test
+    fun daa_subtractionMode() {
+        registers.a = 0x66.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = true,
+            halfCarry = true,
+            carry = true,
+        ).toUByte()
+        memory[0] = 0x27.toUByte() // DAA opcode
+
+        cpu.step()
+
+        assertEquals(0x00.toUByte(), registers.a) // Adjusted in subtraction mode
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.carry)
+        assertTrue(flags.zero)
+        assertFalse(flags.halfCarry)
+    }
 }

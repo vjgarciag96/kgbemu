@@ -299,6 +299,14 @@ sealed interface Instruction {
     data class Rst(
         val address: UByte,
     ) : Instruction
+
+    /**
+     * Decimal adjust register A for BCD addition/subtraction. BCD = Binary-Coded Decimal, a form
+     * of number representation where each nibble (4 bits) represents a decimal digit (0-9).
+     *
+     * For more information, see: https://en.wikipedia.org/wiki/Binary-coded_decimal
+     */
+    data object Daa : Instruction
 }
 
 sealed interface Operand
