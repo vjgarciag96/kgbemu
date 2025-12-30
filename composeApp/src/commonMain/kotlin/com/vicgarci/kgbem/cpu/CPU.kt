@@ -67,6 +67,10 @@ class CPU(
             is Instruction.Ret -> return ret(instruction.condition)
             is Instruction.Jr -> jumpRelative(instruction.condition)
             is Instruction.Rst -> rst(instruction.address)
+            Instruction.LdDecAHL -> loadDecAhl()
+            Instruction.LdIncAHL -> loadIncAhl()
+            Instruction.LdDecHLA -> loadDecHla()
+            Instruction.LdIncHLA -> loadIncHla()
             Instruction.Nop -> Unit
         }
 
@@ -609,6 +613,26 @@ class CPU(
     private fun rst(address: UByte) {
         pushProgramCounterToStack()
         programCounter.setTo(address.toUShort())
+    }
+
+    private fun loadDecAhl() {
+        registers.a = memoryBus.readByte(registers.hl)
+        registers.hl = (registers.hl.toInt() - 1).toUShort()
+    }
+
+    private fun loadIncAhl() {
+        registers.a = memoryBus.readByte(registers.hl)
+        registers.hl = (registers.hl.toInt() + 1).toUShort()
+    }
+
+    private fun loadDecHla() {
+        memoryBus.writeByte(registers.hl, registers.a)
+        registers.hl = (registers.hl.toInt() - 1).toUShort()
+    }
+
+    private fun loadIncHla() {
+        memoryBus.writeByte(registers.hl, registers.a)
+        registers.hl = (registers.hl.toInt() + 1).toUShort()
     }
 
     private fun updateRegister(

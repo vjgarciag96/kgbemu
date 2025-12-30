@@ -1,7 +1,7 @@
 package com.vicgarci.kgbem.cpu
 
 class MemoryBus(
-    private val memory: Array<UByte> = Array(0xFFFF) { 0b0.toUByte() },
+    private val memory: Array<UByte> = Array(0x10000) { 0b0.toUByte() },
 ) {
 
     fun readByte(address: UShort): UByte {

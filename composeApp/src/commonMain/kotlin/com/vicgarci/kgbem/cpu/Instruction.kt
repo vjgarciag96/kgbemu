@@ -253,6 +253,24 @@ sealed interface Instruction {
     ) : Instruction
 
     /**
+     * Load the value of register A into the memory address pointed by HL, then increment HL.
+     */
+    data object LdIncHLA: Instruction
+
+    /**
+     * Load the value of the memory address pointed by HL into register A, then increment HL.
+     */
+    data object LdIncAHL: Instruction
+    /**
+     * Load the value of register A into the memory address pointed by HL, then decrement HL.
+     */
+    data object LdDecHLA: Instruction
+    /**
+     * Load the value of the memory address pointed by HL into register A, then decrement HL.
+     */
+    data object LdDecAHL: Instruction
+
+    /**
      * Pop a value from the stack into a 16-bit register [target].
      */
     data class Pop(

@@ -154,6 +154,11 @@ object InstructionDecoder {
             0x21 -> Instruction.Ld(Register16.HL)
             0x31 -> Instruction.Ld(Register16.SP)
 
+            0x22 -> Instruction.LdIncHLA
+            0x2A -> Instruction.LdIncAHL
+            0x32 -> Instruction.LdDecHLA
+            0x3A -> Instruction.LdDecAHL
+
             else -> null
         }
     }

@@ -17,7 +17,7 @@ class LoadCPUTest {
     )
 
     private var programCounter = ProgramCounter(0.toUShort())
-    private val memory = Array(3) { 0.toUByte() }
+    private val memory = Array(0x10000) { 0.toUByte() }
     private val memoryBus = MemoryBus(memory)
     private val stackPointer = StackPointer(0x3.toUShort())
 
@@ -140,5 +140,73 @@ class LoadCPUTest {
         cpu.step()
 
         assertEquals(0x789A.toUShort(), stackPointer.get())
+    }
+
+    @Test
+    fun loadIncrement_A_from_HL() {
+        registers.hl = 0x9.toUShort()
+        memory[0x9] = 0x42.toUByte() // Value at HL
+        memory[0] = 0x2A.toUByte() // LD A, (HL+) opcode
+
+        cpu.step()
+
+        assertEquals(0x42.toUByte(), registers.a) // A should now hold the value at HL
+        assertEquals(0xA.toUShort(), registers.hl) // HL should increment by 1
+    }
+
+    @Test
+    fun loadIncrement_HL_from_A() {
+        registers.hl = 0x9.toUShort()
+        registers.a = 0x42.toUByte() // Value in A
+        memory[0] = 0x22.toUByte() // LD (HL+), A opcode
+
+        cpu.step()
+
+        assertEquals(0x42.toUByte(), memory[0x9]) // Memory at HL should now hold the value of A
+        assertEquals(0xA.toUShort(), registers.hl) // HL should increment by 1
+    }
+
+    @Test
+    fun loadDecrement_A_from_HL() {
+        registers.hl = 0x9.toUShort()
+        memory[0x9] = 0x42.toUByte() // Value at HL
+        memory[0] = 0x3A.toUByte() // LD A, (HL-) opcode
+
+        cpu.step()
+
+        assertEquals(0x42.toUByte(), registers.a) // A should now hold the value at HL
+        assertEquals(0x8.toUShort(), registers.hl) // HL should decrement by 1
+    }
+
+    @Test
+    fun loadDecrement_HL_from_A() {
+        registers.hl = 0x9.toUShort()
+        registers.a = 0x42.toUByte() // Value in A
+        memory[0] = 0x32.toUByte() // LD (HL-), A opcode
+
+        cpu.step()
+
+        assertEquals(0x42.toUByte(), memory[0x9]) // Memory at HL should now hold the value of A
+        assertEquals(0x8.toUShort(), registers.hl) // HL should decrement by 1
+    }
+
+    @Test
+    fun loadIncrement_wrapAround() {
+        registers.hl = 0xFFFF.toUShort()
+        memory[0] = 0x22.toUByte() // LD (HL+), A opcode
+
+        cpu.step()
+
+        assertEquals(0x0000.toUShort(), registers.hl)
+    }
+
+    @Test
+    fun loadDecrement_wrapAround() {
+        registers.hl = 0x0000.toUShort()
+        memory[0] = 0x32.toUByte() // LD (HL-), A opcode
+
+        cpu.step()
+
+        assertEquals(0xFFFF.toUShort(), registers.hl)
     }
 }
