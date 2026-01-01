@@ -88,7 +88,7 @@ class CPU(
             is Instruction.Pop -> pop(instruction.target)
             is Instruction.Push -> push(instruction.target)
             is Instruction.Call -> return call(instruction.condition)
-            is Instruction.Ret -> return ret(instruction.condition)
+            is Instruction.Ret -> ret(instruction.condition)
             is Instruction.Jr -> jumpRelative(instruction.condition)
             is Instruction.Rst -> rst(instruction.address)
             Instruction.LdDecAHL -> loadDecAhl()
@@ -99,6 +99,7 @@ class CPU(
             Instruction.Halt -> halt()
             Instruction.DisableInterrupts -> disableGlobalInterrupt()
             Instruction.EnableInterrupts -> enableGlobalInterrupt()
+            Instruction.RetI -> returnAndEnableInterrupts()
             Instruction.Nop -> Unit
         }
 
@@ -658,16 +659,17 @@ class CPU(
         }
     }
 
-    private fun ret(condition: JumpCondition): UShort? {
+    private fun ret(condition: JumpCondition) {
         val ret = evaluateJumpCondition(condition)
 
-        return if (ret) {
-            val leastSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
-            val mostSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
-            ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
-        } else {
-            null
+        if (ret) {
+            returnFromSubroutine()
         }
+    }
+
+    private fun returnAndEnableInterrupts() {
+        returnFromSubroutine()
+        enableGlobalInterrupt()
     }
 
     private fun rst(address: UByte) {
@@ -825,5 +827,14 @@ class CPU(
             ((pc.toInt() and 0xFF00) ushr 8).toUByte()
         )
         memoryBus.writeByte(stackPointer.decrementAndGet(), (pc.toInt() and 0x00FF).toUByte())
+    }
+
+    private fun returnFromSubroutine() {
+        val leastSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
+        val mostSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
+        val addressHigh = mostSignificantByte.toInt() shl 8
+        val addressLow = leastSignificantByte.toInt()
+        val returnAddress = (addressHigh or addressLow).toUShort()
+        programCounter.setTo(returnAddress)
     }
 }

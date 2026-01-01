@@ -314,6 +314,11 @@ sealed interface Instruction {
     data object Halt : Instruction
     data object DisableInterrupts : Instruction
     data object EnableInterrupts : Instruction
+
+    /**
+     * Return from a subroutine and enable interrupts.
+     */
+    data object RetI : Instruction
 }
 
 sealed interface Operand

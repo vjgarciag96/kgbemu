@@ -23,11 +23,13 @@ class CPUTest {
     private var programCounter = ProgramCounter(0.toUShort())
     private val memory = Array(0x10000) { 0.toUByte() }
     private val memoryBus = MemoryBus(memory)
+    private val stackPointer = StackPointer(0xFFFF.toUShort())
 
     private val cpu = CPU(
         registers,
         programCounter,
         memoryBus,
+        stackPointer,
     )
 
     @Test
@@ -810,6 +812,35 @@ class CPUTest {
 
         cpu.step()
 
+        // PC jumps to V-Blank handler
+        assertEquals(0x40.toUShort(), programCounter.get())
+    }
+
+    @Test
+    fun reti_enablesInterruptsAndReturns() {
+        memory[0] = 0xF3.toUByte() // DI opcode
+        memory[1] = 0x00.toUByte() // NOP opcode
+        memory[2] = 0xD9.toUByte() // RETI opcode
+        memory[3] = 0x00.toUByte() // NOP opcode
+        memory[0x3412] = 0x00.toUByte() // NOP opcode at interrupt handler
+        memory[0xFFFD] = 0x34.toUByte()
+        memory[0xFFFE] = 0x12.toUByte()
+        stackPointer.setTo(0xFFFD.toUShort())
+
+        // disable interrupts
+        cpu.step()
+        memoryBus.setInterruptFlagBit(0, true) // V-Blank interrupt
+        memoryBus.setInterruptEnableBit(0, true)
+
+        // interrupt is not serviced because interrupts are disabled
+        cpu.step()
+
+        // return from subroutine + enabling interrupts
+        cpu.step()
+        assertEquals(0x1234.toUShort(), programCounter.get())
+
+        // interrupts are now enabled
+        cpu.step()
         // PC jumps to V-Blank handler
         assertEquals(0x40.toUShort(), programCounter.get())
     }
