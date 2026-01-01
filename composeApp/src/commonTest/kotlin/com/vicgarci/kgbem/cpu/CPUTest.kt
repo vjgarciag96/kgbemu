@@ -822,7 +822,7 @@ class CPUTest {
         memory[1] = 0x00.toUByte() // NOP opcode
         memory[2] = 0xD9.toUByte() // RETI opcode
         memory[3] = 0x00.toUByte() // NOP opcode
-        memory[0x3412] = 0x00.toUByte() // NOP opcode at interrupt handler
+        memory[0x1234] = 0x00.toUByte() // NOP opcode at interrupt handler
         memory[0xFFFD] = 0x34.toUByte()
         memory[0xFFFE] = 0x12.toUByte()
         stackPointer.setTo(0xFFFD.toUShort())
