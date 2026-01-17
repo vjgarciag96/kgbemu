@@ -299,7 +299,7 @@ class CPU(
         ).toUByte()
     }
 
-    private fun rr(target: Register8) {
+    private fun rr(target: Operand8) {
         updateOperand(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
             val flags = registers.f.toFlagsRegister()
@@ -318,7 +318,7 @@ class CPU(
         }
     }
 
-    private fun rrc(target: Register8) {
+    private fun rrc(target: Operand8) {
         updateOperand(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
             val bitToWrapAround = leastSignificantBit.toInt() shl 7
@@ -346,7 +346,7 @@ class CPU(
         ).toUByte()
     }
 
-    private fun rl(target: Register8) {
+    private fun rl(target: Operand8) {
         updateOperand(target) { targetValue ->
             val mostSignificantBit = (targetValue and (0b1 shl 7).toUByte()).toInt() ushr 7
             val flags = registers.f.toFlagsRegister()
@@ -364,7 +364,7 @@ class CPU(
         }
     }
 
-    private fun rlc(target: Register8) {
+    private fun rlc(target: Operand8) {
         updateOperand(target) { targetValue ->
             val mostSignificantBit = (targetValue and (0b1 shl 7).toUByte()).toInt() ushr 7
             val rotatedValue = targetValue.toInt() shl 1
@@ -407,9 +407,9 @@ class CPU(
 
     private fun bit(
         index: Int,
-        target: Register8,
+        target: Operand8,
     ) {
-        val targetValue = getRegisterValue(target)
+        val targetValue = getOperandValue(target)
         val bitSet =
             ((targetValue.toInt() ushr index).toUByte() and 0b1.toUByte()) == 0b1.toUByte()
         val flags = registers.f.toFlagsRegister()
@@ -422,7 +422,7 @@ class CPU(
 
     private fun res(
         index: Int,
-        target: Register8,
+        target: Operand8,
     ) {
         updateOperand(target) { targetValue ->
             val mask = (0b1 shl index).toUByte().inv()
@@ -432,7 +432,7 @@ class CPU(
 
     private fun set(
         index: Int,
-        target: Register8,
+        target: Operand8,
     ) {
         updateOperand(target) { targetValue ->
             val mask = (0b1 shl index).toUByte()
@@ -441,7 +441,7 @@ class CPU(
     }
 
     private fun srl(
-        target: Register8,
+        target: Operand8,
     ) {
         updateOperand(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
@@ -457,7 +457,7 @@ class CPU(
     }
 
     private fun sra(
-        target: Register8,
+        target: Operand8,
     ) {
         updateOperand(target) { targetValue ->
             val leastSignificantBit = targetValue and 0b1.toUByte()
@@ -477,7 +477,7 @@ class CPU(
     }
 
     private fun sla(
-        target: Register8,
+        target: Operand8,
     ) {
         updateOperand(target) { targetValue ->
             val mostSignificantBit = targetValue and (0b1 shl 7).toUByte()
@@ -495,7 +495,7 @@ class CPU(
     }
 
     private fun swap(
-        target: Register8,
+        target: Operand8,
     ) {
         updateOperand(target) { targetValue ->
             val upperNibble = targetValue and 0xF0.toUByte()
@@ -521,8 +521,8 @@ class CPU(
         val jump = evaluateJumpCondition(condition)
 
         return if (jump) {
-            val leastSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
-            val mostSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
+            val leastSignificantByte = readImmediate8()
+            val mostSignificantByte = readImmediate8()
             ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
         } else {
             // even if we don't need to jump, we need to "consume" the jump's 16 bit address
@@ -535,7 +535,7 @@ class CPU(
         val jump = evaluateJumpCondition(condition)
 
         return if (jump) {
-            val offset = memoryBus.readByte(programCounter.getAndIncrement())
+            val offset = readImmediate8()
             val signedOffset = offset.toByte().toInt()
             programCounter.increaseBy(stepSize = signedOffset)
         } else {
@@ -559,7 +559,7 @@ class CPU(
         require(source is Operand8) { "Invalid load source for 8-bit register: $source" }
         val byteToLoad = when (source) {
             MemoryAtHl -> memoryBus.readByte(registers.hl)
-            Data8 -> memoryBus.readByte(programCounter.getAndIncrement())
+            Data8 -> readImmediate8()
             Register8.A -> registers.a
             Register8.B -> registers.b
             Register8.C -> registers.c
@@ -576,8 +576,8 @@ class CPU(
         target: Register16,
     ) {
         require(source is Data16) { "Invalid load source for 16-bit register: $source" }
-        val leastSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
-        val mostSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
+        val leastSignificantByte = readImmediate8()
+        val mostSignificantByte = readImmediate8()
         val value =
             ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
         updateOperand(target) { value }
@@ -772,6 +772,20 @@ class CPU(
             Register8.H -> registers.h
             Register8.L -> registers.l
         }
+    }
+
+    private fun getOperandValue(
+        target: Operand8,
+    ): UByte {
+        return when (target) {
+            is Register8 -> getRegisterValue(target)
+            MemoryAtHl -> memoryBus.readByte(registers.hl)
+            Data8 -> readImmediate8()
+        }
+    }
+
+    private fun readImmediate8(): UByte {
+        return memoryBus.readByte(programCounter.getAndIncrement())
     }
 
     private fun evaluateJumpCondition(condition: JumpCondition): Boolean {

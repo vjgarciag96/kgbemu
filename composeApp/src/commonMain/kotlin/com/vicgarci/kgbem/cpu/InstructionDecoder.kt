@@ -37,6 +37,7 @@ object InstructionDecoder {
             0b011 -> Register8.E
             0b100 -> Register8.H
             0b101 -> Register8.L
+            0b110 -> MemoryAtHl
             0b111 -> Register8.A
             else -> null
         } ?: return null

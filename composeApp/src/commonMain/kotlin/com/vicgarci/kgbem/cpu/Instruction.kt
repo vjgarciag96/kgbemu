@@ -92,7 +92,7 @@ sealed interface Instruction {
      * Zero and carry flags are set according to result. Subtract and half carry are set to false.
      */
     data class Rr(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     /**
@@ -102,7 +102,7 @@ sealed interface Instruction {
      * Zero and carry flags are set according to result. Subtract and half carry are set to false.
      */
     data class Rrc(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     /**
@@ -120,7 +120,7 @@ sealed interface Instruction {
      * Zero and carry flags are set according to result. Subtract and half carry are set to false.
      */
     data class Rl(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     /**
@@ -130,7 +130,7 @@ sealed interface Instruction {
      * Zero and carry flags are set according to result. Subtract and half carry are set to false.
      */
     data class Rlc(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     /**
@@ -158,7 +158,7 @@ sealed interface Instruction {
      */
     data class Bit(
         val index: Int,
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction {
 
         init {
@@ -174,7 +174,7 @@ sealed interface Instruction {
      */
     data class Res(
         val index: Int,
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction {
 
         init {
@@ -190,7 +190,7 @@ sealed interface Instruction {
      */
     data class Set(
         val index: Int,
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction {
 
         init {
@@ -202,7 +202,7 @@ sealed interface Instruction {
      * Shift right logically register [target].
      */
     data class Srl(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     /**
@@ -213,7 +213,7 @@ sealed interface Instruction {
      * Zero and carry flags are set according to result. Subtract and half carry are set to false.
      */
     data class Sra(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     /**
@@ -224,14 +224,14 @@ sealed interface Instruction {
      * Zero and carry flags are set according to result. Subtract and half carry are set to false.
      */
     data class Sla(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     /**
      * Switch upper and lower nibble (most and least significant 4 bits) of a specific register.
      */
     data class Swap(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     data object Nop : Instruction

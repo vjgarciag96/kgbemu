@@ -193,12 +193,12 @@ class InstructionDecoderTest {
     }
 
     @Test
-    fun decode_cb_hl_target_is_unsupported() {
+    fun decode_cb_hl_target() {
         val instruction = InstructionDecoder.decode(
             instructionByte = 0x06.toUByte(),
             prefixed = true,
         )
 
-        assertEquals(null, instruction)
+        assertEquals(Instruction.Rlc(MemoryAtHl), instruction)
     }
 }
