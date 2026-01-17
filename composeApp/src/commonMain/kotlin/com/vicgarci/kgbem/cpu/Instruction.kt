@@ -319,6 +319,16 @@ sealed interface Instruction {
      * Return from a subroutine and enable interrupts.
      */
     data object RetI : Instruction
+
+    /**
+     * Add signed 8-bit immediate (e8) to SP.
+     */
+    data object AddSp : Instruction
+
+    /**
+     * Load HL with SP plus signed 8-bit immediate (e8).
+     */
+    data object LdHlSpOffset : Instruction
 }
 
 sealed interface Operand

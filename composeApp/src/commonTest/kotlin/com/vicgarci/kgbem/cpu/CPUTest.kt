@@ -134,6 +134,67 @@ class CPUTest {
     }
 
     @Test
+    fun add_sp_signedOffset() {
+        stackPointer.setTo(0xFFF0.toUShort())
+        memory[0] = 0xE8.toUByte() // ADD SP, e8 opcode
+        memory[1] = 0x10.toUByte() // +16
+
+        cpu.step()
+
+        assertEquals(0x0000.toUShort(), stackPointer.get())
+        assertFalse(registers.f.toFlagsRegister().zero)
+        assertFalse(registers.f.toFlagsRegister().subtract)
+        assertTrue(registers.f.toFlagsRegister().carry)
+        assertFalse(registers.f.toFlagsRegister().halfCarry)
+    }
+
+    @Test
+    fun add_sp_wrapAround_setsCarryAndHalfCarry() {
+        stackPointer.setTo(0xFFFE.toUShort())
+        memory[0] = 0xE8.toUByte() // ADD SP, e8 opcode
+        memory[1] = 0x0F.toUByte() // +15
+
+        cpu.step()
+
+        assertEquals(0x000D.toUShort(), stackPointer.get())
+        assertFalse(registers.f.toFlagsRegister().zero)
+        assertFalse(registers.f.toFlagsRegister().subtract)
+        assertTrue(registers.f.toFlagsRegister().carry)
+        assertTrue(registers.f.toFlagsRegister().halfCarry)
+    }
+
+    @Test
+    fun load_hl_sp_signedOffset() {
+        stackPointer.setTo(0x0001.toUShort())
+        memory[0] = 0xF8.toUByte() // LD HL, SP+e8 opcode
+        memory[1] = 0xFE.toUByte() // -2
+
+        cpu.step()
+
+        assertEquals(0xFFFF.toUShort(), registers.hl)
+        assertEquals(0x0001.toUShort(), stackPointer.get())
+        assertFalse(registers.f.toFlagsRegister().zero)
+        assertFalse(registers.f.toFlagsRegister().subtract)
+        assertFalse(registers.f.toFlagsRegister().carry)
+        assertFalse(registers.f.toFlagsRegister().halfCarry)
+    }
+
+    @Test
+    fun load_hl_sp_halfCarry_set() {
+        stackPointer.setTo(0xFFFE.toUShort())
+        memory[0] = 0xF8.toUByte() // LD HL, SP+e8 opcode
+        memory[1] = 0x0F.toUByte() // +15
+
+        cpu.step()
+
+        assertEquals(0x000D.toUShort(), registers.hl)
+        assertFalse(registers.f.toFlagsRegister().zero)
+        assertFalse(registers.f.toFlagsRegister().subtract)
+        assertTrue(registers.f.toFlagsRegister().carry)
+        assertTrue(registers.f.toFlagsRegister().halfCarry)
+    }
+
+    @Test
     fun addWithCarry_carryFalse() {
         cpu.execute(Instruction.AddC(Register8.D))
 

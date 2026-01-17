@@ -100,6 +100,8 @@ class CPU(
             Instruction.DisableInterrupts -> disableGlobalInterrupt()
             Instruction.EnableInterrupts -> enableGlobalInterrupt()
             Instruction.RetI -> returnAndEnableInterrupts()
+            Instruction.AddSp -> addSp()
+            Instruction.LdHlSpOffset -> loadHlSpOffset()
             Instruction.Nop -> Unit
         }
 
@@ -211,6 +213,14 @@ class CPU(
             carry = borrow,
         )
         registers.f = flags.toUByte()
+    }
+
+    private fun addSp() {
+        stackPointer.setTo(addSignedToSp())
+    }
+
+    private fun loadHlSpOffset() {
+        registers.hl = addSignedToSp()
     }
 
     private fun inc(target: Register) {
@@ -832,6 +842,25 @@ class CPU(
     private fun readMemoryAtImmediate16(): UByte {
         val address = readImmediate16()
         return memoryBus.readByte(address)
+    }
+
+    private fun addSignedToSp(): UShort {
+        val offsetByte = readImmediate8()
+        val offsetSigned = offsetByte.toByte().toInt()
+        val spValue = stackPointer.get().toInt()
+        val unsignedOffset = offsetByte.toInt()
+        val halfCarry = ((spValue and 0xF) + (unsignedOffset and 0xF)) > 0xF
+        val carry = ((spValue and 0xFF) + (unsignedOffset and 0xFF)) > 0xFF
+        val result = (spValue + offsetSigned) and 0xFFFF
+
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = halfCarry,
+            carry = carry,
+        ).toUByte()
+
+        return result.toUShort()
     }
 
     private fun readMemoryAtHighData8(): UByte {

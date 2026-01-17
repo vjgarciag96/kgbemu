@@ -238,6 +238,21 @@ class InstructionDecoderTest {
     }
 
     @Test
+    fun decode_sp_offset_ops() {
+        val addSp = InstructionDecoder.decode(
+            instructionByte = 0xE8.toUByte(),
+            prefixed = false,
+        )
+        val ldHlSp = InstructionDecoder.decode(
+            instructionByte = 0xF8.toUByte(),
+            prefixed = false,
+        )
+
+        assertEquals(Instruction.AddSp, addSp)
+        assertEquals(Instruction.LdHlSpOffset, ldHlSp)
+    }
+
+    @Test
     fun decode_cb_rotate_shift_group() {
         val rlc = InstructionDecoder.decode(
             instructionByte = 0x00.toUByte(),

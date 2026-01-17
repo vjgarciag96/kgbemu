@@ -258,6 +258,8 @@ object InstructionDecoder {
             0x37 -> Instruction.Scf
 
             0x27 -> Instruction.Daa
+            0xE8 -> Instruction.AddSp
+            0xF8 -> Instruction.LdHlSpOffset
 
             0x76 -> Instruction.Halt
             0xF3 -> Instruction.DisableInterrupts
