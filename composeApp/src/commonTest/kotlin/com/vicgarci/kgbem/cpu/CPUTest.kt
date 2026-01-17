@@ -33,6 +33,107 @@ class CPUTest {
     )
 
     @Test
+    fun add_immediate() {
+        registers.a = 0x10.toUByte()
+        memory[0] = 0xC6.toUByte() // ADD A, n opcode
+        memory[1] = 0x05.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x15.toUByte(), registers.a)
+    }
+
+    @Test
+    fun adc_immediate() {
+        registers.a = 0x10.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = false,
+            carry = true,
+        ).toUByte()
+        memory[0] = 0xCE.toUByte() // ADC A, n opcode
+        memory[1] = 0x01.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x12.toUByte(), registers.a)
+    }
+
+    @Test
+    fun sub_immediate() {
+        registers.a = 0x10.toUByte()
+        memory[0] = 0xD6.toUByte() // SUB n opcode
+        memory[1] = 0x01.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x0F.toUByte(), registers.a)
+    }
+
+    @Test
+    fun sbc_immediate() {
+        registers.a = 0x10.toUByte()
+        registers.f = FlagsRegister(
+            zero = false,
+            subtract = false,
+            halfCarry = false,
+            carry = true,
+        ).toUByte()
+        memory[0] = 0xDE.toUByte() // SBC A, n opcode
+        memory[1] = 0x01.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x0E.toUByte(), registers.a)
+    }
+
+    @Test
+    fun and_immediate() {
+        registers.a = 0xF0.toUByte()
+        memory[0] = 0xE6.toUByte() // AND n opcode
+        memory[1] = 0x0F.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x00.toUByte(), registers.a)
+    }
+
+    @Test
+    fun xor_immediate() {
+        registers.a = 0xFF.toUByte()
+        memory[0] = 0xEE.toUByte() // XOR n opcode
+        memory[1] = 0x0F.toUByte()
+
+        cpu.step()
+
+        assertEquals(0xF0.toUByte(), registers.a)
+    }
+
+    @Test
+    fun or_immediate() {
+        registers.a = 0xF0.toUByte()
+        memory[0] = 0xF6.toUByte() // OR n opcode
+        memory[1] = 0x0F.toUByte()
+
+        cpu.step()
+
+        assertEquals(0xFF.toUByte(), registers.a)
+    }
+
+    @Test
+    fun cp_immediate() {
+        registers.a = 0x10.toUByte()
+        memory[0] = 0xFE.toUByte() // CP n opcode
+        memory[1] = 0x10.toUByte()
+
+        cpu.step()
+
+        assertTrue(registers.f.toFlagsRegister().zero)
+        assertEquals(0x10.toUByte(), registers.a)
+    }
+
+    @Test
     fun addWithCarry_carryFalse() {
         cpu.execute(Instruction.AddC(Register8.D))
 

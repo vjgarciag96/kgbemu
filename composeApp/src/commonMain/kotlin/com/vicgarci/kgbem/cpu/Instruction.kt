@@ -3,7 +3,7 @@ package com.vicgarci.kgbem.cpu
 sealed interface Instruction {
 
     data class Add(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     data class AddHl(
@@ -14,37 +14,37 @@ sealed interface Instruction {
      * Add with carry
      */
     data class AddC(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     data class Sub(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     /**
      * Subtract with carry
      */
     data class Sbc(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     data class And(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     data class Or(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     data class Xor(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     /**
      * Compare (like subtract, but discarding the result and only setting the flags)
      */
     data class Cp(
-        val target: Register8,
+        val target: Operand8,
     ) : Instruction
 
     /**

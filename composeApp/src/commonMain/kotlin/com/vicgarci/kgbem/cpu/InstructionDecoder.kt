@@ -127,6 +127,15 @@ object InstructionDecoder {
             0xF7 -> Instruction.Rst(0x30.toUByte())
             0xFF -> Instruction.Rst(0x38.toUByte())
 
+            0xC6 -> Instruction.Add(Data8)
+            0xCE -> Instruction.AddC(Data8)
+            0xD6 -> Instruction.Sub(Data8)
+            0xDE -> Instruction.Sbc(Data8)
+            0xE6 -> Instruction.And(Data8)
+            0xEE -> Instruction.Xor(Data8)
+            0xF6 -> Instruction.Or(Data8)
+            0xFE -> Instruction.Cp(Data8)
+
             in 0x80..0xBF -> {
                 val opGroup = (instructionByte.toInt() shr 3) and 0x07
                 val target = instructionByte.toInt() and 0x07

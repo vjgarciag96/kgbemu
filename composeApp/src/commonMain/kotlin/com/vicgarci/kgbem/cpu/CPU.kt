@@ -106,8 +106,8 @@ class CPU(
         return null
     }
 
-    private fun add(target: Register8) {
-        val targetValue = getRegisterValue(target)
+    private fun add(target: Operand8) {
+        val targetValue = getOperandValue(target)
         val (sum, carry, halfCarry) = overflowAdd(
             registers.a,
             targetValue,
@@ -140,9 +140,9 @@ class CPU(
     }
 
     private fun addC(
-        target: Register8
+        target: Operand8
     ) {
-        val targetValue = getRegisterValue(target)
+        val targetValue = getOperandValue(target)
         val carry = if (registers.f.toFlagsRegister().carry) 0x01.toUByte() else 0x00.toUByte()
         val (sum, carryOut, halfCarry) = overflowAdd(registers.a, targetValue, carry)
 
@@ -156,8 +156,8 @@ class CPU(
         registers.f = flags.toUByte()
     }
 
-    private fun sub(target: Register8) {
-        val targetValue = getRegisterValue(target)
+    private fun sub(target: Operand8) {
+        val targetValue = getOperandValue(target)
         val (sub, halfBorrow, borrow) = sub(registers.a, targetValue)
 
         registers.a = sub.toUByte()
@@ -170,8 +170,8 @@ class CPU(
         registers.f = flags.toUByte()
     }
 
-    private fun sbc(target: Register8) {
-        val targetValue = getRegisterValue(target)
+    private fun sbc(target: Operand8) {
+        val targetValue = getOperandValue(target)
         val carry = if (registers.f.toFlagsRegister().carry) 0x01.toUByte() else 0x00.toUByte()
         val (result, halfBorrow, borrow) = sub(registers.a, targetValue, carry)
 
@@ -185,23 +185,23 @@ class CPU(
         registers.f = flags.toUByte()
     }
 
-    private fun and(target: Register8) {
-        val targetValue = getRegisterValue(target)
+    private fun and(target: Operand8) {
+        val targetValue = getOperandValue(target)
         registers.a = registers.a and targetValue
     }
 
-    private fun or(target: Register8) {
-        val targetValue = getRegisterValue(target)
+    private fun or(target: Operand8) {
+        val targetValue = getOperandValue(target)
         registers.a = registers.a or targetValue
     }
 
-    private fun xor(target: Register8) {
-        val targetValue = getRegisterValue(target)
+    private fun xor(target: Operand8) {
+        val targetValue = getOperandValue(target)
         registers.a = registers.a xor targetValue
     }
 
-    private fun cp(target: Register8) {
-        val targetValue = getRegisterValue(target)
+    private fun cp(target: Operand8) {
+        val targetValue = getOperandValue(target)
 
         val (sub, halfBorrow, borrow) = sub(registers.a, targetValue)
         val flags = FlagsRegister(

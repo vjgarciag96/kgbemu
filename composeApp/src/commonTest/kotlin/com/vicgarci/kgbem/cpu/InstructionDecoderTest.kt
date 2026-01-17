@@ -168,6 +168,51 @@ class InstructionDecoderTest {
     }
 
     @Test
+    fun decode_alu_immediates() {
+        val add = InstructionDecoder.decode(
+            instructionByte = 0xC6.toUByte(),
+            prefixed = false,
+        )
+        val adc = InstructionDecoder.decode(
+            instructionByte = 0xCE.toUByte(),
+            prefixed = false,
+        )
+        val sub = InstructionDecoder.decode(
+            instructionByte = 0xD6.toUByte(),
+            prefixed = false,
+        )
+        val sbc = InstructionDecoder.decode(
+            instructionByte = 0xDE.toUByte(),
+            prefixed = false,
+        )
+        val and = InstructionDecoder.decode(
+            instructionByte = 0xE6.toUByte(),
+            prefixed = false,
+        )
+        val xor = InstructionDecoder.decode(
+            instructionByte = 0xEE.toUByte(),
+            prefixed = false,
+        )
+        val or = InstructionDecoder.decode(
+            instructionByte = 0xF6.toUByte(),
+            prefixed = false,
+        )
+        val cp = InstructionDecoder.decode(
+            instructionByte = 0xFE.toUByte(),
+            prefixed = false,
+        )
+
+        assertEquals(Instruction.Add(Data8), add)
+        assertEquals(Instruction.AddC(Data8), adc)
+        assertEquals(Instruction.Sub(Data8), sub)
+        assertEquals(Instruction.Sbc(Data8), sbc)
+        assertEquals(Instruction.And(Data8), and)
+        assertEquals(Instruction.Xor(Data8), xor)
+        assertEquals(Instruction.Or(Data8), or)
+        assertEquals(Instruction.Cp(Data8), cp)
+    }
+
+    @Test
     fun decode_cb_rotate_shift_group() {
         val rlc = InstructionDecoder.decode(
             instructionByte = 0x00.toUByte(),
