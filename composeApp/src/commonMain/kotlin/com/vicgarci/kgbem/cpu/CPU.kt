@@ -559,6 +559,8 @@ class CPU(
             MemoryAtHl -> memoryBus.readByte(registers.hl)
             is MemoryAtRegister16 -> readMemoryAtRegister16(source.register)
             MemoryAtData16 -> readMemoryAtImmediate16()
+            MemoryAtHighData8 -> readMemoryAtHighData8()
+            MemoryAtHighC -> readMemoryAtHighC()
             Data8 -> readImmediate8()
             Register8.A -> registers.a
             Register8.B -> registers.b
@@ -746,6 +748,14 @@ class CPU(
                 val address = readImmediate16()
                 memoryBus.writeByte(address, update(memoryBus.readByte(address)))
             }
+            MemoryAtHighData8 -> {
+                val address = highAddress(readImmediate8())
+                memoryBus.writeByte(address, update(memoryBus.readByte(address)))
+            }
+            MemoryAtHighC -> {
+                val address = highAddress(registers.c)
+                memoryBus.writeByte(address, update(memoryBus.readByte(address)))
+            }
 
             Data8 -> error("Cannot update value of Data8 operand")
         }
@@ -786,6 +796,8 @@ class CPU(
             MemoryAtHl -> memoryBus.readByte(registers.hl)
             is MemoryAtRegister16 -> readMemoryAtRegister16(target.register)
             MemoryAtData16 -> readMemoryAtImmediate16()
+            MemoryAtHighData8 -> readMemoryAtHighData8()
+            MemoryAtHighC -> readMemoryAtHighC()
             Data8 -> readImmediate8()
         }
     }
@@ -820,6 +832,20 @@ class CPU(
     private fun readMemoryAtImmediate16(): UByte {
         val address = readImmediate16()
         return memoryBus.readByte(address)
+    }
+
+    private fun readMemoryAtHighData8(): UByte {
+        val address = highAddress(readImmediate8())
+        return memoryBus.readByte(address)
+    }
+
+    private fun readMemoryAtHighC(): UByte {
+        val address = highAddress(registers.c)
+        return memoryBus.readByte(address)
+    }
+
+    private fun highAddress(offset: UByte): UShort {
+        return (0xFF00 + offset.toInt()).toUShort()
     }
 
     private fun evaluateJumpCondition(condition: JumpCondition): Boolean {

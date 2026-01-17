@@ -245,7 +245,7 @@ sealed interface Instruction {
     ) : Instruction
 
     /**
-     * Load a byte [source] into a register [target].
+     * Load a byte [source] into [target].
      */
     data class Ld(
         val source: Operand,
@@ -363,4 +363,17 @@ data class MemoryAtRegister16(
     val register: Register16,
 ) : Operand8
 
+/**
+ * Represents the memory address in the 16-bit immediate operand (nn).
+ */
 data object MemoryAtData16 : Operand8
+
+/**
+ * Represents the high memory address 0xFF00 + immediate 8-bit offset (n).
+ */
+data object MemoryAtHighData8 : Operand8
+
+/**
+ * Represents the high memory address 0xFF00 + register C.
+ */
+data object MemoryAtHighC : Operand8

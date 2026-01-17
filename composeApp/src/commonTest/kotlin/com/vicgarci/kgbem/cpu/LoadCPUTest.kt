@@ -381,6 +381,50 @@ class LoadCPUTest {
     }
 
     @Test
+    fun load_registerA_into_highMemoryAtImmediate() {
+        registers.a = 0x1A.toUByte()
+        memory[0] = 0xE0.toUByte() // LDH (n), A opcode
+        memory[1] = 0x10.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x1A.toUByte(), memory[0xFF10])
+    }
+
+    @Test
+    fun load_highMemoryAtImmediate_into_registerA() {
+        memory[0xFF20] = 0x2B.toUByte()
+        memory[0] = 0xF0.toUByte() // LDH A, (n) opcode
+        memory[1] = 0x20.toUByte()
+
+        cpu.step()
+
+        assertEquals(0x2B.toUByte(), registers.a)
+    }
+
+    @Test
+    fun load_registerA_into_highMemoryAtC() {
+        registers.a = 0x3C.toUByte()
+        registers.c = 0x30.toUByte()
+        memory[0] = 0xE2.toUByte() // LD (C), A opcode
+
+        cpu.step()
+
+        assertEquals(0x3C.toUByte(), memory[0xFF30])
+    }
+
+    @Test
+    fun load_highMemoryAtC_into_registerA() {
+        registers.c = 0x40.toUByte()
+        memory[0xFF40] = 0x4D.toUByte()
+        memory[0] = 0xF2.toUByte() // LD A, (C) opcode
+
+        cpu.step()
+
+        assertEquals(0x4D.toUByte(), registers.a)
+    }
+
+    @Test
     fun load_memoryAtHL_into_registerB() {
         registers.hl = 0x2000.toUShort()
         memory[0x2000] = 0x55.toUByte() // Value at HL

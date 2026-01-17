@@ -213,6 +213,31 @@ class InstructionDecoderTest {
     }
 
     @Test
+    fun decode_io_loads() {
+        val ldhStore = InstructionDecoder.decode(
+            instructionByte = 0xE0.toUByte(),
+            prefixed = false,
+        )
+        val ldhLoad = InstructionDecoder.decode(
+            instructionByte = 0xF0.toUByte(),
+            prefixed = false,
+        )
+        val ldCStore = InstructionDecoder.decode(
+            instructionByte = 0xE2.toUByte(),
+            prefixed = false,
+        )
+        val ldCLoad = InstructionDecoder.decode(
+            instructionByte = 0xF2.toUByte(),
+            prefixed = false,
+        )
+
+        assertEquals(Instruction.Ld(Register8.A, MemoryAtHighData8), ldhStore)
+        assertEquals(Instruction.Ld(MemoryAtHighData8, Register8.A), ldhLoad)
+        assertEquals(Instruction.Ld(Register8.A, MemoryAtHighC), ldCStore)
+        assertEquals(Instruction.Ld(MemoryAtHighC, Register8.A), ldCLoad)
+    }
+
+    @Test
     fun decode_cb_rotate_shift_group() {
         val rlc = InstructionDecoder.decode(
             instructionByte = 0x00.toUByte(),

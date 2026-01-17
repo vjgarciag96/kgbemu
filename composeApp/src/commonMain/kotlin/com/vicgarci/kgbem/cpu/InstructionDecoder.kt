@@ -87,6 +87,10 @@ object InstructionDecoder {
 
             0xEA -> Instruction.Ld(Register8.A, MemoryAtData16)
             0xFA -> Instruction.Ld(MemoryAtData16, Register8.A)
+            0xE0 -> Instruction.Ld(Register8.A, MemoryAtHighData8)
+            0xF0 -> Instruction.Ld(MemoryAtHighData8, Register8.A)
+            0xE2 -> Instruction.Ld(Register8.A, MemoryAtHighC)
+            0xF2 -> Instruction.Ld(MemoryAtHighC, Register8.A)
 
             0xC1 -> Instruction.Pop(Register16.BC)
             0xD1 -> Instruction.Pop(Register16.DE)
