@@ -358,3 +358,9 @@ data object Data16 : Operand16
  * Represents the memory address pointed by the HL register pair.
  */
 data object MemoryAtHl : Operand8
+
+data class MemoryAtRegister16(
+    val register: Register16,
+) : Operand8
+
+data object MemoryAtData16 : Operand8

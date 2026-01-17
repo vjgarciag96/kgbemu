@@ -521,9 +521,7 @@ class CPU(
         val jump = evaluateJumpCondition(condition)
 
         return if (jump) {
-            val leastSignificantByte = readImmediate8()
-            val mostSignificantByte = readImmediate8()
-            ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
+            readImmediate16()
         } else {
             // even if we don't need to jump, we need to "consume" the jump's 16 bit address
             programCounter.increaseBy(stepSize = 2)
@@ -559,6 +557,8 @@ class CPU(
         require(source is Operand8) { "Invalid load source for 8-bit register: $source" }
         val byteToLoad = when (source) {
             MemoryAtHl -> memoryBus.readByte(registers.hl)
+            is MemoryAtRegister16 -> readMemoryAtRegister16(source.register)
+            MemoryAtData16 -> readMemoryAtImmediate16()
             Data8 -> readImmediate8()
             Register8.A -> registers.a
             Register8.B -> registers.b
@@ -576,11 +576,7 @@ class CPU(
         target: Register16,
     ) {
         require(source is Data16) { "Invalid load source for 16-bit register: $source" }
-        val leastSignificantByte = readImmediate8()
-        val mostSignificantByte = readImmediate8()
-        val value =
-            ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
-        updateOperand(target) { value }
+        updateOperand(target) { readImmediate16() }
     }
 
     private fun pop(target: Register16) {
@@ -742,6 +738,14 @@ class CPU(
                 registers.hl,
                 update(memoryBus.readByte(registers.hl))
             )
+            is MemoryAtRegister16 -> {
+                val address = getRegister16Value(target.register)
+                memoryBus.writeByte(address, update(memoryBus.readByte(address)))
+            }
+            MemoryAtData16 -> {
+                val address = readImmediate16()
+                memoryBus.writeByte(address, update(memoryBus.readByte(address)))
+            }
 
             Data8 -> error("Cannot update value of Data8 operand")
         }
@@ -780,12 +784,42 @@ class CPU(
         return when (target) {
             is Register8 -> getRegisterValue(target)
             MemoryAtHl -> memoryBus.readByte(registers.hl)
+            is MemoryAtRegister16 -> readMemoryAtRegister16(target.register)
+            MemoryAtData16 -> readMemoryAtImmediate16()
             Data8 -> readImmediate8()
+        }
+    }
+
+    private fun getRegister16Value(
+        target: Register16,
+    ): UShort {
+        return when (target) {
+            Register16.AF -> registers.af
+            Register16.BC -> registers.bc
+            Register16.DE -> registers.de
+            Register16.HL -> registers.hl
+            Register16.SP -> stackPointer.get()
         }
     }
 
     private fun readImmediate8(): UByte {
         return memoryBus.readByte(programCounter.getAndIncrement())
+    }
+
+    private fun readImmediate16(): UShort {
+        val leastSignificantByte = readImmediate8()
+        val mostSignificantByte = readImmediate8()
+        return ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
+    }
+
+    private fun readMemoryAtRegister16(register: Register16): UByte {
+        val address = getRegister16Value(register)
+        return memoryBus.readByte(address)
+    }
+
+    private fun readMemoryAtImmediate16(): UByte {
+        val address = readImmediate16()
+        return memoryBus.readByte(address)
     }
 
     private fun evaluateJumpCondition(condition: JumpCondition): Boolean {

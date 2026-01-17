@@ -99,6 +99,17 @@ class LoadCPUTest {
     }
 
     @Test
+    fun load_constant_into_memoryAtHL() {
+        registers.hl = 0x1234.toUShort()
+        memory[0] = 0x36.toUByte() // LD (HL), n opcode
+        memory[1] = 0x99.toUByte() // value to store at HL
+
+        cpu.step()
+
+        assertEquals(0x99.toUByte(), memory[0x1234])
+    }
+
+    @Test
     fun load_constant_intoRegisterBC() {
         memory[0] = 0x01.toUByte() // LD BC, nn opcode
         memory[1] = 0x34.toUByte() // low byte
@@ -299,6 +310,74 @@ class LoadCPUTest {
         cpu.step()
 
         assertEquals(0x42.toUByte(), memory[0x1000]) // Value in A should be stored at HL
+    }
+
+    @Test
+    fun load_registerA_into_memoryAtBC() {
+        registers.bc = 0x2000.toUShort()
+        registers.a = 0x77.toUByte() // Value in A
+        memory[0] = 0x02.toUByte() // LD (BC), A opcode
+
+        cpu.step()
+
+        assertEquals(0x77.toUByte(), memory[0x2000])
+    }
+
+    @Test
+    fun load_registerA_into_memoryAtDE() {
+        registers.de = 0x2001.toUShort()
+        registers.a = 0x88.toUByte() // Value in A
+        memory[0] = 0x12.toUByte() // LD (DE), A opcode
+
+        cpu.step()
+
+        assertEquals(0x88.toUByte(), memory[0x2001])
+    }
+
+    @Test
+    fun load_memoryAtBC_into_registerA() {
+        registers.bc = 0x2002.toUShort()
+        memory[0x2002] = 0x55.toUByte() // Value at BC
+        memory[0] = 0x0A.toUByte() // LD A, (BC) opcode
+
+        cpu.step()
+
+        assertEquals(0x55.toUByte(), registers.a)
+    }
+
+    @Test
+    fun load_memoryAtDE_into_registerA() {
+        registers.de = 0x2003.toUShort()
+        memory[0x2003] = 0x66.toUByte() // Value at DE
+        memory[0] = 0x1A.toUByte() // LD A, (DE) opcode
+
+        cpu.step()
+
+        assertEquals(0x66.toUByte(), registers.a)
+    }
+
+    @Test
+    fun load_registerA_into_memoryAtImmediate() {
+        registers.a = 0x5A.toUByte() // Value in A
+        memory[0] = 0xEA.toUByte() // LD (nn), A opcode
+        memory[1] = 0x34.toUByte() // low byte
+        memory[2] = 0x12.toUByte() // high byte
+
+        cpu.step()
+
+        assertEquals(0x5A.toUByte(), memory[0x1234])
+    }
+
+    @Test
+    fun load_memoryAtImmediate_into_registerA() {
+        memory[0x5678] = 0xAB.toUByte() // Value at nn
+        memory[0] = 0xFA.toUByte() // LD A, (nn) opcode
+        memory[1] = 0x78.toUByte() // low byte
+        memory[2] = 0x56.toUByte() // high byte
+
+        cpu.step()
+
+        assertEquals(0xAB.toUByte(), registers.a)
     }
 
     @Test

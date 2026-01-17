@@ -128,6 +128,46 @@ class InstructionDecoderTest {
     }
 
     @Test
+    fun decode_load_indirects() {
+        val ldHlImmediate = InstructionDecoder.decode(
+            instructionByte = 0x36.toUByte(),
+            prefixed = false,
+        )
+        val ldBcA = InstructionDecoder.decode(
+            instructionByte = 0x02.toUByte(),
+            prefixed = false,
+        )
+        val ldDeA = InstructionDecoder.decode(
+            instructionByte = 0x12.toUByte(),
+            prefixed = false,
+        )
+        val ldABc = InstructionDecoder.decode(
+            instructionByte = 0x0A.toUByte(),
+            prefixed = false,
+        )
+        val ldADe = InstructionDecoder.decode(
+            instructionByte = 0x1A.toUByte(),
+            prefixed = false,
+        )
+        val ldAbsoluteA = InstructionDecoder.decode(
+            instructionByte = 0xEA.toUByte(),
+            prefixed = false,
+        )
+        val ldAAbsolute = InstructionDecoder.decode(
+            instructionByte = 0xFA.toUByte(),
+            prefixed = false,
+        )
+
+        assertEquals(Instruction.Ld(Data8, MemoryAtHl), ldHlImmediate)
+        assertEquals(Instruction.Ld(Register8.A, MemoryAtRegister16(Register16.BC)), ldBcA)
+        assertEquals(Instruction.Ld(Register8.A, MemoryAtRegister16(Register16.DE)), ldDeA)
+        assertEquals(Instruction.Ld(MemoryAtRegister16(Register16.BC), Register8.A), ldABc)
+        assertEquals(Instruction.Ld(MemoryAtRegister16(Register16.DE), Register8.A), ldADe)
+        assertEquals(Instruction.Ld(Register8.A, MemoryAtData16), ldAbsoluteA)
+        assertEquals(Instruction.Ld(MemoryAtData16, Register8.A), ldAAbsolute)
+    }
+
+    @Test
     fun decode_cb_rotate_shift_group() {
         val rlc = InstructionDecoder.decode(
             instructionByte = 0x00.toUByte(),
