@@ -195,6 +195,60 @@ class CPUTest {
     }
 
     @Test
+    fun addHlBc_halfCarry() {
+        registers.hl = 0x0FFF.toUShort()
+        registers.bc = 0x0001.toUShort()
+        memory[0] = 0x09.toUByte() // ADD HL, BC opcode
+        registers.f = FlagsRegister(
+            zero = true,
+            subtract = true,
+            halfCarry = false,
+            carry = false,
+        ).toUByte()
+
+        cpu.step()
+
+        assertEquals(0x1000.toUShort(), registers.hl)
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.zero)
+        assertFalse(flags.subtract)
+        assertTrue(flags.halfCarry)
+        assertFalse(flags.carry)
+    }
+
+    @Test
+    fun addHlSp_carry() {
+        registers.hl = 0xFFFF.toUShort()
+        stackPointer.setTo(0x0001.toUShort())
+        memory[0] = 0x39.toUByte() // ADD HL, SP opcode
+        registers.f = FlagsRegister(
+            zero = true,
+            subtract = true,
+            halfCarry = false,
+            carry = false,
+        ).toUByte()
+
+        cpu.step()
+
+        assertEquals(0x0000.toUShort(), registers.hl)
+        val flags = registers.f.toFlagsRegister()
+        assertTrue(flags.zero)
+        assertFalse(flags.subtract)
+        assertTrue(flags.halfCarry)
+        assertTrue(flags.carry)
+    }
+
+    @Test
+    fun loadSpHl() {
+        registers.hl = 0x2468.toUShort()
+        memory[0] = 0xF9.toUByte() // LD SP, HL opcode
+
+        cpu.step()
+
+        assertEquals(0x2468.toUShort(), stackPointer.get())
+    }
+
+    @Test
     fun addWithCarry_carryFalse() {
         cpu.execute(Instruction.AddC(Register8.D))
 

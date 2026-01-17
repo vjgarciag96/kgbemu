@@ -7,7 +7,7 @@ sealed interface Instruction {
     ) : Instruction
 
     data class AddHl(
-        val target: Register8,
+        val target: Register16,
     ) : Instruction
 
     /**
@@ -329,6 +329,11 @@ sealed interface Instruction {
      * Load HL with SP plus signed 8-bit immediate (e8).
      */
     data object LdHlSpOffset : Instruction
+
+    /**
+     * Load SP with HL.
+     */
+    data object LdSpHl : Instruction
 }
 
 sealed interface Operand

@@ -253,6 +253,36 @@ class InstructionDecoderTest {
     }
 
     @Test
+    fun decode_add_hl_rr_and_ld_sp_hl() {
+        val addHlBc = InstructionDecoder.decode(
+            instructionByte = 0x09.toUByte(),
+            prefixed = false,
+        )
+        val addHlDe = InstructionDecoder.decode(
+            instructionByte = 0x19.toUByte(),
+            prefixed = false,
+        )
+        val addHlHl = InstructionDecoder.decode(
+            instructionByte = 0x29.toUByte(),
+            prefixed = false,
+        )
+        val addHlSp = InstructionDecoder.decode(
+            instructionByte = 0x39.toUByte(),
+            prefixed = false,
+        )
+        val ldSpHl = InstructionDecoder.decode(
+            instructionByte = 0xF9.toUByte(),
+            prefixed = false,
+        )
+
+        assertEquals(Instruction.AddHl(Register16.BC), addHlBc)
+        assertEquals(Instruction.AddHl(Register16.DE), addHlDe)
+        assertEquals(Instruction.AddHl(Register16.HL), addHlHl)
+        assertEquals(Instruction.AddHl(Register16.SP), addHlSp)
+        assertEquals(Instruction.LdSpHl, ldSpHl)
+    }
+
+    @Test
     fun decode_cb_rotate_shift_group() {
         val rlc = InstructionDecoder.decode(
             instructionByte = 0x00.toUByte(),

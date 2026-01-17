@@ -215,6 +215,7 @@ object InstructionDecoder {
             0x11 -> Instruction.Ld(Data16, Register16.DE)
             0x21 -> Instruction.Ld(Data16, Register16.HL)
             0x31 -> Instruction.Ld(Data16, Register16.SP)
+            0xF9 -> Instruction.LdSpHl
 
             in LD_R8HL_R8_OPCODES -> {
                 val source = instructionByte.toInt() and 0x07
@@ -260,6 +261,10 @@ object InstructionDecoder {
             0x27 -> Instruction.Daa
             0xE8 -> Instruction.AddSp
             0xF8 -> Instruction.LdHlSpOffset
+            0x09 -> Instruction.AddHl(Register16.BC)
+            0x19 -> Instruction.AddHl(Register16.DE)
+            0x29 -> Instruction.AddHl(Register16.HL)
+            0x39 -> Instruction.AddHl(Register16.SP)
 
             0x76 -> Instruction.Halt
             0xF3 -> Instruction.DisableInterrupts

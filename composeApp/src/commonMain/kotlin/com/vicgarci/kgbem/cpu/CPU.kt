@@ -102,6 +102,7 @@ class CPU(
             Instruction.RetI -> returnAndEnableInterrupts()
             Instruction.AddSp -> addSp()
             Instruction.LdHlSpOffset -> loadHlSpOffset()
+            Instruction.LdSpHl -> loadSpHl()
             Instruction.Nop -> Unit
         }
 
@@ -124,16 +125,15 @@ class CPU(
         registers.f = flags.toUByte()
     }
 
-    private fun addHl(target: Register8) {
-        val targetValue = getRegisterValue(target)
+    private fun addHl(target: Register16) {
+        val targetValue = getRegister16Value(target)
         val (sum, carry, halfCarry) = overflowAdd(
             registers.hl,
-            targetValue.toUShort(),
+            targetValue,
         )
 
         registers.hl = sum
-        val flags = FlagsRegister(
-            zero = sum == 0.toUShort(),
+        val flags = registers.f.toFlagsRegister().copy(
             subtract = false,
             halfCarry = halfCarry,
             carry = carry,
@@ -221,6 +221,10 @@ class CPU(
 
     private fun loadHlSpOffset() {
         registers.hl = addSignedToSp()
+    }
+
+    private fun loadSpHl() {
+        stackPointer.setTo(registers.hl)
     }
 
     private fun inc(target: Register) {
