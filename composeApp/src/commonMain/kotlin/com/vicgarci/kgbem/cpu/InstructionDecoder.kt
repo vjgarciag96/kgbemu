@@ -28,7 +28,42 @@ object InstructionDecoder {
     }
 
     private fun decodePrefixed(instructionByte: UByte): Instruction? {
-        return null
+        // Bits 0..2 encode the target register (B,C,D,E,H,L,(HL),A).
+        val target = instructionByte.toInt() and 0x07
+        val targetRegister = when (target) {
+            0b000 -> Register8.B
+            0b001 -> Register8.C
+            0b010 -> Register8.D
+            0b011 -> Register8.E
+            0b100 -> Register8.H
+            0b101 -> Register8.L
+            0b111 -> Register8.A
+            else -> null
+        } ?: return null
+
+        // Bits 6..7 select the opcode group; bits 3..5 select op/bit index.
+        val opGroup = (instructionByte.toInt() ushr 6) and 0x03
+        val operation = (instructionByte.toInt() ushr 3) and 0x07
+
+        return when (opGroup) {
+            0b00 -> {
+                when (operation) {
+                    0b000 -> Instruction.Rlc(targetRegister)
+                    0b001 -> Instruction.Rrc(targetRegister)
+                    0b010 -> Instruction.Rl(targetRegister)
+                    0b011 -> Instruction.Rr(targetRegister)
+                    0b100 -> Instruction.Sla(targetRegister)
+                    0b101 -> Instruction.Sra(targetRegister)
+                    0b110 -> Instruction.Swap(targetRegister)
+                    0b111 -> Instruction.Srl(targetRegister)
+                    else -> null
+                }
+            }
+            0b01 -> Instruction.Bit(operation, targetRegister)
+            0b10 -> Instruction.Res(operation, targetRegister)
+            0b11 -> Instruction.Set(operation, targetRegister)
+            else -> null
+        }
     }
 
     private fun decodeNotPrefixed(

@@ -126,4 +126,79 @@ class InstructionDecoderTest {
         assertEquals(Instruction.Dec(Register8.H), instructions[4])
         assertEquals(Instruction.Dec(Register8.L), instructions[5])
     }
+
+    @Test
+    fun decode_cb_rotate_shift_group() {
+        val rlc = InstructionDecoder.decode(
+            instructionByte = 0x00.toUByte(),
+            prefixed = true,
+        )
+        val rrc = InstructionDecoder.decode(
+            instructionByte = 0x09.toUByte(),
+            prefixed = true,
+        )
+        val rl = InstructionDecoder.decode(
+            instructionByte = 0x12.toUByte(),
+            prefixed = true,
+        )
+        val rr = InstructionDecoder.decode(
+            instructionByte = 0x1B.toUByte(),
+            prefixed = true,
+        )
+        val sla = InstructionDecoder.decode(
+            instructionByte = 0x24.toUByte(),
+            prefixed = true,
+        )
+        val sra = InstructionDecoder.decode(
+            instructionByte = 0x2D.toUByte(),
+            prefixed = true,
+        )
+        val swap = InstructionDecoder.decode(
+            instructionByte = 0x35.toUByte(),
+            prefixed = true,
+        )
+        val srl = InstructionDecoder.decode(
+            instructionByte = 0x3F.toUByte(),
+            prefixed = true,
+        )
+
+        assertEquals(Instruction.Rlc(Register8.B), rlc)
+        assertEquals(Instruction.Rrc(Register8.C), rrc)
+        assertEquals(Instruction.Rl(Register8.D), rl)
+        assertEquals(Instruction.Rr(Register8.E), rr)
+        assertEquals(Instruction.Sla(Register8.H), sla)
+        assertEquals(Instruction.Sra(Register8.L), sra)
+        assertEquals(Instruction.Swap(Register8.L), swap)
+        assertEquals(Instruction.Srl(Register8.A), srl)
+    }
+
+    @Test
+    fun decode_cb_bit_res_set_groups() {
+        val bit = InstructionDecoder.decode(
+            instructionByte = 0x7C.toUByte(),
+            prefixed = true,
+        )
+        val res = InstructionDecoder.decode(
+            instructionByte = 0x84.toUByte(),
+            prefixed = true,
+        )
+        val set = InstructionDecoder.decode(
+            instructionByte = 0xFF.toUByte(),
+            prefixed = true,
+        )
+
+        assertEquals(Instruction.Bit(7, Register8.H), bit)
+        assertEquals(Instruction.Res(0, Register8.H), res)
+        assertEquals(Instruction.Set(7, Register8.A), set)
+    }
+
+    @Test
+    fun decode_cb_hl_target_is_unsupported() {
+        val instruction = InstructionDecoder.decode(
+            instructionByte = 0x06.toUByte(),
+            prefixed = true,
+        )
+
+        assertEquals(null, instruction)
+    }
 }
