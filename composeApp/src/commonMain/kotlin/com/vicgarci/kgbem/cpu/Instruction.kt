@@ -317,6 +317,10 @@ sealed interface Instruction {
      * Halt the CPU until an interrupt occurs.
      */
     data object Halt : Instruction
+    /**
+     * Stop the CPU (used for low-power mode).
+     */
+    data object Stop : Instruction
     data object DisableInterrupts : Instruction
     data object EnableInterrupts : Instruction
 

@@ -269,6 +269,7 @@ object InstructionDecoder {
             0x39 -> Instruction.AddHl(Register16.SP)
 
             0x76 -> Instruction.Halt
+            0x10 -> Instruction.Stop
             0xF3 -> Instruction.DisableInterrupts
             0xFB -> Instruction.EnableInterrupts
 

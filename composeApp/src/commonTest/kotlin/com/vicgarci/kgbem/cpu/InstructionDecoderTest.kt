@@ -293,6 +293,16 @@ class InstructionDecoderTest {
     }
 
     @Test
+    fun decode_stop() {
+        val stop = InstructionDecoder.decode(
+            instructionByte = 0x10.toUByte(),
+            prefixed = false,
+        )
+
+        assertEquals(Instruction.Stop, stop)
+    }
+
+    @Test
     fun decode_cb_rotate_shift_group() {
         val rlc = InstructionDecoder.decode(
             instructionByte = 0x00.toUByte(),

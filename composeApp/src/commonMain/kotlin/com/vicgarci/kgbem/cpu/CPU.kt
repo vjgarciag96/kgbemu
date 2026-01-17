@@ -98,6 +98,7 @@ class CPU(
             Instruction.LdIncHLA -> loadIncHla()
             Instruction.Daa -> daa()
             Instruction.Halt -> halt()
+            Instruction.Stop -> stop()
             Instruction.DisableInterrupts -> disableGlobalInterrupt()
             Instruction.EnableInterrupts -> enableGlobalInterrupt()
             Instruction.RetI -> returnAndEnableInterrupts()
@@ -904,6 +905,10 @@ class CPU(
     }
 
     private fun halt() {
+        halted = true
+    }
+
+    private fun stop() {
         halted = true
     }
 
