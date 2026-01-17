@@ -84,6 +84,7 @@ class CPU(
             is Instruction.Sla -> sla(instruction.target)
             is Instruction.Swap -> swap(instruction.target)
             is Instruction.Jp -> return jump(instruction.condition)
+            Instruction.JpHl -> return registers.hl
             is Instruction.Ld -> load(instruction.source, instruction.target)
             is Instruction.Pop -> pop(instruction.target)
             is Instruction.Push -> push(instruction.target)

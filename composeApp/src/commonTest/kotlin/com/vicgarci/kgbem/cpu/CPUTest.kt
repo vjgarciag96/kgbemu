@@ -275,6 +275,16 @@ class CPUTest {
     }
 
     @Test
+    fun jump_hl_setsProgramCounter() {
+        registers.hl = 0x2345.toUShort()
+        memory[0] = 0xE9.toUByte() // JP (HL) opcode
+
+        cpu.step()
+
+        assertEquals(0x2345.toUShort(), programCounter.get())
+    }
+
+    @Test
     fun addWithCarry_carryFalse() {
         cpu.execute(Instruction.AddC(Register8.D))
 

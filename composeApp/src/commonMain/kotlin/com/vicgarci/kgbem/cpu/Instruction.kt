@@ -245,6 +245,11 @@ sealed interface Instruction {
     ) : Instruction
 
     /**
+     * Jump to address contained in HL.
+     */
+    data object JpHl : Instruction
+
+    /**
      * Load a byte [source] into [target].
      */
     data class Ld(
