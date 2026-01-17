@@ -249,6 +249,32 @@ class CPUTest {
     }
 
     @Test
+    fun storeSpAtImmediate() {
+        stackPointer.setTo(0xBEEF.toUShort())
+        memory[0] = 0x08.toUByte() // LD (nn), SP opcode
+        memory[1] = 0x00.toUByte() // low byte
+        memory[2] = 0xC0.toUByte() // high byte
+
+        cpu.step()
+
+        assertEquals(0xEF.toUByte(), memory[0xC000])
+        assertEquals(0xBE.toUByte(), memory[0xC001])
+    }
+
+    @Test
+    fun storeSpAtImmediate_wrapsAddress() {
+        stackPointer.setTo(0x1234.toUShort())
+        memory[0] = 0x08.toUByte() // LD (nn), SP opcode
+        memory[1] = 0xFF.toUByte() // low byte
+        memory[2] = 0xFF.toUByte() // high byte
+
+        cpu.step()
+
+        assertEquals(0x34.toUByte(), memory[0xFFFF])
+        assertEquals(0x12.toUByte(), memory[0x0000])
+    }
+
+    @Test
     fun addWithCarry_carryFalse() {
         cpu.execute(Instruction.AddC(Register8.D))
 

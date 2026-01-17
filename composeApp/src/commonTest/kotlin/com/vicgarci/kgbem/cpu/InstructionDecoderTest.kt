@@ -274,12 +274,17 @@ class InstructionDecoderTest {
             instructionByte = 0xF9.toUByte(),
             prefixed = false,
         )
+        val ldSpIntoMemory = InstructionDecoder.decode(
+            instructionByte = 0x08.toUByte(),
+            prefixed = false,
+        )
 
         assertEquals(Instruction.AddHl(Register16.BC), addHlBc)
         assertEquals(Instruction.AddHl(Register16.DE), addHlDe)
         assertEquals(Instruction.AddHl(Register16.HL), addHlHl)
         assertEquals(Instruction.AddHl(Register16.SP), addHlSp)
         assertEquals(Instruction.LdSpHl, ldSpHl)
+        assertEquals(Instruction.LdMemoryAtData16Sp, ldSpIntoMemory)
     }
 
     @Test

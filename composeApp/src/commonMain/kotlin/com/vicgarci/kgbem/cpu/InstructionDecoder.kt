@@ -215,6 +215,7 @@ object InstructionDecoder {
             0x11 -> Instruction.Ld(Data16, Register16.DE)
             0x21 -> Instruction.Ld(Data16, Register16.HL)
             0x31 -> Instruction.Ld(Data16, Register16.SP)
+            0x08 -> Instruction.LdMemoryAtData16Sp
             0xF9 -> Instruction.LdSpHl
 
             in LD_R8HL_R8_OPCODES -> {

@@ -103,6 +103,7 @@ class CPU(
             Instruction.AddSp -> addSp()
             Instruction.LdHlSpOffset -> loadHlSpOffset()
             Instruction.LdSpHl -> loadSpHl()
+            Instruction.LdMemoryAtData16Sp -> storeSpAtImmediate()
             Instruction.Nop -> Unit
         }
 
@@ -225,6 +226,15 @@ class CPU(
 
     private fun loadSpHl() {
         stackPointer.setTo(registers.hl)
+    }
+
+    private fun storeSpAtImmediate() {
+        val address = readImmediate16()
+        val sp = stackPointer.get()
+        val low = (sp.toInt() and 0x00FF).toUByte()
+        val high = ((sp.toInt() and 0xFF00) ushr 8).toUByte()
+        memoryBus.writeByte(address, low)
+        memoryBus.writeByte((address + 1u).toUShort(), high)
     }
 
     private fun inc(target: Register) {

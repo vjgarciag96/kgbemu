@@ -334,6 +334,11 @@ sealed interface Instruction {
      * Load SP with HL.
      */
     data object LdSpHl : Instruction
+
+    /**
+     * Store SP at the 16-bit immediate address (nn), low byte first.
+     */
+    data object LdMemoryAtData16Sp : Instruction
 }
 
 sealed interface Operand
