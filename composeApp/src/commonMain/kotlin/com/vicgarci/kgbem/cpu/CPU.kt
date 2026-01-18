@@ -36,14 +36,9 @@ class CPU(
             instructionByte = memoryBus.readByte((programCounter.getAndIncrement()))
         }
 
-        val address =
-            when (val instruction = InstructionDecoder.decode(instructionByte, prefixed)) {
-                is Instruction -> execute(instruction)
-                null -> error("Invalid instruction $instructionByte")
-            }
-
-        if (address != null) {
-            programCounter.setTo(address)
+        when (val instruction = InstructionDecoder.decode(instructionByte, prefixed)) {
+            is Instruction -> execute(instruction)
+            null -> error("Invalid instruction $instructionByte")
         }
 
         if (enableGlobalInterruptPending) {
@@ -52,7 +47,7 @@ class CPU(
         }
     }
 
-    fun execute(instruction: Instruction): UShort? {
+    fun execute(instruction: Instruction) {
         when (instruction) {
             is Instruction.Add -> add(instruction.target)
             is Instruction.AddHl -> addHl(instruction.target)
@@ -83,12 +78,12 @@ class CPU(
             is Instruction.Sra -> sra(instruction.target)
             is Instruction.Sla -> sla(instruction.target)
             is Instruction.Swap -> swap(instruction.target)
-            is Instruction.Jp -> return jump(instruction.condition)
-            Instruction.JpHl -> return registers.hl
+            is Instruction.Jp -> jump(instruction.condition)
+            Instruction.JpHl -> jumpHl()
             is Instruction.Ld -> load(instruction.source, instruction.target)
             is Instruction.Pop -> pop(instruction.target)
             is Instruction.Push -> push(instruction.target)
-            is Instruction.Call -> return call(instruction.condition)
+            is Instruction.Call -> call(instruction.condition)
             is Instruction.Ret -> ret(instruction.condition)
             is Instruction.Jr -> jumpRelative(instruction.condition)
             is Instruction.Rst -> rst(instruction.address)
@@ -108,8 +103,6 @@ class CPU(
             Instruction.LdMemoryAtData16Sp -> storeSpAtImmediate()
             Instruction.Nop -> Unit
         }
-
-        return null
     }
 
     private fun add(target: Operand8) {
@@ -543,15 +536,15 @@ class CPU(
         }
     }
 
-    private fun jump(condition: JumpCondition): UShort? {
+    private fun jump(condition: JumpCondition) {
         val jump = evaluateJumpCondition(condition)
 
-        return if (jump) {
-            readImmediate16()
+        if (jump) {
+            val address = readImmediate16()
+            programCounter.setTo(address)
         } else {
             // even if we don't need to jump, we need to "consume" the jump's 16 bit address
             programCounter.increaseBy(stepSize = 2)
-            null
         }
     }
 
@@ -566,6 +559,10 @@ class CPU(
             // even if we don't need to jump, we need to "consume" the jump's 8 bit address
             programCounter.increaseBy(stepSize = 1)
         }
+    }
+
+    private fun jumpHl() {
+        programCounter.setTo(registers.hl)
     }
 
     private fun load(source: Operand, target: Operand) {
@@ -663,10 +660,10 @@ class CPU(
         }
     }
 
-    private fun call(condition: JumpCondition): UShort? {
+    private fun call(condition: JumpCondition) {
         val call = evaluateJumpCondition(condition)
 
-        return if (call) {
+        if (call) {
             // read address to call
             val leastSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
             val mostSignificantByte = memoryBus.readByte(programCounter.getAndIncrement())
@@ -675,11 +672,10 @@ class CPU(
 
             pushProgramCounterToStack()
 
-            address
+            programCounter.setTo(address)
         } else {
             // even if we don't need to call, we need to "consume" the call's 16 bit address
             programCounter.increaseBy(stepSize = 2)
-            null
         }
     }
 
@@ -766,18 +762,22 @@ class CPU(
                 registers.hl,
                 update(memoryBus.readByte(registers.hl))
             )
+
             is MemoryAtRegister16 -> {
                 val address = getRegister16Value(target.register)
                 memoryBus.writeByte(address, update(memoryBus.readByte(address)))
             }
+
             MemoryAtData16 -> {
                 val address = readImmediate16()
                 memoryBus.writeByte(address, update(memoryBus.readByte(address)))
             }
+
             MemoryAtHighData8 -> {
                 val address = highAddress(readImmediate8())
                 memoryBus.writeByte(address, update(memoryBus.readByte(address)))
             }
+
             MemoryAtHighC -> {
                 val address = highAddress(registers.c)
                 memoryBus.writeByte(address, update(memoryBus.readByte(address)))
