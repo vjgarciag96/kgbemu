@@ -158,13 +158,13 @@ class InstructionDecoderTest {
             prefixed = false,
         )
 
-        assertEquals(Instruction.Ld(Data8, MemoryAtHl), ldHlImmediate)
-        assertEquals(Instruction.Ld(Register8.A, MemoryAtRegister16(Register16.BC)), ldBcA)
-        assertEquals(Instruction.Ld(Register8.A, MemoryAtRegister16(Register16.DE)), ldDeA)
-        assertEquals(Instruction.Ld(MemoryAtRegister16(Register16.BC), Register8.A), ldABc)
-        assertEquals(Instruction.Ld(MemoryAtRegister16(Register16.DE), Register8.A), ldADe)
-        assertEquals(Instruction.Ld(Register8.A, MemoryAtData16), ldAbsoluteA)
-        assertEquals(Instruction.Ld(MemoryAtData16, Register8.A), ldAAbsolute)
+        assertEquals(Instruction.Ld8(Data8, MemoryAtHl), ldHlImmediate)
+        assertEquals(Instruction.Ld8(Register8.A, MemoryAtRegister16(Register16.BC)), ldBcA)
+        assertEquals(Instruction.Ld8(Register8.A, MemoryAtRegister16(Register16.DE)), ldDeA)
+        assertEquals(Instruction.Ld8(MemoryAtRegister16(Register16.BC), Register8.A), ldABc)
+        assertEquals(Instruction.Ld8(MemoryAtRegister16(Register16.DE), Register8.A), ldADe)
+        assertEquals(Instruction.Ld8(Register8.A, MemoryAtData16), ldAbsoluteA)
+        assertEquals(Instruction.Ld8(MemoryAtData16, Register8.A), ldAAbsolute)
     }
 
     @Test
@@ -231,10 +231,10 @@ class InstructionDecoderTest {
             prefixed = false,
         )
 
-        assertEquals(Instruction.Ld(Register8.A, MemoryAtHighData8), ldhStore)
-        assertEquals(Instruction.Ld(MemoryAtHighData8, Register8.A), ldhLoad)
-        assertEquals(Instruction.Ld(Register8.A, MemoryAtHighC), ldCStore)
-        assertEquals(Instruction.Ld(MemoryAtHighC, Register8.A), ldCLoad)
+        assertEquals(Instruction.Ld8(Register8.A, MemoryAtHighData8), ldhStore)
+        assertEquals(Instruction.Ld8(MemoryAtHighData8, Register8.A), ldhLoad)
+        assertEquals(Instruction.Ld8(Register8.A, MemoryAtHighC), ldCStore)
+        assertEquals(Instruction.Ld8(MemoryAtHighC, Register8.A), ldCLoad)
     }
 
     @Test

@@ -71,26 +71,26 @@ object InstructionDecoder {
         instructionByte: UByte,
     ): Instruction? {
         return when (instructionByte.toInt()) {
-            0x06 -> Instruction.Ld(Data8, Register8.B)
-            0x0E -> Instruction.Ld(Data8, Register8.C)
-            0x16 -> Instruction.Ld(Data8, Register8.D)
-            0x1E -> Instruction.Ld(Data8, Register8.E)
-            0x26 -> Instruction.Ld(Data8, Register8.H)
-            0x2E -> Instruction.Ld(Data8, Register8.L)
-            0x3E -> Instruction.Ld(Data8, Register8.A)
-            0x36 -> Instruction.Ld(Data8, MemoryAtHl)
+            0x06 -> Instruction.Ld8(Data8, Register8.B)
+            0x0E -> Instruction.Ld8(Data8, Register8.C)
+            0x16 -> Instruction.Ld8(Data8, Register8.D)
+            0x1E -> Instruction.Ld8(Data8, Register8.E)
+            0x26 -> Instruction.Ld8(Data8, Register8.H)
+            0x2E -> Instruction.Ld8(Data8, Register8.L)
+            0x3E -> Instruction.Ld8(Data8, Register8.A)
+            0x36 -> Instruction.Ld8(Data8, MemoryAtHl)
 
-            0x02 -> Instruction.Ld(Register8.A, MemoryAtRegister16(Register16.BC))
-            0x12 -> Instruction.Ld(Register8.A, MemoryAtRegister16(Register16.DE))
-            0x0A -> Instruction.Ld(MemoryAtRegister16(Register16.BC), Register8.A)
-            0x1A -> Instruction.Ld(MemoryAtRegister16(Register16.DE), Register8.A)
+            0x02 -> Instruction.Ld8(Register8.A, MemoryAtRegister16(Register16.BC))
+            0x12 -> Instruction.Ld8(Register8.A, MemoryAtRegister16(Register16.DE))
+            0x0A -> Instruction.Ld8(MemoryAtRegister16(Register16.BC), Register8.A)
+            0x1A -> Instruction.Ld8(MemoryAtRegister16(Register16.DE), Register8.A)
 
-            0xEA -> Instruction.Ld(Register8.A, MemoryAtData16)
-            0xFA -> Instruction.Ld(MemoryAtData16, Register8.A)
-            0xE0 -> Instruction.Ld(Register8.A, MemoryAtHighData8)
-            0xF0 -> Instruction.Ld(MemoryAtHighData8, Register8.A)
-            0xE2 -> Instruction.Ld(Register8.A, MemoryAtHighC)
-            0xF2 -> Instruction.Ld(MemoryAtHighC, Register8.A)
+            0xEA -> Instruction.Ld8(Register8.A, MemoryAtData16)
+            0xFA -> Instruction.Ld8(MemoryAtData16, Register8.A)
+            0xE0 -> Instruction.Ld8(Register8.A, MemoryAtHighData8)
+            0xF0 -> Instruction.Ld8(MemoryAtHighData8, Register8.A)
+            0xE2 -> Instruction.Ld8(Register8.A, MemoryAtHighC)
+            0xF2 -> Instruction.Ld8(MemoryAtHighC, Register8.A)
 
             0xC1 -> Instruction.Pop(Register16.BC)
             0xD1 -> Instruction.Pop(Register16.DE)
@@ -212,10 +212,10 @@ object InstructionDecoder {
             0xDA -> Jp(JumpCondition.CARRY)
             0xE9 -> Instruction.JpHl
 
-            0x01 -> Instruction.Ld(Data16, Register16.BC)
-            0x11 -> Instruction.Ld(Data16, Register16.DE)
-            0x21 -> Instruction.Ld(Data16, Register16.HL)
-            0x31 -> Instruction.Ld(Data16, Register16.SP)
+            0x01 -> Instruction.Ld16(Register16.BC)
+            0x11 -> Instruction.Ld16(Register16.DE)
+            0x21 -> Instruction.Ld16(Register16.HL)
+            0x31 -> Instruction.Ld16(Register16.SP)
             0x08 -> Instruction.LdMemoryAtData16Sp
             0xF9 -> Instruction.LdSpHl
 
@@ -247,7 +247,7 @@ object InstructionDecoder {
                     else -> error("Invalid target register $target")
                 }
 
-                Instruction.Ld(sourceRegister, targetRegister)
+                Instruction.Ld8(sourceRegister, targetRegister)
             }
 
             0x22 -> Instruction.LdIncHLA

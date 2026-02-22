@@ -249,31 +249,35 @@ sealed interface Instruction {
      */
     data object JpHl : Instruction
 
+    data class Ld8(
+        val source: Operand8,
+        val target: Operand8,
+    ) : LoadInstruction
+
     /**
-     * Load a byte [source] into [target].
+     * Load a 16-bit value from immediate memory into a 16-bit register [target].
      */
-    data class Ld(
-        val source: Operand,
-        val target: Operand,
-    ) : Instruction
+    data class Ld16(
+        val target: Register16,
+    ) : LoadInstruction
 
     /**
      * Load the value of register A into the memory address pointed by HL, then increment HL.
      */
-    data object LdIncHLA: Instruction
+    data object LdIncHLA: LoadInstruction
 
     /**
      * Load the value of the memory address pointed by HL into register A, then increment HL.
      */
-    data object LdIncAHL: Instruction
+    data object LdIncAHL: LoadInstruction
     /**
      * Load the value of register A into the memory address pointed by HL, then decrement HL.
      */
-    data object LdDecHLA: Instruction
+    data object LdDecHLA: LoadInstruction
     /**
      * Load the value of the memory address pointed by HL into register A, then decrement HL.
      */
-    data object LdDecAHL: Instruction
+    data object LdDecAHL: LoadInstruction
 
     /**
      * Pop a value from the stack into a 16-bit register [target].
@@ -334,18 +338,20 @@ sealed interface Instruction {
      */
     data object AddSp : Instruction
 
+    sealed interface LoadInstruction : Instruction
+
     /**
      * Load HL with SP plus signed 8-bit immediate (e8).
      */
-    data object LdHlSpOffset : Instruction
+    data object LdHlSpOffset : LoadInstruction
 
     /**
      * Load SP with HL.
      */
-    data object LdSpHl : Instruction
+    data object LdSpHl : LoadInstruction
 
     /**
      * Store SP at the 16-bit immediate address (nn), low byte first.
      */
-    data object LdMemoryAtData16Sp : Instruction
+    data object LdMemoryAtData16Sp : LoadInstruction
 }
