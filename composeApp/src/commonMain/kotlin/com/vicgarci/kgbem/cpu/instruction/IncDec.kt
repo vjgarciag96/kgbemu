@@ -9,11 +9,10 @@ import com.vicgarci.kgbem.cpu.Register8
 import com.vicgarci.kgbem.cpu.overflowAdd
 import com.vicgarci.kgbem.cpu.sub
 
-internal fun CPUInstructionScope.executeIncDec(instruction: Instruction) {
+internal fun CPUInstructionScope.executeIncDec(instruction: Instruction.IncDecInstruction) {
     when (instruction) {
         is Instruction.Inc -> inc(instruction.target)
         is Instruction.Dec -> dec(instruction.target)
-        else -> error("Unsupported INC/DEC instruction: $instruction")
     }
 }
 

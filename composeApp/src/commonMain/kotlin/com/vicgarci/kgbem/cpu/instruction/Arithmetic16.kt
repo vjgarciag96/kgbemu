@@ -6,11 +6,10 @@ import com.vicgarci.kgbem.cpu.Instruction
 import com.vicgarci.kgbem.cpu.Register16
 import com.vicgarci.kgbem.cpu.overflowAdd
 
-internal fun CPUInstructionScope.executeArithmetic16(instruction: Instruction) {
+internal fun CPUInstructionScope.executeArithmetic16(instruction: Instruction.Arithmetic16Instruction) {
     when (instruction) {
         is Instruction.AddHl -> addHl(instruction.target)
         Instruction.AddSp -> addSp()
-        else -> error("Unsupported 16-bit arithmetic instruction: $instruction")
     }
 }
 

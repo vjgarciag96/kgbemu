@@ -6,7 +6,7 @@ import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toUByte
 import com.vicgarci.kgbem.cpu.Instruction
 import com.vicgarci.kgbem.cpu.Operand8
 
-internal fun CPUInstructionScope.executeBitOps(instruction: Instruction) {
+internal fun CPUInstructionScope.executeBitOps(instruction: Instruction.BitInstruction) {
     when (instruction) {
         Instruction.Rra -> rra()
         is Instruction.Rr -> rr(instruction.target)
@@ -23,7 +23,6 @@ internal fun CPUInstructionScope.executeBitOps(instruction: Instruction) {
         is Instruction.Sra -> sra(instruction.target)
         is Instruction.Sla -> sla(instruction.target)
         is Instruction.Swap -> swap(instruction.target)
-        else -> error("Unsupported bit operation instruction: $instruction")
     }
 }
 

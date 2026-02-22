@@ -3,11 +3,10 @@ package com.vicgarci.kgbem.cpu.instruction
 import com.vicgarci.kgbem.cpu.Instruction
 import com.vicgarci.kgbem.cpu.Register16
 
-internal fun CPUInstructionScope.executeStack(instruction: Instruction) {
+internal fun CPUInstructionScope.executeStack(instruction: Instruction.StackInstruction) {
     when (instruction) {
         is Instruction.Pop -> pop(instruction.target)
         is Instruction.Push -> push(instruction.target)
-        else -> error("Unsupported stack instruction: $instruction")
     }
 }
 

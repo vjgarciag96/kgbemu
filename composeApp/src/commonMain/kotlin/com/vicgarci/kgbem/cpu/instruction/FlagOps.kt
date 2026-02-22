@@ -4,13 +4,12 @@ import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toFlagsRegister
 import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toUByte
 import com.vicgarci.kgbem.cpu.Instruction
 
-internal fun CPUInstructionScope.executeFlagOps(instruction: Instruction) {
+internal fun CPUInstructionScope.executeFlagOps(instruction: Instruction.FlagInstruction) {
     when (instruction) {
         Instruction.Ccf -> ccf()
         Instruction.Scf -> scf()
         Instruction.Cpl -> cpl()
         Instruction.Daa -> daa()
-        else -> error("Unsupported flag/misc ALU instruction: $instruction")
     }
 }
 

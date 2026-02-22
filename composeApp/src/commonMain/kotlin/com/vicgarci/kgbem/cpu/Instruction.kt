@@ -4,48 +4,48 @@ sealed interface Instruction {
 
     data class Add(
         val target: Operand8,
-    ) : Instruction
+    ) : ArithmeticLogic8Instruction
 
     data class AddHl(
         val target: Register16,
-    ) : Instruction
+    ) : Arithmetic16Instruction
 
     /**
      * Add with carry
      */
     data class AddC(
         val target: Operand8,
-    ) : Instruction
+    ) : ArithmeticLogic8Instruction
 
     data class Sub(
         val target: Operand8,
-    ) : Instruction
+    ) : ArithmeticLogic8Instruction
 
     /**
      * Subtract with carry
      */
     data class Sbc(
         val target: Operand8,
-    ) : Instruction
+    ) : ArithmeticLogic8Instruction
 
     data class And(
         val target: Operand8,
-    ) : Instruction
+    ) : ArithmeticLogic8Instruction
 
     data class Or(
         val target: Operand8,
-    ) : Instruction
+    ) : ArithmeticLogic8Instruction
 
     data class Xor(
         val target: Operand8,
-    ) : Instruction
+    ) : ArithmeticLogic8Instruction
 
     /**
      * Compare (like subtract, but discarding the result and only setting the flags)
      */
     data class Cp(
         val target: Operand8,
-    ) : Instruction
+    ) : ArithmeticLogic8Instruction
 
     /**
      * Does not perform a full arithmetic operation with carry propagation (i.e., carry flag
@@ -53,7 +53,7 @@ sealed interface Instruction {
      */
     data class Inc(
         val target: Register,
-    ) : Instruction
+    ) : IncDecInstruction
 
     /**
      * Does not perform a full arithmetic operation with carry propagation (i.e., carry flag
@@ -61,21 +61,21 @@ sealed interface Instruction {
      */
     data class Dec(
         val target: Register,
-    ) : Instruction
+    ) : IncDecInstruction
 
     /**
      * Complement carry flag.
      *
      * Changes subtract and half carry flags to false, and inverts the carry flag.
      */
-    data object Ccf : Instruction
+    data object Ccf : FlagInstruction
 
     /**
      * Set carry flag.
      *
      * Changes subtract and half carry flags to false, and sets the carry flag to true.
      */
-    data object Scf : Instruction
+    data object Scf : FlagInstruction
 
     /**
      * Right-rotate the A register through carry (i.e., carry becomes most significant bit of A,
@@ -83,7 +83,7 @@ sealed interface Instruction {
      *
      * Zero flag, subtract, and half carry are set to false. Carry is set according to result.
      */
-    data object Rra : Instruction
+    data object Rra : BitInstruction
 
     /**
      * Rotate register [target] right, through carry (i.e., carry becomes most significant bit of
@@ -93,7 +93,7 @@ sealed interface Instruction {
      */
     data class Rr(
         val target: Operand8,
-    ) : Instruction
+    ) : BitInstruction
 
     /**
      * Rotate register [target] right circularly (i.e., least significant bit wraps around to most
@@ -103,7 +103,7 @@ sealed interface Instruction {
      */
     data class Rrc(
         val target: Operand8,
-    ) : Instruction
+    ) : BitInstruction
 
     /**
      * Left-rotate the A register through carry (i.e., carry becomes least significant bit of A,
@@ -111,7 +111,7 @@ sealed interface Instruction {
      *
      * Zero flag, subtract, and half carry are set to false. Carry is set according to result.
      */
-    data object Rla : Instruction
+    data object Rla : BitInstruction
 
     /**
      * Rotate register [target] left, through carry (i.e., carry becomes least significant bit of
@@ -121,7 +121,7 @@ sealed interface Instruction {
      */
     data class Rl(
         val target: Operand8,
-    ) : Instruction
+    ) : BitInstruction
 
     /**
      * Rotate register [target] left circularly (i.e., most significant bit wraps around to least
@@ -131,24 +131,24 @@ sealed interface Instruction {
      */
     data class Rlc(
         val target: Operand8,
-    ) : Instruction
+    ) : BitInstruction
 
     /**
      * Right-rotate the A register (i.e., least significant bit becomes most significant and is
      * also copied into the carry flag).
      */
-    data object Rrca : Instruction
+    data object Rrca : BitInstruction
 
     /**
      * Left-rotate the A register (i.e., most significant bit becomes least significant and is
      * also copied into the carry flag).
      */
-    data object Rlca : Instruction
+    data object Rlca : BitInstruction
 
     /**
      * Toggle every bit of the register A.
      */
-    data object Cpl : Instruction
+    data object Cpl : FlagInstruction
 
     /**
      * Test bit [index] in register [target], set the zero flag if bit not set.
@@ -159,7 +159,7 @@ sealed interface Instruction {
     data class Bit(
         val index: Int,
         val target: Operand8,
-    ) : Instruction {
+    ) : BitInstruction {
 
         init {
             require(index in 0..7)
@@ -175,7 +175,7 @@ sealed interface Instruction {
     data class Res(
         val index: Int,
         val target: Operand8,
-    ) : Instruction {
+    ) : BitInstruction {
 
         init {
             require(index in 0..7)
@@ -191,7 +191,7 @@ sealed interface Instruction {
     data class Set(
         val index: Int,
         val target: Operand8,
-    ) : Instruction {
+    ) : BitInstruction {
 
         init {
             require(index in 0..7)
@@ -203,7 +203,7 @@ sealed interface Instruction {
      */
     data class Srl(
         val target: Operand8,
-    ) : Instruction
+    ) : BitInstruction
 
     /**
      * Shift right arithmetically register [target].
@@ -214,7 +214,7 @@ sealed interface Instruction {
      */
     data class Sra(
         val target: Operand8,
-    ) : Instruction
+    ) : BitInstruction
 
     /**
      * Shift left arithmetically register [target].
@@ -225,16 +225,16 @@ sealed interface Instruction {
      */
     data class Sla(
         val target: Operand8,
-    ) : Instruction
+    ) : BitInstruction
 
     /**
      * Switch upper and lower nibble (most and least significant 4 bits) of a specific register.
      */
     data class Swap(
         val target: Operand8,
-    ) : Instruction
+    ) : BitInstruction
 
-    data object Nop : Instruction
+    data object Nop : CpuControlInstruction
 
     /**
      * Jump to a particular address dependent on one [condition]. The address to jump to is
@@ -242,12 +242,12 @@ sealed interface Instruction {
      */
     data class Jp(
         val condition: JumpCondition,
-    ) : Instruction
+    ) : ControlFlowInstruction
 
     /**
      * Jump to address contained in HL.
      */
-    data object JpHl : Instruction
+    data object JpHl : ControlFlowInstruction
 
     data class Ld8(
         val source: Operand8,
@@ -284,30 +284,30 @@ sealed interface Instruction {
      */
     data class Pop(
         val target: Register16,
-    ) : Instruction
+    ) : StackInstruction
 
     /**
      * Push a value from a 16-bit register [target] onto the stack.
      */
     data class Push(
         val target: Register16,
-    ) : Instruction
+    ) : StackInstruction
 
     data class Call(
         val condition: JumpCondition,
-    ) : Instruction
+    ) : ControlFlowInstruction
 
     data class Ret(
         val condition: JumpCondition,
-    ) : Instruction
+    ) : ControlFlowInstruction
 
     data class Jr(
         val condition: JumpCondition,
-    ) : Instruction
+    ) : ControlFlowInstruction
 
     data class Rst(
         val address: UByte,
-    ) : Instruction
+    ) : ControlFlowInstruction
 
     /**
      * Decimal adjust register A for BCD addition/subtraction. BCD = Binary-Coded Decimal, a form
@@ -315,30 +315,38 @@ sealed interface Instruction {
      *
      * For more information, see: https://en.wikipedia.org/wiki/Binary-coded_decimal
      */
-    data object Daa : Instruction
+    data object Daa : FlagInstruction
 
     /**
      * Halt the CPU until an interrupt occurs.
      */
-    data object Halt : Instruction
+    data object Halt : CpuControlInstruction
     /**
      * Stop the CPU (used for low-power mode).
      */
-    data object Stop : Instruction
-    data object DisableInterrupts : Instruction
-    data object EnableInterrupts : Instruction
+    data object Stop : CpuControlInstruction
+    data object DisableInterrupts : CpuControlInstruction
+    data object EnableInterrupts : CpuControlInstruction
 
     /**
      * Return from a subroutine and enable interrupts.
      */
-    data object RetI : Instruction
+    data object RetI : ControlFlowInstruction
 
     /**
      * Add signed 8-bit immediate (e8) to SP.
      */
-    data object AddSp : Instruction
+    data object AddSp : Arithmetic16Instruction
 
+    sealed interface Arithmetic16Instruction : Instruction
+    sealed interface ArithmeticLogic8Instruction : Instruction
+    sealed interface IncDecInstruction : Instruction
+    sealed interface FlagInstruction : Instruction
+    sealed interface BitInstruction : Instruction
     sealed interface LoadInstruction : Instruction
+    sealed interface ControlFlowInstruction : Instruction
+    sealed interface StackInstruction : Instruction
+    sealed interface CpuControlInstruction : Instruction
 
     /**
      * Load HL with SP plus signed 8-bit immediate (e8).

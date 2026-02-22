@@ -1,6 +1,5 @@
 package com.vicgarci.kgbem.cpu.instruction
 
-import com.vicgarci.kgbem.cpu.Data16
 import com.vicgarci.kgbem.cpu.Instruction
 import com.vicgarci.kgbem.cpu.Instruction.LoadInstruction
 import com.vicgarci.kgbem.cpu.Operand8

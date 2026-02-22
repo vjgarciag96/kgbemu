@@ -4,7 +4,7 @@ import com.vicgarci.kgbem.cpu.Instruction
 import com.vicgarci.kgbem.cpu.JumpCondition
 import com.vicgarci.kgbem.cpu.Register16
 
-internal fun CPUInstructionScope.executeControlFlow(instruction: Instruction) {
+internal fun CPUInstructionScope.executeControlFlow(instruction: Instruction.ControlFlowInstruction) {
     when (instruction) {
         is Instruction.Jp -> jump(instruction.condition)
         Instruction.JpHl -> jumpHl()
@@ -13,7 +13,6 @@ internal fun CPUInstructionScope.executeControlFlow(instruction: Instruction) {
         is Instruction.Ret -> ret(instruction.condition)
         Instruction.RetI -> returnAndEnableInterrupts()
         is Instruction.Rst -> rst(instruction.address)
-        else -> error("Unsupported control-flow instruction: $instruction")
     }
 }
 
