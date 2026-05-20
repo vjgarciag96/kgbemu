@@ -17,19 +17,17 @@ class CPU(
     private var enableGlobalInterruptPending = false
     private var halted = false
 
-    fun step() {
+    fun step(): Int {
         val pending = anyInterruptPending()
         if (globalInterruptEnabled && pending) {
             halted = false
             serviceInterrupt()
-            return
+            return 20
         }
 
         if (halted) {
-            if (pending) {
-                halted = false
-            }
-            return
+            if (pending) halted = false
+            return 4
         }
 
         var instructionByte = memoryBus.readByte(programCounter.getAndIncrement())
@@ -45,6 +43,74 @@ class CPU(
         if (enableGlobalInterruptPending) {
             globalInterruptEnabled = true
             enableGlobalInterruptPending = false
+        }
+
+        return instruction.estimateCycles(prefixed)
+    }
+
+    private fun Instruction.estimateCycles(prefixed: Boolean): Int {
+        if (prefixed) {
+            val cbTarget: Operand8? = when (this) {
+                is Instruction.Bit -> target
+                is Instruction.Res -> target
+                is Instruction.Set -> target
+                is Instruction.Rl -> target
+                is Instruction.Rr -> target
+                is Instruction.Rlc -> target
+                is Instruction.Rrc -> target
+                is Instruction.Sla -> target
+                is Instruction.Sra -> target
+                is Instruction.Srl -> target
+                is Instruction.Swap -> target
+                else -> null
+            }
+            return if (cbTarget == MemoryAtHl) 16 else 8
+        }
+        return when (this) {
+            is Instruction.Nop -> 4
+            is Instruction.Halt -> 4
+            is Instruction.Stop -> 4
+            is Instruction.DisableInterrupts -> 4
+            is Instruction.EnableInterrupts -> 4
+            is Instruction.Ccf, is Instruction.Scf, is Instruction.Cpl, is Instruction.Daa -> 4
+            is Instruction.Rlca, is Instruction.Rrca, is Instruction.Rla, is Instruction.Rra -> 4
+            is Instruction.JpHl -> 4
+            is Instruction.LdSpHl -> 8
+            is Instruction.AddHl -> 8
+            is Instruction.LdIncAHL, is Instruction.LdIncHLA,
+            is Instruction.LdDecAHL, is Instruction.LdDecHLA -> 8
+            is Instruction.Pop -> 12
+            is Instruction.Ld16 -> 12
+            is Instruction.LdHlSpOffset -> 12
+            is Instruction.Jr -> 12
+            is Instruction.Jp -> 16
+            is Instruction.Push -> 16
+            is Instruction.Rst -> 16
+            is Instruction.RetI -> 16
+            is Instruction.AddSp -> 16
+            is Instruction.LdMemoryAtData16Sp -> 20
+            is Instruction.Call -> 24
+            is Instruction.Ret -> if (condition == JumpCondition.ALWAYS) 16 else 20
+            is Instruction.Inc -> if (target is Register16) 8 else 4
+            is Instruction.Dec -> if (target is Register16) 8 else 4
+            is Instruction.Add -> if (target == MemoryAtHl || target == Data8) 8 else 4
+            is Instruction.AddC -> if (target == MemoryAtHl || target == Data8) 8 else 4
+            is Instruction.Sub -> if (target == MemoryAtHl || target == Data8) 8 else 4
+            is Instruction.Sbc -> if (target == MemoryAtHl || target == Data8) 8 else 4
+            is Instruction.And -> if (target == MemoryAtHl || target == Data8) 8 else 4
+            is Instruction.Or -> if (target == MemoryAtHl || target == Data8) 8 else 4
+            is Instruction.Xor -> if (target == MemoryAtHl || target == Data8) 8 else 4
+            is Instruction.Cp -> if (target == MemoryAtHl || target == Data8) 8 else 4
+            is Instruction.Ld8 -> when {
+                source == MemoryAtHl || target == MemoryAtHl -> 8
+                source is MemoryAtRegister16 || target is MemoryAtRegister16 -> 8
+                source == MemoryAtHighC || target == MemoryAtHighC -> 8
+                source == MemoryAtHighData8 || target == MemoryAtHighData8 -> 12
+                source == MemoryAtData16 || target == MemoryAtData16 -> 16
+                source == Data8 -> 8
+                else -> 4
+            }
+            else -> 4
         }
     }
 

@@ -1,8 +1,15 @@
 package com.vicgarci.kgbem.cpu
 
+import com.vicgarci.kgbem.Cartridge
+
 class MemoryBus(
     private val memory: Array<UByte> = Array(0x10000) { 0b0.toUByte() },
+    private var cartridge: Cartridge? = null,
 ) {
+
+    fun loadCartridge(cartridge: Cartridge) {
+        this.cartridge = cartridge
+    }
 
     /**
      * Get the interrupt pending mask, which indicates which interrupts are both
@@ -33,12 +40,27 @@ class MemoryBus(
     private val interruptEnable: UByte
         get() = memory[0xFFFF]
 
+    // DIV register (0xFF04) is tracked separately so Timer can increment without reset
+    private var divRegister: UByte = 0u
+
+    fun readDiv(): UByte = divRegister
+    fun incrementDiv() { divRegister = (divRegister + 1u).toUByte() }
+    fun resetDiv() { divRegister = 0u }
+
     fun readByte(address: UShort): UByte {
-        return memory[address.toInt()]
+        val addr = address.toInt() and 0xFFFF
+        if (addr == 0xFF04) return divRegister
+        val cart = cartridge
+        return if (cart != null && addr < 0x8000) cart.read(address) else memory[addr]
     }
 
     fun writeByte(address: UShort, value: UByte) {
-        memory[address.toInt()] = value
+        val addr = address.toInt() and 0xFFFF
+        when {
+            addr == 0xFF04 -> divRegister = 0u // any write to DIV resets it to 0
+            addr < 0x8000 && cartridge != null -> { /* ROM is read-only for MBC0 */ }
+            else -> memory[addr] = value
+        }
     }
 
     fun anyInterruptPending(): Boolean {
