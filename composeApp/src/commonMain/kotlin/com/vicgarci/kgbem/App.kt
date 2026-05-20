@@ -26,7 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vicgarci.kgbem.emulator.GameBoyEmulator
 import com.vicgarci.kgbem.ppu.PPU
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 
 @Composable
 fun App() {
@@ -34,9 +36,11 @@ fun App() {
     var framebuffer by remember { mutableStateOf(IntArray(PPU.SCREEN_WIDTH * PPU.SCREEN_HEIGHT)) }
 
     LaunchedEffect(emulator) {
-        while (isActive) {
-            emulator.runUntilVBlank()
-            framebuffer = emulator.ppu.framebuffer.copyOf()
+        withContext(Dispatchers.Default) {
+            while (isActive) {
+                emulator.runUntilVBlank()
+                framebuffer = emulator.ppu.framebuffer.copyOf()
+            }
         }
     }
 

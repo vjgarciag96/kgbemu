@@ -16,7 +16,7 @@ import com.vicgarci.kgbem.cpu.MemoryBus
  */
 class PPU(private val memoryBus: MemoryBus) {
 
-    /** ARGB pixel data for the 160×144 display. Updated once per frame during V-Blank entry. */
+    /** ARGB pixel data for the 160×144 display. Written scanline-by-scanline; the UI should sample it at V-Blank. */
     val framebuffer: IntArray = IntArray(SCREEN_WIDTH * SCREEN_HEIGHT) { DMG_COLORS[0] }
 
     /** True for exactly one [tick] call after V-Blank starts; callers must reset this. */
@@ -32,12 +32,11 @@ class PPU(private val memoryBus: MemoryBus) {
 
         scanlineDots += cycles
 
-        if (scanlineDots >= DOTS_PER_LINE) {
+        while (scanlineDots >= DOTS_PER_LINE) {
             scanlineDots -= DOTS_PER_LINE
             advanceScanline()
-        } else {
-            updateModeForCurrentDot()
         }
+        updateModeForCurrentDot()
     }
 
     // ── Scanline advancement ────────────────────────────────────────────────
