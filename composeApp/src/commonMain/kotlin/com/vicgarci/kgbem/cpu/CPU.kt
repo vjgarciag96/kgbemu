@@ -9,43 +9,46 @@ import kotlin.toUByte
 class CPU(
     private val registers: Registers,
     private val programCounter: ProgramCounter,
-    private val memoryBus: MemoryBus,
+    private val bus: Bus,
     private val stackPointer: StackPointer = StackPointer(),
 ) : CPUInstructionScope {
 
     private var globalInterruptEnabled = true
     private var enableGlobalInterruptPending = false
     private var halted = false
+    private var lastBranchTaken = false
 
-    fun step() {
+    fun step(): Int {
         val pending = anyInterruptPending()
         if (globalInterruptEnabled && pending) {
             halted = false
             serviceInterrupt()
-            return
+            return 20
         }
 
         if (halted) {
-            if (pending) {
-                halted = false
-            }
-            return
+            if (pending) halted = false
+            return 4
         }
 
-        var instructionByte = memoryBus.readByte(programCounter.getAndIncrement())
+        var instructionByte = bus.readByte(programCounter.getAndIncrement())
         val prefixed = instructionByte == 0xCB.toUByte()
         if (prefixed) {
-            instructionByte = memoryBus.readByte((programCounter.getAndIncrement()))
+            instructionByte = bus.readByte(programCounter.getAndIncrement())
         }
 
         val instruction = InstructionDecoder.decode(instructionByte, prefixed)
-            ?: error("Invalid instruction $instructionByte")
+            ?: error("Invalid instruction 0x${instructionByte.toString(16).padStart(2, '0')}")
+
+        lastBranchTaken = false
         execute(instruction)
 
         if (enableGlobalInterruptPending) {
             globalInterruptEnabled = true
             enableGlobalInterruptPending = false
         }
+
+        return instruction.cycleCost(lastBranchTaken)
     }
 
     fun execute(instruction: Instruction) {
@@ -64,29 +67,29 @@ class CPU(
             Register8.E -> registers.e = update(registers.e)
             Register8.H -> registers.h = update(registers.h)
             Register8.L -> registers.l = update(registers.l)
-            MemoryAtHl -> memoryBus.writeByte(
+            MemoryAtHl -> bus.writeByte(
                 registers.hl,
-                update(memoryBus.readByte(registers.hl))
+                update(bus.readByte(registers.hl))
             )
 
             is MemoryAtRegister16 -> {
                 val address = getRegister16Value(target.register)
-                memoryBus.writeByte(address, update(memoryBus.readByte(address)))
+                bus.writeByte(address, update(bus.readByte(address)))
             }
 
             MemoryAtData16 -> {
                 val address = readImmediate16()
-                memoryBus.writeByte(address, update(memoryBus.readByte(address)))
+                bus.writeByte(address, update(bus.readByte(address)))
             }
 
             MemoryAtHighData8 -> {
                 val address = highAddress(readImmediate8())
-                memoryBus.writeByte(address, update(memoryBus.readByte(address)))
+                bus.writeByte(address, update(bus.readByte(address)))
             }
 
             MemoryAtHighC -> {
                 val address = highAddress(registers.c)
-                memoryBus.writeByte(address, update(memoryBus.readByte(address)))
+                bus.writeByte(address, update(bus.readByte(address)))
             }
 
             Data8 -> error("Cannot update value of Data8 operand")
@@ -125,11 +128,11 @@ class CPU(
     ): UByte {
         return when (target) {
             is Register8 -> getRegisterValue(target)
-            MemoryAtHl -> memoryBus.readByte(registers.hl)
-            is MemoryAtRegister16 -> readMemoryAtRegister16(target.register)
-            MemoryAtData16 -> readMemoryAtImmediate16()
-            MemoryAtHighData8 -> readMemoryAtHighData8()
-            MemoryAtHighC -> readMemoryAtHighC()
+            MemoryAtHl -> bus.readByte(registers.hl)
+            is MemoryAtRegister16 -> bus.readByte(getRegister16Value(target.register))
+            MemoryAtData16 -> bus.readByte(readImmediate16())
+            MemoryAtHighData8 -> bus.readByte(highAddress(readImmediate8()))
+            MemoryAtHighC -> bus.readByte(highAddress(registers.c))
             Data8 -> readImmediate8()
         }
     }
@@ -147,23 +150,13 @@ class CPU(
     }
 
     override fun readImmediate8(): UByte {
-        return memoryBus.readByte(programCounter.getAndIncrement())
+        return bus.readByte(programCounter.getAndIncrement())
     }
 
     override fun readImmediate16(): UShort {
         val leastSignificantByte = readImmediate8()
         val mostSignificantByte = readImmediate8()
         return ((mostSignificantByte.toInt() shl 8) or (leastSignificantByte.toInt())).toUShort()
-    }
-
-    private fun readMemoryAtRegister16(register: Register16): UByte {
-        val address = getRegister16Value(register)
-        return memoryBus.readByte(address)
-    }
-
-    private fun readMemoryAtImmediate16(): UByte {
-        val address = readImmediate16()
-        return memoryBus.readByte(address)
     }
 
     override fun addSignedToSp(): UShort {
@@ -185,40 +178,28 @@ class CPU(
         return result.toUShort()
     }
 
-    private fun readMemoryAtHighData8(): UByte {
-        val address = highAddress(readImmediate8())
-        return memoryBus.readByte(address)
-    }
-
-    private fun readMemoryAtHighC(): UByte {
-        val address = highAddress(registers.c)
-        return memoryBus.readByte(address)
-    }
-
-    private fun highAddress(offset: UByte): UShort {
-        return (0xFF00 + offset.toInt()).toUShort()
-    }
+    private fun highAddress(offset: UByte): UShort = (0xFF00 + offset.toInt()).toUShort()
 
     override fun shouldJump(condition: JumpCondition): Boolean {
         val flags = registers.f.toFlagsRegister()
-        return when (condition) {
+        val result = when (condition) {
             JumpCondition.NOT_ZERO -> !flags.zero
             JumpCondition.ZERO -> flags.zero
             JumpCondition.CARRY -> flags.carry
             JumpCondition.NOT_CARRY -> !flags.carry
             JumpCondition.ALWAYS -> true
         }
+        lastBranchTaken = result
+        return result
     }
 
-    private fun anyInterruptPending(): Boolean {
-        return memoryBus.anyInterruptPending()
-    }
+    private fun anyInterruptPending(): Boolean = bus.anyInterruptPending()
 
     private fun serviceInterrupt() {
-        val pending = memoryBus.interruptPendingMask
+        val pending = bus.interruptPendingMask
         val highestPriorityInterrupt = pending.countTrailingZeroBits()
         globalInterruptEnabled = false
-        memoryBus.setInterruptFlagBit(highestPriorityInterrupt, false)
+        bus.setInterruptFlagBit(highestPriorityInterrupt, false)
         pushProgramCounterToStack()
         programCounter.setTo(
             when (highestPriorityInterrupt) {
@@ -234,19 +215,14 @@ class CPU(
 
     override fun pushProgramCounterToStack() {
         val pc = programCounter.get()
-        memoryBus.writeByte(
-            stackPointer.decrementAndGet(),
-            ((pc.toInt() and 0xFF00) ushr 8).toUByte()
-        )
-        memoryBus.writeByte(stackPointer.decrementAndGet(), (pc.toInt() and 0x00FF).toUByte())
+        bus.writeByte(stackPointer.decrementAndGet(), ((pc.toInt() and 0xFF00) ushr 8).toUByte())
+        bus.writeByte(stackPointer.decrementAndGet(), (pc.toInt() and 0x00FF).toUByte())
     }
 
     override fun returnFromSubroutine() {
-        val leastSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
-        val mostSignificantByte = memoryBus.readByte(stackPointer.getAndIncrement())
-        val addressHigh = mostSignificantByte.toInt() shl 8
-        val addressLow = leastSignificantByte.toInt()
-        val returnAddress = (addressHigh or addressLow).toUShort()
+        val leastSignificantByte = bus.readByte(stackPointer.getAndIncrement())
+        val mostSignificantByte = bus.readByte(stackPointer.getAndIncrement())
+        val returnAddress = ((mostSignificantByte.toInt() shl 8) or leastSignificantByte.toInt()).toUShort()
         programCounter.setTo(returnAddress)
     }
 
@@ -269,13 +245,9 @@ class CPU(
         return getRegister16Value(register)
     }
 
-    override fun readMemory(address: UShort): UByte {
-        return memoryBus.readByte(address)
-    }
+    override fun readMemory(address: UShort): UByte = bus.readByte(address)
 
-    override fun writeMemory(address: UShort, value: UByte) {
-        memoryBus.writeByte(address, value)
-    }
+    override fun writeMemory(address: UShort, value: UByte) = bus.writeByte(address, value)
 
     override fun readAccumulator(): UByte {
         return registers.a
@@ -316,5 +288,5 @@ class CPU(
 }
 
 interface ImmutableCPU {
-    fun step()
+    fun step(): Int
 }

@@ -2,13 +2,13 @@ package com.vicgarci.kgbem.cpu
 
 class MemoryBus(
     private val memory: Array<UByte> = Array(0x10000) { 0b0.toUByte() },
-) {
+) : Bus {
 
     /**
      * Get the interrupt pending mask, which indicates which interrupts are both
      * enabled and requested.
      */
-    val interruptPendingMask: UByte
+    override val interruptPendingMask: UByte
         get() = interruptEnable and interruptFlags and 0x1F.toUByte()
 
     /**
@@ -33,23 +33,23 @@ class MemoryBus(
     private val interruptEnable: UByte
         get() = memory[0xFFFF]
 
-    fun readByte(address: UShort): UByte {
+    override fun readByte(address: UShort): UByte {
         return memory[address.toInt()]
     }
 
-    fun writeByte(address: UShort, value: UByte) {
+    override fun writeByte(address: UShort, value: UByte) {
         memory[address.toInt()] = value
     }
 
-    fun anyInterruptPending(): Boolean {
+    override fun anyInterruptPending(): Boolean {
         return interruptPendingMask != 0b0.toUByte()
     }
 
-    fun setInterruptFlagBit(bitPosition: Int, value: Boolean) {
+    override fun setInterruptFlagBit(bitPosition: Int, value: Boolean) {
         setBit(0xFF0F.toUShort(), bitPosition, value)
     }
 
-    fun setInterruptEnableBit(bitPosition: Int, value: Boolean) {
+    override fun setInterruptEnableBit(bitPosition: Int, value: Boolean) {
         setBit(0xFFFF.toUShort(), bitPosition, value)
     }
 
