@@ -4,20 +4,18 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    //alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
 }
 
 kotlin {
-    /*
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    */
 
     listOf(
         iosArm64(),
@@ -28,27 +26,25 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     jvm()
-    
+
     js {
         browser()
         binaries.executable()
     }
-    
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
         binaries.executable()
     }
-    
+
     sourceSets {
-        /*
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
         }
-        */
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -69,7 +65,6 @@ kotlin {
     }
 }
 
-/*
 android {
     namespace = "com.vicgarci.kgbem"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -96,13 +91,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
-*/
 
-/*
 dependencies {
     debugImplementation(compose.uiTooling)
 }
-*/
 
 compose.desktop {
     application {

@@ -12,26 +12,44 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
 fun App() {
+    var gameBoy by remember { mutableStateOf<GameBoy?>(null) }
+    var frameBuffer by remember { mutableStateOf<IntArray?>(null) }
+
+    LaunchedEffect(gameBoy) {
+        val gb = gameBoy ?: return@LaunchedEffect
+        while (true) {
+            withContext(Dispatchers.Default) { gb.runFrame() }
+            frameBuffer = gb.frameBuffer.copyOf()
+        }
+    }
+
     MaterialTheme {
-        Column(
-            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                text = "KGB Emu",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(16.dp),
+        val buffer = frameBuffer
+        if (buffer != null) {
+            GameBoyScreen(
+                frameBuffer = buffer,
+                modifier = Modifier.fillMaxSize(),
             )
-            Text(
-                text = "Load a ROM to start",
-                style = MaterialTheme.typography.bodyMedium,
-            )
+        } else {
+            Column(
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = "KGB Emu",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(16.dp),
+                )
+                RomLoader { bytes -> gameBoy = GameBoy(bytes) }
+            }
         }
     }
 }
