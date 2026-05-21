@@ -92,7 +92,7 @@ class GameBoyBus(
             0xFF07 -> { timer.tac = value }
             0xFF0F -> interruptFlags = value
             0xFF40 -> ppu.lcdc = value
-            0xFF41 -> ppu.stat = (ppu.stat and 0x07u) or (value and 0xF8u)
+            0xFF41 -> ppu.stat = ((ppu.stat.toInt() and 0x07) or (value.toInt() and 0xF8)).toUByte()
             0xFF42 -> ppu.scy = value
             0xFF43 -> ppu.scx = value
             0xFF44 -> ppu.resetLy()

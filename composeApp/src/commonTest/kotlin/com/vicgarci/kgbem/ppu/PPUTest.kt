@@ -66,7 +66,7 @@ class PPUTest {
 
     @Test
     fun lycMatch_setsStatBit2() {
-        ppu.lyc = 1u
+        ppu.lyc = 1.toUByte()
         // Run one full scanline so LY becomes 1
         ppu.step(456)
         // bit 2 of STAT should be set
@@ -75,7 +75,7 @@ class PPUTest {
 
     @Test
     fun lycMismatch_clearsStatBit2() {
-        ppu.lyc = 5u
+        ppu.lyc = 5.toUByte()
         ppu.step(456)
         // LY is 1, LYC is 5, no match
         assertFalse((ppu.stat.toInt() and 0x04) != 0)
@@ -103,16 +103,16 @@ class PPUTest {
         // Set up a simple tile in VRAM at tile index 0
         // Tile data: all pixels set to color 1 (both bit planes = 1 = color 3 actually, let's use simple pattern)
         // Tile 0, row 0: lo = 0xFF, hi = 0x00 -> color = (0 shl 1) | 1 = 1 for each pixel
-        ppu.writeVram(0x8000u, 0xFFu)  // lo byte of tile 0, row 0
-        ppu.writeVram(0x8001u, 0x00u)  // hi byte -> color index 1
+        ppu.writeVram(0x8000.toUShort(), 0xFF.toUByte())  // lo byte of tile 0, row 0
+        ppu.writeVram(0x8001.toUShort(), 0x00.toUByte())  // hi byte -> color index 1
 
         // Enable LCD, BG enabled, tile data = 0x8000 (unsigned, lcdc bit 4 = 1)
-        ppu.lcdc = 0x91u  // bit 7=1 (LCD on), bit 4=1 (tile data 0x8000), bit 0=1 (BG on)
+        ppu.lcdc = 0x91.toUByte()  // bit 7=1 (LCD on), bit 4=1 (tile data 0x8000), bit 0=1 (BG on)
 
         // Set BG tile map at 0x9800 (lcdc bit 3 = 0)
         // Tile map index 0 = tile 0 (already set by default 0)
         // Set palette: color 1 maps to palette slot 1 (bits 3-2 = 01 = index 1)
-        ppu.bgp = 0b00000100u  // color 0 -> slot 0, color 1 -> slot 1
+        ppu.bgp = 0b00000100.toUByte()  // color 0 -> slot 0, color 1 -> slot 1
 
         // Run mode 2 + mode 3 to trigger renderScanline
         ppu.step(80)   // OAM scan

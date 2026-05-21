@@ -17,11 +17,11 @@ class GameBoy(romBytes: UByteArray) {
 
     // Post-boot CPU state (skipping boot ROM)
     private val registers = Registers(
-        a = 0x01u, b = 0x00u, c = 0x13u, d = 0x00u,
-        e = 0xD8u, f = 0xB0u, h = 0x01u, l = 0x4Du,
+        a = 0x01.toUByte(), b = 0x00.toUByte(), c = 0x13.toUByte(), d = 0x00.toUByte(),
+        e = 0xD8.toUByte(), f = 0xB0.toUByte(), h = 0x01.toUByte(), l = 0x4D.toUByte(),
     )
-    private val programCounter = ProgramCounter(0x0100u)
-    private val stackPointer = StackPointer(0xFFFEu)
+    private val programCounter = ProgramCounter(0x0100.toUShort())
+    private val stackPointer = StackPointer(0xFFFE.toUShort())
     val cpu = CPU(registers, programCounter, bus, stackPointer)
 
     val frameBuffer: IntArray get() = ppu.frameBuffer
