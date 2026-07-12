@@ -297,11 +297,17 @@ interface FrameSink {
 `EmulatorViewModel` implements `FrameSink`. `onFrame()` sets `_frameState.value = pixels` on the `MutableStateFlow<IntArray?>`. Because `StateFlow` conflates emissions, a slow Compose frame does not queue frames. The Compose collector runs on the main thread and converts the `IntArray` to `ImageBitmap` there, ensuring the `ImageBitmap` is only written and read on the same thread.
 
 ```kotlin
-// In Compose:
+// In Compose (Android):
+// android.graphics.Bitmap.setPixels() writes IntArray ARGB into the Bitmap.
+// Then Bitmap.asImageBitmap() wraps it for Compose. Both calls on the main thread.
 val pixels by viewModel.frameState.collectAsStateWithLifecycle()
+val androidBitmap = remember { android.graphics.Bitmap.createBitmap(160, 144, ARGB_8888) }
+val imageBitmap = remember { androidBitmap.asImageBitmap() }
 LaunchedEffect(pixels) {
-    pixels?.let { imageBitmap.writePixels(it, ...) }
+    pixels?.let { androidBitmap.setPixels(it, 0, 160, 0, 0, 160, 144) }
 }
+// Note: on Desktop, use org.jetbrains.skia.Bitmap.installPixels() or equivalent.
+// Validate both APIs compile correctly — see OQ-2.
 ```
 
 ---
@@ -328,6 +334,8 @@ LaunchedEffect(pixels) {
 
 On TIMA overflow: set Timer interrupt flag (0xFF0F bit 2); load TMA into TIMA on the next T-cycle (4 T-cycle delay before interrupt fires — the obscure timer quirk; implement this correctly).
 
+**DIV reset TIMA trigger:** Writing any value to 0xFF04 resets the internal 16-bit counter to 0. If the bit of the counter that feeds the current TAC multiplexer was high at the moment of reset, this constitutes a falling edge and triggers a TIMA increment. Implement by checking the relevant counter bit before zeroing, and incrementing TIMA if it was set.
+
 ---
 
 ## 10. Joypad
@@ -336,7 +344,7 @@ On TIMA overflow: set Timer interrupt flag (0xFF0F bit 2); load TMA into TIMA on
 
 Bit 5 (select buttons): when 0, bits 3–0 reflect Start/Select/B/A (active low — 0 = pressed).
 Bit 4 (select directions): when 0, bits 3–0 reflect Down/Up/Left/Right (active low — 0 = pressed).
-Both selection bits can be 0 simultaneously; result is ANDed.
+Both selection bits can be 0 simultaneously; result is ANDed — bits 3–0 return the AND of the direction nibble and the button nibble. Some games poll both simultaneously; return the correctly ANDed value.
 
 On any button transition from released → pressed: set Joypad interrupt flag (0xFF0F bit 4).
 
@@ -403,7 +411,7 @@ expect suspend fun pickRomFile(): ByteArray?
 ```
 
 Returns `null` if the user cancels. Must be called from a coroutine. Platform implementations:
-- **Android:** Launches `ActivityResultContracts.GetContent` for `application/octet-stream`; resolves the returned `content://` URI using `ContentResolver.openInputStream()` on `Dispatchers.IO`; reads all bytes.
+- **Android:** Launches `ActivityResultContracts.GetContent` (registered with `rememberLauncherForActivityResult` — must be called unconditionally at composition time, not inside a click handler). Resolves the returned `content://` URI using `ContentResolver.openInputStream()` on `Dispatchers.IO`. **Immediately copies bytes to `filesDir/roms/<sanitised-title>.gb`** — the `GetContent` URI is one-time and may be revoked; subsequent reset/reload uses the cached file, not the URI.
 - **iOS:** Presents `UIDocumentPickerViewController`; reads file bytes via `Data(contentsOf:)`.
 - **Desktop:** Shows `java.awt.FileDialog`; reads bytes via `File.readBytes()` on `Dispatchers.IO`.
 
@@ -428,20 +436,27 @@ Save file naming: strip non-alphanumeric ASCII from `romTitle`, truncate to 16 c
 
 **Write atomicity:** saves are written to a `.tmp` file first, then renamed (atomic on POSIX; on Android/Linux `File.renameTo()` is atomic within the same filesystem). This ensures no partial write is read on process death.
 
+**Save file corruption:** On load, if the persisted file length does not match the expected RAM size for the cartridge, log a warning and start with zeroed RAM (do not crash, do not throw). This handles truncated saves from interrupted writes.
+
 ---
 
 ## 12. Dependency Injection
 
-`EmulatorViewModel` is provided via Hilt (`@HiltViewModel`). It receives an `EmulatorLoopFactory` (Hilt-injected) and an `InputSource` (platform-specific Hilt binding per target). The Compose entry point uses `hiltViewModel()` to obtain the ViewModel — no manual construction.
+**Hilt is Android-only.** `EmulatorViewModel` must live in `androidMain` (not `commonMain`), as `@HiltViewModel` and `@Inject` are Hilt annotations unavailable on iOS or Desktop. Any shared emulator state it depends on is defined as `commonMain` interfaces and injected via Hilt bindings declared in `androidMain`.
+
+`EmulatorViewModel` is provided via Hilt (`@HiltViewModel`). The Compose entry point uses `hiltViewModel()` — no manual construction. The Application class is annotated `@HiltAndroidApp`; the Activity is annotated `@AndroidEntryPoint`.
 
 ```kotlin
+// androidMain
 @HiltViewModel
 class EmulatorViewModel @Inject constructor(
-    private val loopFactory: EmulatorLoopFactory,
-    private val inputSource: InputSource,
-    private val saveStorage: SaveStorage,
+    private val loopFactory: EmulatorLoopFactory,   // commonMain interface
+    private val inputSource: InputSource,            // commonMain interface
+    private val saveStorage: SaveStorage,            // commonMain interface, androidMain impl
 ) : ViewModel(), FrameSink, DefaultLifecycleObserver { ... }
 ```
+
+Desktop and iOS do not use Hilt. Their entry points construct the ViewModel equivalent manually (Desktop: `remember { EmulatorController(...) }`; iOS: constructed by SwiftUI `@StateObject`).
 
 ---
 
