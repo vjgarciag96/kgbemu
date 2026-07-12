@@ -16,7 +16,7 @@ kgbemu is a Game Boy (DMG-01) emulator built with Kotlin Multiplatform and Compo
 
 - Language: Kotlin (Multiplatform)
 - UI: Compose Multiplatform (shared across all targets)
-- DI: Hilt (Android only — `androidMain`); manual construction on Desktop/iOS
+- DI: Metro (`dev.zacsweers.metro`) — compile-time, all KMP targets; `AppGraph` in `commonMain`; platform bindings via `@ContributesTo` in each platformMain
 - Async: Kotlin Coroutines + StateFlow
 - Date/time: kotlinx-datetime (for MBC3 RTC)
 - Testing: kotlin.test in `commonTest`; JUnit4 on Android
@@ -56,7 +56,8 @@ composeApp/src/
 - PRs contain only implementation changes — no BACKLOG.md, no spec files.
 - Branch from `origin/main` (push main first before branching).
 - Commit messages: short imperative summary, capitalised (e.g. "Add Cartridge interface").
-- `EmulatorViewModel` lives in `androidMain` — Hilt annotations are Android-only.
+- Metro `AppGraph` defined in `commonMain`; platform-specific bindings via `@ContributesTo` in each platformMain.
+- `EmulatorController` (state + FrameSink) is in `commonMain`; a thin `EmulatorViewModel` wraps it in `androidMain` for Jetpack lifecycle.
 - The common emulator loop (`EmulatorLoop`) makes no platform calls.
 - ROM bytes only — the common module never receives a URI, File path, or platform handle.
 - `FrameSink.onFrame()` emits via `StateFlow.value` (not `emit()`); ImageBitmap conversion on main thread only.

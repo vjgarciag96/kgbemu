@@ -442,21 +442,87 @@ Save file naming: strip non-alphanumeric ASCII from `romTitle`, truncate to 16 c
 
 ## 12. Dependency Injection
 
-**Hilt is Android-only.** `EmulatorViewModel` must live in `androidMain` (not `commonMain`), as `@HiltViewModel` and `@Inject` are Hilt annotations unavailable on iOS or Desktop. Any shared emulator state it depends on is defined as `commonMain` interfaces and injected via Hilt bindings declared in `androidMain`.
+**Metro** (`dev.zacsweers.metro`) is used for DI across all platforms. Metro is a compile-time Kotlin compiler plugin — no KAPT, no KSP, supports all KMP targets including Android, JVM, and iOS. See `stacks/kotlin-multiplatform/metro-di.md` in the ai-workflows repo for full setup guidance.
 
-`EmulatorViewModel` is provided via Hilt (`@HiltViewModel`). The Compose entry point uses `hiltViewModel()` — no manual construction. The Application class is annotated `@HiltAndroidApp`; the Activity is annotated `@AndroidEntryPoint`.
+### Graph definition (commonMain)
+
+```kotlin
+@DependencyGraph
+interface AppGraph {
+    val emulatorController: EmulatorController
+    val cartridgeLoader: CartridgeLoader
+
+    // Platform-specific deps contributed via @ContributesTo in each platformMain
+}
+
+@Scope annotation class AppScope
+```
+
+### Injectable classes (commonMain)
+
+```kotlin
+@Inject @SingleIn(AppScope::class)
+class EmulatorController(
+    private val loopFactory: EmulatorLoopFactory,
+    private val inputSource: InputSource,
+    private val saveStorage: SaveStorage,
+) : FrameSink { ... }
+```
+
+`EmulatorController` is the common replacement for the Android-only `EmulatorViewModel`. It holds `EmulatorState`, emits `StateFlow<IntArray?>`, and implements `FrameSink`.
+
+### Platform bindings (platformMain)
 
 ```kotlin
 // androidMain
-@HiltViewModel
-class EmulatorViewModel @Inject constructor(
-    private val loopFactory: EmulatorLoopFactory,   // commonMain interface
-    private val inputSource: InputSource,            // commonMain interface
-    private val saveStorage: SaveStorage,            // commonMain interface, androidMain impl
-) : ViewModel(), FrameSink, DefaultLifecycleObserver { ... }
+@ContributesTo(AppScope::class)
+object AndroidModule {
+    @Provides fun provideInputSource(...): InputSource = TouchInputSource(...)
+    @Provides fun provideSaveStorage(ctx: Context): SaveStorage = AndroidSaveStorage(ctx)
+    @Provides fun provideLoopDriver(...): LoopDriver = AndroidLoopDriver(...)
+}
+
+// jvmMain / iosMain — same pattern, different implementations
 ```
 
-Desktop and iOS do not use Hilt. Their entry points construct the ViewModel equivalent manually (Desktop: `remember { EmulatorController(...) }`; iOS: constructed by SwiftUI `@StateObject`).
+### Android ViewModel (androidMain)
+
+On Android, a thin `@HiltViewModel`-free `EmulatorViewModel` wraps `EmulatorController` for Jetpack lifecycle management:
+
+```kotlin
+// androidMain
+class EmulatorViewModel(
+    private val controller: EmulatorController
+) : ViewModel(), DefaultLifecycleObserver {
+    val emulatorState get() = controller.emulatorState
+    val frameState get() = controller.frameState
+    override fun onCleared() { controller.stop() }
+    override fun onStop(owner: LifecycleOwner) { controller.pause() }
+}
+```
+
+The `EmulatorViewModel` is created in `MainActivity` using the `AppGraph`:
+
+```kotlin
+val graph = createGraph<AppGraph>()
+val vm = ViewModelProvider(this) { EmulatorViewModel(graph.emulatorController) }.get(...)
+```
+
+### Compose entry point
+
+```kotlin
+// commonMain App.kt
+val LocalAppGraph = staticCompositionLocalOf<AppGraph> { error("no graph") }
+
+@Composable
+fun App(graph: AppGraph) {
+    CompositionLocalProvider(LocalAppGraph provides graph) {
+        AppNavigation()
+    }
+}
+```
+
+Desktop and iOS create the graph in their entry points and pass it to `App(graph)`.
 
 ---
 

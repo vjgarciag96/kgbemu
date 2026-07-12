@@ -130,28 +130,29 @@
 - [ ] An invalid ROM shows the correct error message on LauncherScreen
 - [ ] App does not crash when backgrounded during emulation
 
-#### Task 4.1.1: Hilt application setup
+#### Task 4.1.1: Metro DI setup
 **Owner:** Harry
 **Domain:** android
 **Status:** todo
-**Dependencies:** none
+**Dependencies:** Task 1.1.1
 **ACs:**
-- [ ] `KgbemuApplication` annotated `@HiltAndroidApp` and declared in `AndroidManifest.xml`
-- [ ] `MainActivity` annotated `@AndroidEntryPoint`
+- [ ] `dev.zacsweers.metro` plugin added to root and `composeApp` `build.gradle.kts`; version in `libs.versions.toml`
+- [ ] `AppGraph` interface declared in `commonMain` with `@DependencyGraph` and `AppScope` scope annotation
+- [ ] `EmulatorController` in `commonMain` annotated `@Inject @SingleIn(AppScope::class)`
+- [ ] `AndroidModule` in `androidMain` with `@ContributesTo(AppScope::class)` providing `LoopDriver`, `InputSource`, `SaveStorage` Android actuals
+- [ ] `createGraph<AppGraph>()` called in `MainActivity.onCreate`; no runtime crash
 - [ ] `./gradlew :composeApp:assembleDebug` succeeds
-- [ ] App launches without Hilt component initialisation crash on a physical device
 
-#### Task 4.1.2: EmulatorViewModel (androidMain)
+#### Task 4.1.2: EmulatorController (commonMain) + EmulatorViewModel (androidMain)
 **Owner:** Harry
 **Domain:** android
 **Status:** todo
 **Dependencies:** Task 4.1.1, Task 3.1.2
 **ACs:**
-- [ ] `EmulatorViewModel` in `androidMain`, annotated `@HiltViewModel @Inject`
-- [ ] Exposes `emulatorState: StateFlow<EmulatorState>` and `frameState: StateFlow<IntArray?>`
-- [ ] Implements `FrameSink.onFrame()` — sets `_frameState.value` (no `emit()`, no `runBlocking`)
-- [ ] Implements `DefaultLifecycleObserver`: `onStop` calls `loopDriver.stop()`; `onStart` resumes if was Running; `onCleared` calls `loopDriver.stop()`
-- [ ] `hiltViewModel()` in Compose returns the same instance across recompositions
+- [ ] `EmulatorController` in `commonMain` exposes `emulatorState: StateFlow<EmulatorState>` and `frameState: StateFlow<IntArray?>`; implements `FrameSink.onFrame()` via `_frameState.value = pixels`
+- [ ] `EmulatorViewModel` in `androidMain` wraps `EmulatorController`; implements `DefaultLifecycleObserver`: `onStop` pauses; `onStart` resumes if was Running; `onCleared` stops
+- [ ] `EmulatorViewModel` created via `ViewModelProvider` factory using the `AppGraph` instance from `MainActivity`
+- [ ] ViewModel survives configuration change (rotation) without restarting the emulator loop
 
 #### Task 4.1.3: FilePicker Android actual + ROM caching
 **Owner:** Harry
