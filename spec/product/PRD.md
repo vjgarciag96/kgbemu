@@ -59,8 +59,9 @@ As a user, I can see the game running on screen at full speed so that the game i
 
 **Acceptance Criteria:**
 - [ ] The 160×144 LCD output advances exactly 70,224 T-cycles per frame.
-- [ ] Background tiles, the window layer, and sprites are all rendered correctly.
-- [ ] The game does not freeze or crash on the Tetris or Dr. Mario ROMs within 5 minutes of play.
+- [ ] Background tiles, the window layer, and sprites render correctly — verified by dmg-acid2 test ROM passing its reference frame in CI.
+- [ ] The game does not freeze or crash on the Tetris or Dr. Mario ROMs within 5 minutes of play (manual verification; commercial ROMs not included in CI).
+- [ ] Playable frame rate on a Pixel 6 / Android 12 device: ≥ 57 fps sustained over 60 seconds.
 
 ### US-3: Control the Game
 As a user, I can press the D-pad and A/B/Start/Select buttons to interact with the game.
