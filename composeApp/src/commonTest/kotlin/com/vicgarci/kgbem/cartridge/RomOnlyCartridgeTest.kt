@@ -42,7 +42,7 @@ class RomOnlyCartridgeTest {
     @Test
     fun writeRomIsNoOp() {
         cartridge.writeRom(0x0000, 0xFF)
-        assertEquals(romData[0].toInt() and 0xFF, cartridge.readRom(0x0000))
+        assertEquals(0x00, cartridge.readRom(0x0000))
     }
 
     @Test
@@ -82,6 +82,12 @@ class RomOnlyCartridgeTest {
     fun loadStateIsNoOp() {
         // Should not throw
         cartridge.loadState(byteArrayOf(0x01, 0x02, 0x03))
+    }
+
+    @Test
+    fun readsCorrectByteAtAddress0x3FFF() {
+        // 0x3FFF = 16383, as a byte: 16383 % 256 = 255 = 0xFF
+        assertEquals(0xFF, cartridge.readRom(0x3FFF))
     }
 
     @Test
