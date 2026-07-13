@@ -100,7 +100,7 @@
 #### Task 3.1.1: Post-boot CPU initialisation
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 2.1.3
 **ACs:**
 - [ ] `CpuInitialiser.applyPostBootState(cpu, bus)` sets all registers to DMG post-boot values (A=0x01, F=0xB0, B=0x00, C=0x13, D=0x00, E=0xD8, H=0x01, L=0x4D, SP=0xFFFE, PC=0x0100)
@@ -157,7 +157,7 @@
 #### Task 4.1.3: FilePicker Android actual + ROM caching
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 4.1.1
 **ACs:**
 - [ ] `actual suspend fun pickRomFile()` registered via `rememberLauncherForActivityResult` called unconditionally at composition root (not inside click handler)
@@ -247,7 +247,7 @@
 #### Task 6.1.1: Timer implementation
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 2.1.3
 **ACs:**
 - [ ] `Timer` class with `step(cycles: Int)` advances a 16-bit internal counter; DIV (0xFF04) is the upper byte
@@ -362,7 +362,7 @@
 #### Task 8.1.1: JoypadRegister
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 2.1.3
 **ACs:**
 - [ ] `JoypadRegister.read()` returns correct byte for direction-only, button-only, and both-select-low cases
