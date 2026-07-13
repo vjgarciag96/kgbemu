@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.vicgarci.kgbem.di.AppGraph
+import com.vicgarci.kgbem.platform.AndroidFilePicker
+import com.vicgarci.kgbem.platform.RegisterFilePicker
 import dev.zacsweers.metro.createGraph
 
 class MainActivity : ComponentActivity() {
@@ -16,7 +18,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        AndroidFilePicker.context = applicationContext
+
         setContent {
+            RegisterFilePicker()
             App()
         }
     }
