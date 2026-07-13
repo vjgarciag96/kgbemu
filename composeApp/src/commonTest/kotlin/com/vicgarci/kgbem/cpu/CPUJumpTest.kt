@@ -1,5 +1,6 @@
 package com.vicgarci.kgbem.cpu
 
+import com.vicgarci.kgbem.cartridge.RomOnlyCartridge
 import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toUByte
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,21 +19,20 @@ class CPUJumpTest {
     )
 
     private var programCounter = ProgramCounter(0.toUShort())
-    private val memory = Array(0x10000) { 0.toUByte() }
-    private val memoryBus = MemoryBus(memory)
 
-    private val cpu = CPU(
-        registers,
-        programCounter,
-        memoryBus,
-    )
+    private fun createCpu(rom: ByteArray): CPU {
+        val memoryBus = MemoryBus(RomOnlyCartridge(rom))
+        return CPU(registers, programCounter, memoryBus)
+    }
 
     @Test
     fun jump_notZero_met() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = false).toUByte()
-        memory[0] = 0xC2.toUByte() // JUMP NZ opcode
-        memory[1] = 0xCD.toUByte()
-        memory[2] = 0xAB.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xC2.toByte() // JUMP NZ opcode
+        rom[1] = 0xCD.toByte()
+        rom[2] = 0xAB.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
         val currentPc = programCounter.getAndIncrement()
@@ -43,9 +43,11 @@ class CPUJumpTest {
     @Test
     fun jump_notZero_notMet() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = true).toUByte()
-        memory[0] = 0xC2.toUByte() // JP NZ opcode
-        memory[1] = 0xCD.toUByte()
-        memory[2] = 0xAB.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xC2.toByte() // JP NZ opcode
+        rom[1] = 0xCD.toByte()
+        rom[2] = 0xAB.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
         val currentPc = programCounter.getAndIncrement()
@@ -56,9 +58,11 @@ class CPUJumpTest {
     @Test
     fun jump_zero_met() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = true).toUByte()
-        memory[0] = 0xCA.toUByte() // JP Z opcode
-        memory[1] = 0xCD.toUByte()
-        memory[2] = 0xAB.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xCA.toByte() // JP Z opcode
+        rom[1] = 0xCD.toByte()
+        rom[2] = 0xAB.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
         val currentPc = programCounter.getAndIncrement()
@@ -69,9 +73,11 @@ class CPUJumpTest {
     @Test
     fun jump_zero_notMet() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = false).toUByte()
-        memory[0] = 0xCA.toUByte() // JP Z opcode
-        memory[1] = 0xCD.toUByte()
-        memory[2] = 0xAB.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xCA.toByte() // JP Z opcode
+        rom[1] = 0xCD.toByte()
+        rom[2] = 0xAB.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
         val currentPc = programCounter.getAndIncrement()
@@ -82,9 +88,11 @@ class CPUJumpTest {
     @Test
     fun jump_carry_met() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
-        memory[0] = 0xDA.toUByte() // JP C opcode
-        memory[1] = 0xCD.toUByte()
-        memory[2] = 0xAB.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xDA.toByte() // JP C opcode
+        rom[1] = 0xCD.toByte()
+        rom[2] = 0xAB.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
         val currentPc = programCounter.getAndIncrement()
@@ -95,9 +103,11 @@ class CPUJumpTest {
     @Test
     fun jump_carry_notMet() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = false).toUByte()
-        memory[0] = 0xDA.toUByte() // JP C opcode
-        memory[1] = 0xCD.toUByte()
-        memory[2] = 0xAB.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xDA.toByte() // JP C opcode
+        rom[1] = 0xCD.toByte()
+        rom[2] = 0xAB.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
         val currentPc = programCounter.getAndIncrement()
@@ -108,9 +118,11 @@ class CPUJumpTest {
     @Test
     fun jump_notCarry_met() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = false).toUByte()
-        memory[0] = 0xD2.toUByte() // JP NC opcode
-        memory[1] = 0xCD.toUByte()
-        memory[2] = 0xAB.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xD2.toByte() // JP NC opcode
+        rom[1] = 0xCD.toByte()
+        rom[2] = 0xAB.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
         val currentPc = programCounter.getAndIncrement()
@@ -121,9 +133,11 @@ class CPUJumpTest {
     @Test
     fun jump_notCarry_notMet() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
-        memory[0] = 0xD2.toUByte() // JP NC opcode
-        memory[1] = 0xCD.toUByte()
-        memory[2] = 0xAB.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xD2.toByte() // JP NC opcode
+        rom[1] = 0xCD.toByte()
+        rom[2] = 0xAB.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
         val currentPc = programCounter.getAndIncrement()
@@ -133,9 +147,11 @@ class CPUJumpTest {
 
     @Test
     fun jump_unconditional() {
-        memory[0] = 0xC3.toUByte() // JP nn opcode
-        memory[1] = 0xCD.toUByte()
-        memory[2] = 0xAB.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xC3.toByte() // JP nn opcode
+        rom[1] = 0xCD.toByte()
+        rom[2] = 0xAB.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
         val currentPc = programCounter.getAndIncrement()
@@ -145,8 +161,10 @@ class CPUJumpTest {
 
     @Test
     fun jumpRelative_unconditional_positive() {
-        memory[0] = 0x18.toUByte() // JR n opcode
-        memory[1] = 0x05.toUByte() // +5
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x18.toByte() // JR n opcode
+        rom[1] = 0x05.toByte() // +5
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -156,8 +174,10 @@ class CPUJumpTest {
 
     @Test
     fun jumpRelative_unconditional_negative() {
-        memory[0] = 0x18.toUByte() // JR n opcode
-        memory[1] = 0xFB.toUByte() // -5
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x18.toByte() // JR n opcode
+        rom[1] = 0xFB.toByte() // -5
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -168,8 +188,10 @@ class CPUJumpTest {
     @Test
     fun jumpRelative_notZero_met() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = false).toUByte()
-        memory[0] = 0x20.toUByte() // JR NZ opcode
-        memory[1] = 0x05.toUByte() // +5
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x20.toByte() // JR NZ opcode
+        rom[1] = 0x05.toByte() // +5
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -179,8 +201,10 @@ class CPUJumpTest {
     @Test
     fun jumpRelative_notZero_notMet() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = true).toUByte()
-        memory[0] = 0x20.toUByte() // JR NZ opcode
-        memory[1] = 0x05.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x20.toByte() // JR NZ opcode
+        rom[1] = 0x05.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -190,8 +214,10 @@ class CPUJumpTest {
     @Test
     fun jumpRelative_zero_met() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = true).toUByte()
-        memory[0] = 0x28.toUByte() // JR Z opcode
-        memory[1] = 0x05.toUByte() // +5
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x28.toByte() // JR Z opcode
+        rom[1] = 0x05.toByte() // +5
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -201,8 +227,10 @@ class CPUJumpTest {
     @Test
     fun jumpRelative_zero_notMet() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = false).toUByte()
-        memory[0] = 0x28.toUByte() // JR Z opcode
-        memory[1] = 0x05.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x28.toByte() // JR Z opcode
+        rom[1] = 0x05.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -212,8 +240,10 @@ class CPUJumpTest {
     @Test
     fun jumpRelative_notCarry_met() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = false).toUByte()
-        memory[0] = 0x30.toUByte() // JR NC opcode
-        memory[1] = 0x05.toUByte() // +5
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x30.toByte() // JR NC opcode
+        rom[1] = 0x05.toByte() // +5
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -223,8 +253,10 @@ class CPUJumpTest {
     @Test
     fun jumpRelative_notCarry_notMet() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
-        memory[0] = 0x30.toUByte() // JR NC opcode
-        memory[1] = 0x05.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x30.toByte() // JR NC opcode
+        rom[1] = 0x05.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -234,8 +266,10 @@ class CPUJumpTest {
     @Test
     fun jumpRelative_carry_met() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
-        memory[0] = 0x38.toUByte() // JR C opcode
-        memory[1] = 0x05.toUByte() // +5
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x38.toByte() // JR C opcode
+        rom[1] = 0x05.toByte() // +5
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -245,8 +279,10 @@ class CPUJumpTest {
     @Test
     fun jumpRelative_carry_notMet() {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = false).toUByte()
-        memory[0] = 0x38.toUByte() // JR C opcode
-        memory[1] = 0x05.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x38.toByte() // JR C opcode
+        rom[1] = 0x05.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 

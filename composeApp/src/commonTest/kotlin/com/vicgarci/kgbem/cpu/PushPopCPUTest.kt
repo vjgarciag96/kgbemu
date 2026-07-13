@@ -1,5 +1,6 @@
 package com.vicgarci.kgbem.cpu
 
+import com.vicgarci.kgbem.cartridge.RomOnlyCartridge
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -17,22 +18,21 @@ class PushPopCPUTest {
     )
 
     private var programCounter = ProgramCounter(0.toUShort())
-    private val memory = Array(0x10000) { 0.toUByte() }
-    private val memoryBus = MemoryBus(memory)
-    private val stackPointer = StackPointer(8.toUShort())
+    private val stackPointer = StackPointer(0xFFFE.toUShort())
 
-    private val cpu = CPU(
-        registers,
-        programCounter,
-        memoryBus,
-        stackPointer,
-    )
+    private fun createCpuWithMemoryBus(rom: ByteArray): Pair<CPU, MemoryBus> {
+        val memoryBus = MemoryBus(RomOnlyCartridge(rom))
+        val cpu = CPU(registers, programCounter, memoryBus, stackPointer)
+        return cpu to memoryBus
+    }
 
     @Test
     fun popBC() {
-        memory[0] = 0xC1.toUByte() // POP BC opcode
-        memory[8] = 0x34.toUByte() // low byte
-        memory[9] = 0x12.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xC1.toByte() // POP BC opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFE.toUShort(), 0x34.toUByte()) // low byte
+        memoryBus.writeByte(0xFFFF.toUShort(), 0x12.toUByte()) // high byte
 
         cpu.step()
 
@@ -42,9 +42,11 @@ class PushPopCPUTest {
 
     @Test
     fun popDE() {
-        memory[0] = 0xD1.toUByte() // POP DE opcode
-        memory[8] = 0x34.toUByte() // low byte
-        memory[9] = 0x12.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xD1.toByte() // POP DE opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFE.toUShort(), 0x34.toUByte()) // low byte
+        memoryBus.writeByte(0xFFFF.toUShort(), 0x12.toUByte()) // high byte
 
         cpu.step()
 
@@ -53,9 +55,11 @@ class PushPopCPUTest {
 
     @Test
     fun popHL() {
-        memory[0] = 0xE1.toUByte() // POP HL opcode
-        memory[8] = 0x34.toUByte() // low byte
-        memory[9] = 0x12.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xE1.toByte() // POP HL opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFE.toUShort(), 0x34.toUByte()) // low byte
+        memoryBus.writeByte(0xFFFF.toUShort(), 0x12.toUByte()) // high byte
 
         cpu.step()
 
@@ -64,9 +68,11 @@ class PushPopCPUTest {
 
     @Test
     fun popAF() {
-        memory[0] = 0xF1.toUByte() // POP AF opcode
-        memory[8] = 0x34.toUByte() // low byte
-        memory[9] = 0x12.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xF1.toByte() // POP AF opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFE.toUShort(), 0x34.toUByte()) // low byte
+        memoryBus.writeByte(0xFFFF.toUShort(), 0x12.toUByte()) // high byte
 
         cpu.step()
 
@@ -76,49 +82,57 @@ class PushPopCPUTest {
 
     @Test
     fun pushBC() {
-        memory[0] = 0xC5.toUByte() // PUSH BC opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xC5.toByte() // PUSH BC opcode
         registers.b = 0x12.toUByte()
         registers.c = 0x34.toUByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x34.toUByte(), memory[6]) // low byte
-        assertEquals(0x12.toUByte(), memory[7]) // high byte
+        assertEquals(0x34.toUByte(), memoryBus.readByte(0xFFFC.toUShort())) // low byte
+        assertEquals(0x12.toUByte(), memoryBus.readByte(0xFFFD.toUShort())) // high byte
     }
 
     @Test
     fun pushDE() {
-        memory[0] = 0xD5.toUByte() // PUSH DE opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xD5.toByte() // PUSH DE opcode
         registers.d = 0x12.toUByte()
         registers.e = 0x34.toUByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x34.toUByte(), memory[6]) // low byte
-        assertEquals(0x12.toUByte(), memory[7]) // high byte
+        assertEquals(0x34.toUByte(), memoryBus.readByte(0xFFFC.toUShort())) // low byte
+        assertEquals(0x12.toUByte(), memoryBus.readByte(0xFFFD.toUShort())) // high byte
     }
 
     @Test
     fun pushHL() {
-        memory[0] = 0xE5.toUByte() // PUSH HL opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xE5.toByte() // PUSH HL opcode
         registers.h = 0x12.toUByte()
         registers.l = 0x34.toUByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x34.toUByte(), memory[6]) // low byte
-        assertEquals(0x12.toUByte(), memory[7]) // high byte
+        assertEquals(0x34.toUByte(), memoryBus.readByte(0xFFFC.toUShort())) // low byte
+        assertEquals(0x12.toUByte(), memoryBus.readByte(0xFFFD.toUShort())) // high byte
     }
 
     @Test
     fun pushAF() {
-        memory[0] = 0xF5.toUByte() // PUSH AF opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xF5.toByte() // PUSH AF opcode
         registers.a = 0x12.toUByte()
         registers.f = 0x34.toUByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x34.toUByte(), memory[6]) // low byte
-        assertEquals(0x12.toUByte(), memory[7]) // high byte
+        assertEquals(0x34.toUByte(), memoryBus.readByte(0xFFFC.toUShort())) // low byte
+        assertEquals(0x12.toUByte(), memoryBus.readByte(0xFFFD.toUShort())) // high byte
     }
 }

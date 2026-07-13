@@ -1,44 +1,37 @@
 package com.vicgarci.kgbem.cpu
 
+import com.vicgarci.kgbem.cartridge.Cartridge
+
 class MemoryBus(
+    private val cartridge: Cartridge,
     private val memory: Array<UByte> = Array(0x10000) { 0b0.toUByte() },
 ) {
-
-    /**
-     * Get the interrupt pending mask, which indicates which interrupts are both
-     * enabled and requested.
-     */
     val interruptPendingMask: UByte
         get() = interruptEnable and interruptFlags and 0x1F.toUByte()
 
-    /**
-     * Get the interrupt flags register (IF, located at address 0xFF0F). This register
-     * indicates which interrupts are requested.
-     *
-     * The bits in this register correspond to the following interrupts:
-     * - Bit 0: V-Blank Interrupt
-     * - Bit 1: LCD STAT Interrupt
-     * - Bit 2: Timer Interrupt
-     * - Bit 3: Serial Interrupt
-     * - Bit 4: Joypad Interrupt
-     * - Bit 5-7: Unused (always read as 0)
-     */
     private val interruptFlags: UByte
         get() = memory[0xFF0F]
 
-    /**
-     * Get the interrupt enable register (IE, located at address 0xFFFF). This register
-     * enables or disables the individual interrupt sources.
-     */
     private val interruptEnable: UByte
         get() = memory[0xFFFF]
 
     fun readByte(address: UShort): UByte {
-        return memory[address.toInt()]
+        val addr = address.toInt()
+        return when {
+            addr <= 0x7FFF -> cartridge.readRom(addr).toUByte()
+            addr in 0xA000..0xBFFF -> cartridge.readRam(addr).toUByte()
+            else -> memory[addr]
+        }
     }
 
     fun writeByte(address: UShort, value: UByte) {
-        memory[address.toInt()] = value
+        val addr = address.toInt()
+        val v = value.toInt()
+        when {
+            addr <= 0x7FFF -> cartridge.writeRom(addr, v)
+            addr in 0xA000..0xBFFF -> cartridge.writeRam(addr, v)
+            else -> memory[addr] = value
+        }
     }
 
     fun anyInterruptPending(): Boolean {

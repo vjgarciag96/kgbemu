@@ -1,5 +1,6 @@
 package com.vicgarci.kgbem.cpu
 
+import com.vicgarci.kgbem.cartridge.RomOnlyCartridge
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -17,21 +18,25 @@ class LoadCPUTest {
     )
 
     private var programCounter = ProgramCounter(0.toUShort())
-    private val memory = Array(0x10000) { 0.toUByte() }
-    private val memoryBus = MemoryBus(memory)
-    private val stackPointer = StackPointer(0x3.toUShort())
+    private val stackPointer = StackPointer(0xFFFE.toUShort())
 
-    private val cpu = CPU(
-        registers,
-        programCounter,
-        memoryBus,
-        stackPointer,
-    )
+    private fun createCpu(rom: ByteArray): CPU {
+        val memoryBus = MemoryBus(RomOnlyCartridge(rom))
+        return CPU(registers, programCounter, memoryBus, stackPointer)
+    }
+
+    private fun createCpuWithMemoryBus(rom: ByteArray): Pair<CPU, MemoryBus> {
+        val memoryBus = MemoryBus(RomOnlyCartridge(rom))
+        val cpu = CPU(registers, programCounter, memoryBus, stackPointer)
+        return cpu to memoryBus
+    }
 
     @Test
     fun load_constant_intoRegisterB() {
-        memory[0] = 0x06.toUByte() // LD B, n opcode
-        memory[1] = 0x42.toUByte() // value to load into register B
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x06.toByte() // LD B, n opcode
+        rom[1] = 0x42.toByte() // value to load into register B
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -40,8 +45,10 @@ class LoadCPUTest {
 
     @Test
     fun load_constant_intoRegisterC() {
-        memory[0] = 0x0E.toUByte() // LD C, n opcode
-        memory[1] = 0x43.toUByte() // value to load into register C
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x0E.toByte() // LD C, n opcode
+        rom[1] = 0x43.toByte() // value to load into register C
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -50,8 +57,10 @@ class LoadCPUTest {
 
     @Test
     fun load_constant_intoRegisterD() {
-        memory[0] = 0x16.toUByte() // LD D, n opcode
-        memory[1] = 0x44.toUByte() // value to load into register D
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x16.toByte() // LD D, n opcode
+        rom[1] = 0x44.toByte() // value to load into register D
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -60,8 +69,10 @@ class LoadCPUTest {
 
     @Test
     fun load_constant_intoRegisterE() {
-        memory[0] = 0x1E.toUByte() // LD E, n opcode
-        memory[1] = 0x45.toUByte() // value to load into register E
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x1E.toByte() // LD E, n opcode
+        rom[1] = 0x45.toByte() // value to load into register E
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -70,8 +81,10 @@ class LoadCPUTest {
 
     @Test
     fun load_constant_intoRegisterH() {
-        memory[0] = 0x26.toUByte() // LD H, n opcode
-        memory[1] = 0x46.toUByte() // value to load into register H
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x26.toByte() // LD H, n opcode
+        rom[1] = 0x46.toByte() // value to load into register H
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -80,8 +93,10 @@ class LoadCPUTest {
 
     @Test
     fun load_constant_intoRegisterL() {
-        memory[0] = 0x2E.toUByte() // LD L, n opcode
-        memory[1] = 0x47.toUByte() // value to load into register L
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x2E.toByte() // LD L, n opcode
+        rom[1] = 0x47.toByte() // value to load into register L
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -90,8 +105,10 @@ class LoadCPUTest {
 
     @Test
     fun load_constant_intoRegisterA() {
-        memory[0] = 0x3E.toUByte() // LD A, n opcode
-        memory[1] = 0x48.toUByte() // value to load into register A
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x3E.toByte() // LD A, n opcode
+        rom[1] = 0x48.toByte() // value to load into register A
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -100,20 +117,24 @@ class LoadCPUTest {
 
     @Test
     fun load_constant_into_memoryAtHL() {
-        registers.hl = 0x1234.toUShort()
-        memory[0] = 0x36.toUByte() // LD (HL), n opcode
-        memory[1] = 0x99.toUByte() // value to store at HL
+        registers.hl = 0xC000.toUShort() // Use WRAM, not ROM range
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x36.toByte() // LD (HL), n opcode
+        rom[1] = 0x99.toByte() // value to store at HL
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x99.toUByte(), memory[0x1234])
+        assertEquals(0x99.toUByte(), memoryBus.readByte(0xC000.toUShort()))
     }
 
     @Test
     fun load_constant_intoRegisterBC() {
-        memory[0] = 0x01.toUByte() // LD BC, nn opcode
-        memory[1] = 0x34.toUByte() // low byte
-        memory[2] = 0x12.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x01.toByte() // LD BC, nn opcode
+        rom[1] = 0x34.toByte() // low byte
+        rom[2] = 0x12.toByte() // high byte
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -122,9 +143,11 @@ class LoadCPUTest {
 
     @Test
     fun load_constant_intoRegisterDE() {
-        memory[0] = 0x11.toUByte() // LD DE, nn opcode
-        memory[1] = 0x56.toUByte() // low byte
-        memory[2] = 0x34.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x11.toByte() // LD DE, nn opcode
+        rom[1] = 0x56.toByte() // low byte
+        rom[2] = 0x34.toByte() // high byte
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -133,9 +156,11 @@ class LoadCPUTest {
 
     @Test
     fun load_constant_intoRegisterHL() {
-        memory[0] = 0x21.toUByte() // LD HL, nn opcode
-        memory[1] = 0x78.toUByte() // low byte
-        memory[2] = 0x56.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x21.toByte() // LD HL, nn opcode
+        rom[1] = 0x78.toByte() // low byte
+        rom[2] = 0x56.toByte() // high byte
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -144,9 +169,11 @@ class LoadCPUTest {
 
     @Test
     fun load_constant_intoRegisterSP() {
-        memory[0] = 0x31.toUByte() // LD SP, nn opcode
-        memory[1] = 0x9A.toUByte() // low byte
-        memory[2] = 0x78.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x31.toByte() // LD SP, nn opcode
+        rom[1] = 0x9A.toByte() // low byte
+        rom[2] = 0x78.toByte() // high byte
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -155,56 +182,66 @@ class LoadCPUTest {
 
     @Test
     fun loadIncrement_A_from_HL() {
-        registers.hl = 0x9.toUShort()
-        memory[0x9] = 0x42.toUByte() // Value at HL
-        memory[0] = 0x2A.toUByte() // LD A, (HL+) opcode
+        registers.hl = 0xC009.toUShort() // Use WRAM
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x2A.toByte() // LD A, (HL+) opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xC009.toUShort(), 0x42.toUByte()) // Value at HL
 
         cpu.step()
 
         assertEquals(0x42.toUByte(), registers.a) // A should now hold the value at HL
-        assertEquals(0xA.toUShort(), registers.hl) // HL should increment by 1
+        assertEquals(0xC00A.toUShort(), registers.hl) // HL should increment by 1
     }
 
     @Test
     fun loadIncrement_HL_from_A() {
-        registers.hl = 0x9.toUShort()
+        registers.hl = 0xC009.toUShort() // Use WRAM
         registers.a = 0x42.toUByte() // Value in A
-        memory[0] = 0x22.toUByte() // LD (HL+), A opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x22.toByte() // LD (HL+), A opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x42.toUByte(), memory[0x9]) // Memory at HL should now hold the value of A
-        assertEquals(0xA.toUShort(), registers.hl) // HL should increment by 1
+        assertEquals(0x42.toUByte(), memoryBus.readByte(0xC009.toUShort())) // Memory at HL should now hold the value of A
+        assertEquals(0xC00A.toUShort(), registers.hl) // HL should increment by 1
     }
 
     @Test
     fun loadDecrement_A_from_HL() {
-        registers.hl = 0x9.toUShort()
-        memory[0x9] = 0x42.toUByte() // Value at HL
-        memory[0] = 0x3A.toUByte() // LD A, (HL-) opcode
+        registers.hl = 0xC009.toUShort() // Use WRAM
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x3A.toByte() // LD A, (HL-) opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xC009.toUShort(), 0x42.toUByte()) // Value at HL
 
         cpu.step()
 
         assertEquals(0x42.toUByte(), registers.a) // A should now hold the value at HL
-        assertEquals(0x8.toUShort(), registers.hl) // HL should decrement by 1
+        assertEquals(0xC008.toUShort(), registers.hl) // HL should decrement by 1
     }
 
     @Test
     fun loadDecrement_HL_from_A() {
-        registers.hl = 0x9.toUShort()
+        registers.hl = 0xC009.toUShort() // Use WRAM
         registers.a = 0x42.toUByte() // Value in A
-        memory[0] = 0x32.toUByte() // LD (HL-), A opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x32.toByte() // LD (HL-), A opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x42.toUByte(), memory[0x9]) // Memory at HL should now hold the value of A
-        assertEquals(0x8.toUShort(), registers.hl) // HL should decrement by 1
+        assertEquals(0x42.toUByte(), memoryBus.readByte(0xC009.toUShort())) // Memory at HL should now hold the value of A
+        assertEquals(0xC008.toUShort(), registers.hl) // HL should decrement by 1
     }
 
     @Test
     fun loadIncrement_wrapAround() {
         registers.hl = 0xFFFF.toUShort()
-        memory[0] = 0x22.toUByte() // LD (HL+), A opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x22.toByte() // LD (HL+), A opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -214,7 +251,9 @@ class LoadCPUTest {
     @Test
     fun loadDecrement_wrapAround() {
         registers.hl = 0x0000.toUShort()
-        memory[0] = 0x32.toUByte() // LD (HL-), A opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x32.toByte() // LD (HL-), A opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -224,7 +263,9 @@ class LoadCPUTest {
     @Test
     fun load_registerB_into_registerA() {
         registers.b = 0x45.toUByte()
-        memory[0] = 0x78.toUByte() // LD A, B opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x78.toByte() // LD A, B opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -234,7 +275,9 @@ class LoadCPUTest {
     @Test
     fun load_registerC_into_registerB() {
         registers.c = 0x42.toUByte()
-        memory[0] = 0x41.toUByte() // LD B, C opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x41.toByte() // LD B, C opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -244,7 +287,9 @@ class LoadCPUTest {
     @Test
     fun load_registerD_into_registerB() {
         registers.d = 0x50.toUByte()
-        memory[0] = 0x42.toUByte() // LD B, D opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x42.toByte() // LD B, D opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -254,7 +299,9 @@ class LoadCPUTest {
     @Test
     fun load_registerE_into_registerD() {
         registers.e = 0x43.toUByte()
-        memory[0] = 0x53.toUByte() // LD D, E opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x53.toByte() // LD D, E opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -263,7 +310,9 @@ class LoadCPUTest {
     @Test
     fun load_registerH_into_registerE() {
         registers.h = 0x47.toUByte()
-        memory[0] = 0x5C.toUByte() // LD E, H opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x5C.toByte() // LD E, H opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -273,7 +322,9 @@ class LoadCPUTest {
     @Test
     fun load_registerL_into_registerH() {
         registers.l = 0x44.toUByte()
-        memory[0] = 0x65.toUByte() // LD H, L opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x65.toByte() // LD H, L opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -283,7 +334,9 @@ class LoadCPUTest {
     @Test
     fun load_registerA_into_registerC() {
         registers.a = 0x46.toUByte()
-        memory[0] = 0x4F.toUByte() // LD C, A opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x4F.toByte() // LD C, A opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -292,9 +345,11 @@ class LoadCPUTest {
 
     @Test
     fun load_memoryAtHL_into_registerA() {
-        registers.hl = 0x1000.toUShort()
-        memory[0x1000] = 0x42.toUByte() // Value at HL
-        memory[0] = 0x7E.toUByte() // LD A, (HL) opcode
+        registers.hl = 0xC000.toUShort() // Use WRAM
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x7E.toByte() // LD A, (HL) opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xC000.toUShort(), 0x42.toUByte()) // Value at HL
 
         cpu.step()
 
@@ -303,42 +358,50 @@ class LoadCPUTest {
 
     @Test
     fun load_registerA_into_memoryAtHL() {
-        registers.hl = 0x1000.toUShort()
+        registers.hl = 0xC000.toUShort() // Use WRAM
         registers.a = 0x42.toUByte() // Value in A
-        memory[0] = 0x77.toUByte() // LD (HL), A opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x77.toByte() // LD (HL), A opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x42.toUByte(), memory[0x1000]) // Value in A should be stored at HL
+        assertEquals(0x42.toUByte(), memoryBus.readByte(0xC000.toUShort())) // Value in A should be stored at HL
     }
 
     @Test
     fun load_registerA_into_memoryAtBC() {
-        registers.bc = 0x2000.toUShort()
+        registers.bc = 0xC000.toUShort() // Use WRAM
         registers.a = 0x77.toUByte() // Value in A
-        memory[0] = 0x02.toUByte() // LD (BC), A opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x02.toByte() // LD (BC), A opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x77.toUByte(), memory[0x2000])
+        assertEquals(0x77.toUByte(), memoryBus.readByte(0xC000.toUShort()))
     }
 
     @Test
     fun load_registerA_into_memoryAtDE() {
-        registers.de = 0x2001.toUShort()
+        registers.de = 0xC001.toUShort() // Use WRAM
         registers.a = 0x88.toUByte() // Value in A
-        memory[0] = 0x12.toUByte() // LD (DE), A opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x12.toByte() // LD (DE), A opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x88.toUByte(), memory[0x2001])
+        assertEquals(0x88.toUByte(), memoryBus.readByte(0xC001.toUShort()))
     }
 
     @Test
     fun load_memoryAtBC_into_registerA() {
-        registers.bc = 0x2002.toUShort()
-        memory[0x2002] = 0x55.toUByte() // Value at BC
-        memory[0] = 0x0A.toUByte() // LD A, (BC) opcode
+        registers.bc = 0xC002.toUShort() // Use WRAM
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x0A.toByte() // LD A, (BC) opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xC002.toUShort(), 0x55.toUByte()) // Value at BC
 
         cpu.step()
 
@@ -347,9 +410,11 @@ class LoadCPUTest {
 
     @Test
     fun load_memoryAtDE_into_registerA() {
-        registers.de = 0x2003.toUShort()
-        memory[0x2003] = 0x66.toUByte() // Value at DE
-        memory[0] = 0x1A.toUByte() // LD A, (DE) opcode
+        registers.de = 0xC003.toUShort() // Use WRAM
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x1A.toByte() // LD A, (DE) opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xC003.toUShort(), 0x66.toUByte()) // Value at DE
 
         cpu.step()
 
@@ -359,21 +424,25 @@ class LoadCPUTest {
     @Test
     fun load_registerA_into_memoryAtImmediate() {
         registers.a = 0x5A.toUByte() // Value in A
-        memory[0] = 0xEA.toUByte() // LD (nn), A opcode
-        memory[1] = 0x34.toUByte() // low byte
-        memory[2] = 0x12.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xEA.toByte() // LD (nn), A opcode
+        rom[1] = 0x34.toByte() // low byte
+        rom[2] = 0xC0.toByte() // high byte -> 0xC034 (WRAM)
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x5A.toUByte(), memory[0x1234])
+        assertEquals(0x5A.toUByte(), memoryBus.readByte(0xC034.toUShort()))
     }
 
     @Test
     fun load_memoryAtImmediate_into_registerA() {
-        memory[0x5678] = 0xAB.toUByte() // Value at nn
-        memory[0] = 0xFA.toUByte() // LD A, (nn) opcode
-        memory[1] = 0x78.toUByte() // low byte
-        memory[2] = 0x56.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xFA.toByte() // LD A, (nn) opcode
+        rom[1] = 0x78.toByte() // low byte
+        rom[2] = 0xC0.toByte() // high byte -> 0xC078 (WRAM)
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xC078.toUShort(), 0xAB.toUByte()) // Value at nn
 
         cpu.step()
 
@@ -383,19 +452,23 @@ class LoadCPUTest {
     @Test
     fun load_registerA_into_highMemoryAtImmediate() {
         registers.a = 0x1A.toUByte()
-        memory[0] = 0xE0.toUByte() // LDH (n), A opcode
-        memory[1] = 0x10.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xE0.toByte() // LDH (n), A opcode
+        rom[1] = 0x10.toByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x1A.toUByte(), memory[0xFF10])
+        assertEquals(0x1A.toUByte(), memoryBus.readByte(0xFF10.toUShort()))
     }
 
     @Test
     fun load_highMemoryAtImmediate_into_registerA() {
-        memory[0xFF20] = 0x2B.toUByte()
-        memory[0] = 0xF0.toUByte() // LDH A, (n) opcode
-        memory[1] = 0x20.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xF0.toByte() // LDH A, (n) opcode
+        rom[1] = 0x20.toByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFF20.toUShort(), 0x2B.toUByte())
 
         cpu.step()
 
@@ -406,18 +479,22 @@ class LoadCPUTest {
     fun load_registerA_into_highMemoryAtC() {
         registers.a = 0x3C.toUByte()
         registers.c = 0x30.toUByte()
-        memory[0] = 0xE2.toUByte() // LD (C), A opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xE2.toByte() // LD (C), A opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x3C.toUByte(), memory[0xFF30])
+        assertEquals(0x3C.toUByte(), memoryBus.readByte(0xFF30.toUShort()))
     }
 
     @Test
     fun load_highMemoryAtC_into_registerA() {
         registers.c = 0x40.toUByte()
-        memory[0xFF40] = 0x4D.toUByte()
-        memory[0] = 0xF2.toUByte() // LD A, (C) opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xF2.toByte() // LD A, (C) opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFF40.toUShort(), 0x4D.toUByte())
 
         cpu.step()
 
@@ -426,9 +503,11 @@ class LoadCPUTest {
 
     @Test
     fun load_memoryAtHL_into_registerB() {
-        registers.hl = 0x2000.toUShort()
-        memory[0x2000] = 0x55.toUByte() // Value at HL
-        memory[0] = 0x46.toUByte() // LD B, (HL) opcode
+        registers.hl = 0xC000.toUShort() // Use WRAM
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x46.toByte() // LD B, (HL) opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xC000.toUShort(), 0x55.toUByte()) // Value at HL
 
         cpu.step()
 
@@ -437,12 +516,14 @@ class LoadCPUTest {
 
     @Test
     fun load_registerC_into_memoryAtHL() {
-        registers.hl = 0x2000.toUShort()
+        registers.hl = 0xC000.toUShort() // Use WRAM
         registers.c = 0x66.toUByte() // Value in C
-        memory[0] = 0x71.toUByte() // LD (HL), C opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x71.toByte() // LD (HL), C opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x66.toUByte(), memory[0x2000]) // Value in C should be stored at HL
+        assertEquals(0x66.toUByte(), memoryBus.readByte(0xC000.toUShort())) // Value in C should be stored at HL
     }
 }

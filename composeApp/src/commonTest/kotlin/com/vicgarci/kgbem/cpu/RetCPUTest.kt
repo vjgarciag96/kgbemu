@@ -1,5 +1,6 @@
 package com.vicgarci.kgbem.cpu
 
+import com.vicgarci.kgbem.cartridge.RomOnlyCartridge
 import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toUByte
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,131 +19,146 @@ class RetCPUTest {
     )
 
     private var programCounter = ProgramCounter(0.toUShort())
-    private val memory = Array(0x10000) { 0.toUByte() }
-    private val memoryBus = MemoryBus(memory)
-    private val stackPointer = StackPointer(8.toUShort())
+    private val stackPointer = StackPointer(0xFFFC.toUShort())
 
-    private val cpu = CPU(
-        registers,
-        programCounter,
-        memoryBus,
-        stackPointer,
-    )
+    private fun createCpuWithMemoryBus(rom: ByteArray): Pair<CPU, MemoryBus> {
+        val memoryBus = MemoryBus(RomOnlyCartridge(rom))
+        val cpu = CPU(registers, programCounter, memoryBus, stackPointer)
+        return cpu to memoryBus
+    }
 
     @Test
     fun ret_unconditional() {
-        memory[0] = 0xC9.toUByte() // RET opcode
-        memory[8] = 0x34.toUByte() // low byte
-        memory[9] = 0x12.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xC9.toByte() // RET opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte()) // low byte
+        memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte()) // high byte
 
         cpu.step()
 
         val retProgramCounter = programCounter.get()
         assertEquals(0x1234.toUShort(), retProgramCounter)
-        assertEquals(10.toUShort(), stackPointer.getAndIncrement())
+        assertEquals(0xFFFE.toUShort(), stackPointer.getAndIncrement())
     }
 
     @Test
     fun ret_notZero_met() {
-        memory[0] = 0xC0.toUByte() // RET NZ opcode
-        memory[8] = 0x34.toUByte() // low byte
-        memory[9] = 0x12.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xC0.toByte() // RET NZ opcode
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte()) // low byte
+        memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte()) // high byte
 
         cpu.step()
 
         assertEquals(0x1234.toUShort(), programCounter.get())
-        assertEquals(10.toUShort(), stackPointer.getAndIncrement())
+        assertEquals(0xFFFE.toUShort(), stackPointer.getAndIncrement())
     }
 
     @Test
     fun ret_notZero_notMet() {
-        memory[0] = 0xC0.toUByte() // RET NZ opcode
-        memory[8] = 0x34.toUByte()
-        memory[9] = 0x12.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xC0.toByte() // RET NZ opcode
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = true).toUByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
+        memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
         cpu.step()
 
         assertEquals(0x0001.toUShort(), programCounter.get())
-        assertEquals(8.toUShort(), stackPointer.getAndIncrement())
+        assertEquals(0xFFFC.toUShort(), stackPointer.getAndIncrement())
     }
 
     @Test
     fun ret_zero_met() {
-        memory[0] = 0xC8.toUByte() // RET Z opcode
-        memory[8] = 0x34.toUByte()
-        memory[9] = 0x12.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xC8.toByte() // RET Z opcode
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = true).toUByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
+        memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
         cpu.step()
 
         assertEquals(0x1234.toUShort(), programCounter.get())
-        assertEquals(10.toUShort(), stackPointer.getAndIncrement())
+        assertEquals(0xFFFE.toUShort(), stackPointer.getAndIncrement())
     }
 
     @Test
     fun ret_zero_notMet() {
-        memory[0] = 0xC8.toUByte() // RET Z opcode
-        memory[8] = 0x34.toUByte()
-        memory[9] = 0x12.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xC8.toByte() // RET Z opcode
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
+        memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
         cpu.step()
 
         assertEquals(0x0001.toUShort(), programCounter.get())
-        assertEquals(8.toUShort(), stackPointer.getAndIncrement())
+        assertEquals(0xFFFC.toUShort(), stackPointer.getAndIncrement())
     }
 
     @Test
     fun ret_notCarry_met() {
-        memory[0] = 0xD0.toUByte() // RET NC opcode
-        memory[8] = 0x34.toUByte()
-        memory[9] = 0x12.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xD0.toByte() // RET NC opcode
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
+        memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
         cpu.step()
 
         assertEquals(0x1234.toUShort(), programCounter.get())
-        assertEquals(10.toUShort(), stackPointer.getAndIncrement())
+        assertEquals(0xFFFE.toUShort(), stackPointer.getAndIncrement())
     }
 
     @Test
     fun ret_notCarry_notMet() {
-        memory[0] = 0xD0.toUByte() // RET NC opcode
-        memory[8] = 0x34.toUByte()
-        memory[9] = 0x12.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xD0.toByte() // RET NC opcode
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
+        memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
         cpu.step()
 
         assertEquals(0x0001.toUShort(), programCounter.get())
-        assertEquals(8.toUShort(), stackPointer.getAndIncrement())
+        assertEquals(0xFFFC.toUShort(), stackPointer.getAndIncrement())
     }
 
     @Test
     fun ret_carry_met() {
-        memory[0] = 0xD8.toUByte() // RET C opcode
-        memory[8] = 0x34.toUByte()
-        memory[9] = 0x12.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xD8.toByte() // RET C opcode
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
+        memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
         cpu.step()
 
         assertEquals(0x1234.toUShort(), programCounter.get())
-        assertEquals(10.toUShort(), stackPointer.getAndIncrement())
+        assertEquals(0xFFFE.toUShort(), stackPointer.getAndIncrement())
     }
 
     @Test
     fun ret_carry_notMet() {
-        memory[0] = 0xD8.toUByte() // RET C opcode
-        memory[8] = 0x34.toUByte()
-        memory[9] = 0x12.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xD8.toByte() // RET C opcode
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
+        memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
         cpu.step()
 
         assertEquals(0x0001.toUShort(), programCounter.get())
-        assertEquals(8.toUShort(), stackPointer.getAndIncrement())
+        assertEquals(0xFFFC.toUShort(), stackPointer.getAndIncrement())
     }
 }

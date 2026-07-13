@@ -1,5 +1,6 @@
 package com.vicgarci.kgbem.cpu
 
+import com.vicgarci.kgbem.cartridge.RomOnlyCartridge
 import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toFlagsRegister
 import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toUByte
 import kotlin.test.Test
@@ -21,22 +22,26 @@ class CPUTest {
     )
 
     private var programCounter = ProgramCounter(0.toUShort())
-    private val memory = Array(0x10000) { 0.toUByte() }
-    private val memoryBus = MemoryBus(memory)
     private val stackPointer = StackPointer(0xFFFF.toUShort())
 
-    private val cpu = CPU(
-        registers,
-        programCounter,
-        memoryBus,
-        stackPointer,
-    )
+    private fun createCpu(rom: ByteArray): CPU {
+        val memoryBus = MemoryBus(RomOnlyCartridge(rom))
+        return CPU(registers, programCounter, memoryBus, stackPointer)
+    }
+
+    private fun createCpuWithMemoryBus(rom: ByteArray): Pair<CPU, MemoryBus> {
+        val memoryBus = MemoryBus(RomOnlyCartridge(rom))
+        val cpu = CPU(registers, programCounter, memoryBus, stackPointer)
+        return cpu to memoryBus
+    }
 
     @Test
     fun add_immediate() {
         registers.a = 0x10.toUByte()
-        memory[0] = 0xC6.toUByte() // ADD A, n opcode
-        memory[1] = 0x05.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xC6.toByte() // ADD A, n opcode
+        rom[1] = 0x05.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -52,8 +57,10 @@ class CPUTest {
             halfCarry = false,
             carry = true,
         ).toUByte()
-        memory[0] = 0xCE.toUByte() // ADC A, n opcode
-        memory[1] = 0x01.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xCE.toByte() // ADC A, n opcode
+        rom[1] = 0x01.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -63,8 +70,10 @@ class CPUTest {
     @Test
     fun sub_immediate() {
         registers.a = 0x10.toUByte()
-        memory[0] = 0xD6.toUByte() // SUB n opcode
-        memory[1] = 0x01.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xD6.toByte() // SUB n opcode
+        rom[1] = 0x01.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -80,8 +89,10 @@ class CPUTest {
             halfCarry = false,
             carry = true,
         ).toUByte()
-        memory[0] = 0xDE.toUByte() // SBC A, n opcode
-        memory[1] = 0x01.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xDE.toByte() // SBC A, n opcode
+        rom[1] = 0x01.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -91,8 +102,10 @@ class CPUTest {
     @Test
     fun and_immediate() {
         registers.a = 0xF0.toUByte()
-        memory[0] = 0xE6.toUByte() // AND n opcode
-        memory[1] = 0x0F.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xE6.toByte() // AND n opcode
+        rom[1] = 0x0F.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -102,8 +115,10 @@ class CPUTest {
     @Test
     fun xor_immediate() {
         registers.a = 0xFF.toUByte()
-        memory[0] = 0xEE.toUByte() // XOR n opcode
-        memory[1] = 0x0F.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xEE.toByte() // XOR n opcode
+        rom[1] = 0x0F.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -113,8 +128,10 @@ class CPUTest {
     @Test
     fun or_immediate() {
         registers.a = 0xF0.toUByte()
-        memory[0] = 0xF6.toUByte() // OR n opcode
-        memory[1] = 0x0F.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xF6.toByte() // OR n opcode
+        rom[1] = 0x0F.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -124,8 +141,10 @@ class CPUTest {
     @Test
     fun cp_immediate() {
         registers.a = 0x10.toUByte()
-        memory[0] = 0xFE.toUByte() // CP n opcode
-        memory[1] = 0x10.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xFE.toByte() // CP n opcode
+        rom[1] = 0x10.toByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -136,8 +155,10 @@ class CPUTest {
     @Test
     fun add_sp_signedOffset() {
         stackPointer.setTo(0xFFF0.toUShort())
-        memory[0] = 0xE8.toUByte() // ADD SP, e8 opcode
-        memory[1] = 0x10.toUByte() // +16
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xE8.toByte() // ADD SP, e8 opcode
+        rom[1] = 0x10.toByte() // +16
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -151,8 +172,10 @@ class CPUTest {
     @Test
     fun add_sp_wrapAround_setsCarryAndHalfCarry() {
         stackPointer.setTo(0xFFFE.toUShort())
-        memory[0] = 0xE8.toUByte() // ADD SP, e8 opcode
-        memory[1] = 0x0F.toUByte() // +15
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xE8.toByte() // ADD SP, e8 opcode
+        rom[1] = 0x0F.toByte() // +15
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -166,8 +189,10 @@ class CPUTest {
     @Test
     fun load_hl_sp_signedOffset() {
         stackPointer.setTo(0x0001.toUShort())
-        memory[0] = 0xF8.toUByte() // LD HL, SP+e8 opcode
-        memory[1] = 0xFE.toUByte() // -2
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xF8.toByte() // LD HL, SP+e8 opcode
+        rom[1] = 0xFE.toByte() // -2
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -182,8 +207,10 @@ class CPUTest {
     @Test
     fun load_hl_sp_halfCarry_set() {
         stackPointer.setTo(0xFFFE.toUShort())
-        memory[0] = 0xF8.toUByte() // LD HL, SP+e8 opcode
-        memory[1] = 0x0F.toUByte() // +15
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xF8.toByte() // LD HL, SP+e8 opcode
+        rom[1] = 0x0F.toByte() // +15
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -198,13 +225,15 @@ class CPUTest {
     fun addHlBc_halfCarry() {
         registers.hl = 0x0FFF.toUShort()
         registers.bc = 0x0001.toUShort()
-        memory[0] = 0x09.toUByte() // ADD HL, BC opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x09.toByte() // ADD HL, BC opcode
         registers.f = FlagsRegister(
             zero = true,
             subtract = true,
             halfCarry = false,
             carry = false,
         ).toUByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -220,13 +249,15 @@ class CPUTest {
     fun addHlSp_carry() {
         registers.hl = 0xFFFF.toUShort()
         stackPointer.setTo(0x0001.toUShort())
-        memory[0] = 0x39.toUByte() // ADD HL, SP opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x39.toByte() // ADD HL, SP opcode
         registers.f = FlagsRegister(
             zero = true,
             subtract = true,
             halfCarry = false,
             carry = false,
         ).toUByte()
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -241,7 +272,9 @@ class CPUTest {
     @Test
     fun loadSpHl() {
         registers.hl = 0x2468.toUShort()
-        memory[0] = 0xF9.toUByte() // LD SP, HL opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xF9.toByte() // LD SP, HL opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -251,33 +284,40 @@ class CPUTest {
     @Test
     fun storeSpAtImmediate() {
         stackPointer.setTo(0xBEEF.toUShort())
-        memory[0] = 0x08.toUByte() // LD (nn), SP opcode
-        memory[1] = 0x00.toUByte() // low byte
-        memory[2] = 0xC0.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x08.toByte() // LD (nn), SP opcode
+        rom[1] = 0x00.toByte() // low byte
+        rom[2] = 0xC0.toByte() // high byte -> target 0xC000 (WRAM, non-ROM)
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0xEF.toUByte(), memory[0xC000])
-        assertEquals(0xBE.toUByte(), memory[0xC001])
+        assertEquals(0xEF.toUByte(), memoryBus.readByte(0xC000.toUShort()))
+        assertEquals(0xBE.toUByte(), memoryBus.readByte(0xC001.toUShort()))
     }
 
     @Test
     fun storeSpAtImmediate_wrapsAddress() {
         stackPointer.setTo(0x1234.toUShort())
-        memory[0] = 0x08.toUByte() // LD (nn), SP opcode
-        memory[1] = 0xFF.toUByte() // low byte
-        memory[2] = 0xFF.toUByte() // high byte
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x08.toByte() // LD (nn), SP opcode
+        rom[1] = 0xFF.toByte() // low byte
+        rom[2] = 0xFF.toByte() // high byte -> target 0xFFFF
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
-        assertEquals(0x34.toUByte(), memory[0xFFFF])
-        assertEquals(0x12.toUByte(), memory[0x0000])
+        assertEquals(0x34.toUByte(), memoryBus.readByte(0xFFFF.toUShort()))
+        // Address 0x0000 wraps around and is in ROM range — write goes to cartridge (no-op for RomOnly).
+        // So we verify the 0xFFFF write succeeded instead of checking the wrapped write at 0x0000.
     }
 
     @Test
     fun jump_hl_setsProgramCounter() {
         registers.hl = 0x2345.toUShort()
-        memory[0] = 0xE9.toUByte() // JP (HL) opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xE9.toByte() // JP (HL) opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -286,6 +326,7 @@ class CPUTest {
 
     @Test
     fun addWithCarry_carryFalse() {
+        val cpu = createCpu(ByteArray(0x8000))
         cpu.execute(Instruction.AddC(Register8.D))
 
         assertEquals(
@@ -303,6 +344,7 @@ class CPUTest {
             halfCarry = false,
             carry = true,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.AddC(Register8.D))
 
@@ -317,6 +359,7 @@ class CPUTest {
     fun subtractWithCarry_carryFalse() {
         registers.a = 0xFF.toUByte()
         registers.d = 0x0F.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Sbc(Register8.D))
 
@@ -336,6 +379,7 @@ class CPUTest {
             halfCarry = false,
             carry = true,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Sbc(Register8.D))
 
@@ -355,6 +399,7 @@ class CPUTest {
             halfCarry = false,
             carry = true,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rra)
 
@@ -371,6 +416,7 @@ class CPUTest {
             halfCarry = false,
             carry = true,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rra)
 
@@ -387,6 +433,7 @@ class CPUTest {
             halfCarry = false,
             carry = true,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rla)
 
@@ -403,6 +450,7 @@ class CPUTest {
             halfCarry = false,
             carry = true,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rla)
 
@@ -419,6 +467,7 @@ class CPUTest {
             halfCarry = false,
             carry = true,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rrca)
 
@@ -435,6 +484,7 @@ class CPUTest {
             halfCarry = false,
             carry = false,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rrca)
 
@@ -451,6 +501,7 @@ class CPUTest {
             halfCarry = false,
             carry = true,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rlca)
 
@@ -467,6 +518,7 @@ class CPUTest {
             halfCarry = false,
             carry = false,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rlca)
 
@@ -477,7 +529,9 @@ class CPUTest {
     @Test
     fun cpl() {
         registers.a = 0xF0.toUByte()
-        memory[0] = 0x2F.toUByte() // CPL opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x2F.toByte() // CPL opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -491,7 +545,9 @@ class CPUTest {
             subtract = true,
             halfCarry = true,
         ).toUByte()
-        memory[0] = 0x37.toUByte() // SCF opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x37.toByte() // SCF opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -508,7 +564,9 @@ class CPUTest {
             subtract = true,
             halfCarry = true,
         ).toUByte()
-        memory[0] = 0x3F.toUByte() // CCF opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x3F.toByte() // CCF opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -527,6 +585,7 @@ class CPUTest {
             halfCarry = false,
             carry = false,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(
             Instruction.Bit(
@@ -550,6 +609,7 @@ class CPUTest {
             halfCarry = false,
             carry = false,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(
             Instruction.Bit(
@@ -573,6 +633,7 @@ class CPUTest {
             halfCarry = false,
             carry = false,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(
             Instruction.Bit(
@@ -590,6 +651,7 @@ class CPUTest {
     @Test
     fun reset() {
         registers.c = 0xFF.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Res(index = 7, Register8.C))
         cpu.execute(Instruction.Res(index = 2, Register8.C))
@@ -600,6 +662,7 @@ class CPUTest {
     @Test
     fun set() {
         registers.e = 0xF0.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Set(index = 0, Register8.E))
         cpu.execute(Instruction.Set(index = 6, Register8.E))
@@ -616,6 +679,7 @@ class CPUTest {
             halfCarry = false,
             carry = false,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Srl(Register8.B))
 
@@ -633,6 +697,7 @@ class CPUTest {
             halfCarry = false,
             carry = false,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Srl(Register8.B))
 
@@ -650,6 +715,7 @@ class CPUTest {
             halfCarry = false,
             carry = false,
         ).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Srl(Register8.B))
 
@@ -662,6 +728,7 @@ class CPUTest {
     fun rotateRight_carryFalse_leastSignificantBit1() {
         registers.c = 0x0F.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rr(Register8.C))
 
@@ -674,6 +741,7 @@ class CPUTest {
     fun rotateRight_carryTrue_leastSignificantBit0() {
         registers.c = 0xF0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rr(Register8.C))
 
@@ -686,6 +754,7 @@ class CPUTest {
     fun rotateRight_rotatesToZero() {
         registers.c = 0b1.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rr(Register8.C))
 
@@ -698,6 +767,7 @@ class CPUTest {
     fun rotateLeft_carryFalse_mostSignificantBit1() {
         registers.c = 0xF0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rl(Register8.C))
 
@@ -710,6 +780,7 @@ class CPUTest {
     fun rotateLeft_carryTrue_mostSignificantBit0() {
         registers.c = 0x0F.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rl(Register8.C))
 
@@ -722,6 +793,7 @@ class CPUTest {
     fun rotateLeft_rotatesToZero() {
         registers.c = 0b10000000.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rl(Register8.C))
 
@@ -734,6 +806,7 @@ class CPUTest {
     fun rotateRightCircularly_leastSignificantBit1() {
         registers.c = 0x0F.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rrc(Register8.C))
 
@@ -746,6 +819,7 @@ class CPUTest {
     fun rotateRightCircularly_leastSignificantBit0() {
         registers.c = 0xF0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rrc(Register8.C))
 
@@ -758,6 +832,7 @@ class CPUTest {
     fun rotateRightCircularly_rotatesToZero() {
         registers.c = 0b0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rrc(Register8.C))
 
@@ -770,6 +845,7 @@ class CPUTest {
     fun rotateLeftCircularly_mostSignificantBit1() {
         registers.c = 0xF0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rlc(Register8.C))
 
@@ -782,6 +858,7 @@ class CPUTest {
     fun rotateLeftCircularly_mostSignificantBit0() {
         registers.c = 0x0F.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rlc(Register8.C))
 
@@ -794,6 +871,7 @@ class CPUTest {
     fun rotateLeftCircularly_rotatesToZero() {
         registers.c = 0b0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Rlc(Register8.C))
 
@@ -806,6 +884,7 @@ class CPUTest {
     fun shiftRightArithmetically_leastSignificantBit0_signBit1() {
         registers.d = 0b10010100.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Sra(Register8.D))
 
@@ -818,6 +897,7 @@ class CPUTest {
     fun shiftRightArithmetically_leastSignificantBit1_signBit0() {
         registers.d = 0b00010101.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Sra(Register8.D))
 
@@ -830,6 +910,7 @@ class CPUTest {
     fun shiftRightArithmetically_shiftsToZero() {
         registers.d = 0b00000001.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Sra(Register8.D))
 
@@ -841,6 +922,7 @@ class CPUTest {
     fun shiftLeftArithmetically_mostSignificantBit0() {
         registers.b = 0x0F.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Sla(Register8.B))
 
@@ -853,6 +935,7 @@ class CPUTest {
     fun shiftLeftArithmetically_mostSignificantBit1() {
         registers.b = 0xF0.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Sla(Register8.B))
 
@@ -865,6 +948,7 @@ class CPUTest {
     fun shiftLeftArithmetically_shiftsToZero() {
         registers.b = 0b100000000.toUByte()
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Sla(Register8.B))
 
@@ -877,6 +961,7 @@ class CPUTest {
         registers.a = 0x0F.toUByte()
         registers.b = 0xF0.toUByte()
         registers.c = 0b01010010.toUByte()
+        val cpu = createCpu(ByteArray(0x8000))
 
         cpu.execute(Instruction.Swap(Register8.A))
         cpu.execute(Instruction.Swap(Register8.B))
@@ -896,11 +981,13 @@ class CPUTest {
             halfCarry = false,
             carry = false,
         ).toUByte()
-        memory[0] = 0x27.toUByte() // DAA opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x27.toByte() // DAA opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
-        assertEquals(0x45.toUByte(), registers.a) // No adjustments needed
+        assertEquals(0x45.toUByte(), registers.a)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.carry)
         assertFalse(flags.halfCarry)
@@ -916,11 +1003,13 @@ class CPUTest {
             halfCarry = true,
             carry = false,
         ).toUByte()
-        memory[0] = 0x27.toUByte() // DAA opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x27.toByte() // DAA opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
-        assertEquals(0x10.toUByte(), registers.a) // Adjusted for lower nibble
+        assertEquals(0x10.toUByte(), registers.a)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.carry)
         assertFalse(flags.halfCarry)
@@ -936,11 +1025,13 @@ class CPUTest {
             halfCarry = false,
             carry = true,
         ).toUByte()
-        memory[0] = 0x27.toUByte() // DAA opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x27.toByte() // DAA opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
-        assertEquals(0x00.toUByte(), registers.a) // Adjusted for upper nibble
+        assertEquals(0x00.toUByte(), registers.a)
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.carry)
         assertTrue(flags.zero)
@@ -956,11 +1047,13 @@ class CPUTest {
             halfCarry = true,
             carry = true,
         ).toUByte()
-        memory[0] = 0x27.toUByte() // DAA opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x27.toByte() // DAA opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
-        assertEquals(0x00.toUByte(), registers.a) // Adjusted for both nibbles
+        assertEquals(0x00.toUByte(), registers.a)
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.carry)
         assertTrue(flags.zero)
@@ -976,11 +1069,13 @@ class CPUTest {
             halfCarry = true,
             carry = true,
         ).toUByte()
-        memory[0] = 0x27.toUByte() // DAA opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x27.toByte() // DAA opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
 
-        assertEquals(0x00.toUByte(), registers.a) // Adjusted in subtraction mode
+        assertEquals(0x00.toUByte(), registers.a)
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.carry)
         assertTrue(flags.zero)
@@ -989,7 +1084,9 @@ class CPUTest {
 
     @Test
     fun halt_stopsExecution() {
-        memory[0] = 0x76.toUByte() // HALT opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x76.toByte() // HALT opcode
+        val cpu = createCpu(rom)
 
         cpu.step()
         cpu.step()
@@ -1000,8 +1097,10 @@ class CPUTest {
 
     @Test
     fun halt_stopsExecutionUntilInterrupt() {
-        memory[0] = 0x76.toUByte() // HALT opcode
-        memory[1] = 0x00.toUByte() // NOP opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x76.toByte() // HALT opcode
+        rom[1] = 0x00.toByte() // NOP opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
         assertEquals(0x01.toUShort(), programCounter.get())
@@ -1018,9 +1117,11 @@ class CPUTest {
 
     @Test
     fun disableInterrupts() {
-        memory[0] = 0xF3.toUByte() // DI opcode
-        memory[1] = 0x76.toUByte() // HALT opcode
-        memory[2] = 0x00.toUByte() // NOP opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xF3.toByte() // DI opcode
+        rom[1] = 0x76.toByte() // HALT opcode
+        rom[2] = 0x00.toByte() // NOP opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         cpu.step()
 
@@ -1033,9 +1134,11 @@ class CPUTest {
 
     @Test
     fun enableInterrupts() {
-        memory[0] = 0xF3.toUByte() // DI opcode
-        memory[1] = 0xFB.toUByte() // EI opcode
-        memory[2] = 0x00.toUByte() // NOP opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xF3.toByte() // DI opcode
+        rom[1] = 0xFB.toByte() // EI opcode
+        rom[2] = 0x00.toByte() // NOP opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
         // disable interrupts
         cpu.step()
@@ -1054,7 +1157,9 @@ class CPUTest {
 
     @Test
     fun interrupt_servicesHighestPriorityInterrupt() {
-        memory[0] = 0x00.toUByte() // NOP opcode
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x00.toByte() // NOP opcode
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
         // Timer interrupt
         memoryBus.setInterruptFlagBit(2, true)
         memoryBus.setInterruptEnableBit(2, true)
@@ -1070,13 +1175,15 @@ class CPUTest {
 
     @Test
     fun reti_enablesInterruptsAndReturns() {
-        memory[0] = 0xF3.toUByte() // DI opcode
-        memory[1] = 0x00.toUByte() // NOP opcode
-        memory[2] = 0xD9.toUByte() // RETI opcode
-        memory[3] = 0x00.toUByte() // NOP opcode
-        memory[0x1234] = 0x00.toUByte() // NOP opcode at interrupt handler
-        memory[0xFFFD] = 0x34.toUByte()
-        memory[0xFFFE] = 0x12.toUByte()
+        val rom = ByteArray(0x8000)
+        rom[0] = 0xF3.toByte() // DI opcode
+        rom[1] = 0x00.toByte() // NOP opcode
+        rom[2] = 0xD9.toByte() // RETI opcode
+        rom[3] = 0x00.toByte() // NOP opcode
+        rom[0x1234] = 0x00.toByte() // NOP opcode at interrupt handler
+        val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
+        memoryBus.writeByte(0xFFFD.toUShort(), 0x34.toUByte())
+        memoryBus.writeByte(0xFFFE.toUShort(), 0x12.toUByte())
         stackPointer.setTo(0xFFFD.toUShort())
 
         // disable interrupts
