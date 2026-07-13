@@ -1,5 +1,6 @@
 package com.vicgarci.kgbem.cpu
 
+import com.vicgarci.kgbem.cartridge.RomOnlyCartridge
 import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toFlagsRegister
 import com.vicgarci.kgbem.cpu.FlagsRegister.Companion.toUByte
 import kotlin.test.Test
@@ -21,20 +22,18 @@ class CPUIncDecTest {
     )
 
     private var programCounter = ProgramCounter(0.toUShort())
-    private val memory = Array(0x10000) { 0.toUByte() }
-    private val memoryBus = MemoryBus(memory)
     private val stackPointer = StackPointer(0xFFFF.toUShort())
 
-    private val cpu = CPU(
-        registers,
-        programCounter,
-        memoryBus,
-        stackPointer,
-    )
+    private fun createCpu(rom: ByteArray): CPU {
+        val memoryBus = MemoryBus(RomOnlyCartridge(rom))
+        return CPU(registers, programCounter, memoryBus, stackPointer)
+    }
 
     @Test
     fun increment_8bit_registerB() {
-        memory[0] = 0x04.toUByte() // INC B
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x04.toByte() // INC B
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -48,7 +47,9 @@ class CPUIncDecTest {
     @Test
     fun increment_8bit_registerC() {
         registers.c = 0x7F.toUByte()
-        memory[0] = 0x0C.toUByte() // INC C
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x0C.toByte() // INC C
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -62,7 +63,9 @@ class CPUIncDecTest {
     @Test
     fun increment_8bit_registerD() {
         registers.d = 0xFF.toUByte()
-        memory[0] = 0x14.toUByte() // INC D
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x14.toByte() // INC D
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -76,7 +79,9 @@ class CPUIncDecTest {
     @Test
     fun increment_8bit_registerE() {
         registers.e = 0x0F.toUByte()
-        memory[0] = 0x1C.toUByte() // INC E
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x1C.toByte() // INC E
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -90,7 +95,9 @@ class CPUIncDecTest {
     @Test
     fun increment_8bit_registerH() {
         registers.h = 0x00.toUByte()
-        memory[0] = 0x24.toUByte() // INC H
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x24.toByte() // INC H
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -104,7 +111,9 @@ class CPUIncDecTest {
     @Test
     fun increment_8bit_registerL() {
         registers.l = 0xFE.toUByte()
-        memory[0] = 0x2C.toUByte() // INC L
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x2C.toByte() // INC L
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -118,7 +127,9 @@ class CPUIncDecTest {
     @Test
     fun increment_8bit_registerA() {
         registers.a = 0x7F.toUByte()
-        memory[0] = 0x3C.toUByte() // INC A
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x3C.toByte() // INC A
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -137,7 +148,9 @@ class CPUIncDecTest {
             halfCarry = false,
             carry = true,
         ).toUByte()
-        memory[0] = 0x04.toUByte() // INC B
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x04.toByte() // INC B
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -150,7 +163,9 @@ class CPUIncDecTest {
 
     @Test
     fun decrement_8bit_registerD() {
-        memory[0] = 0x15.toUByte() // DEC D
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x15.toByte() // DEC D
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -164,7 +179,9 @@ class CPUIncDecTest {
     @Test
     fun decrement_8bit_registerB() {
         registers.b = 0x01.toUByte()
-        memory[0] = 0x05.toUByte() // DEC B
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x05.toByte() // DEC B
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -178,7 +195,9 @@ class CPUIncDecTest {
     @Test
     fun decrement_8bit_registerC() {
         registers.c = 0x00.toUByte()
-        memory[0] = 0x0D.toUByte() // DEC C
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x0D.toByte() // DEC C
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -192,7 +211,9 @@ class CPUIncDecTest {
     @Test
     fun decrement_8bit_registerE() {
         registers.e = 0x10.toUByte()
-        memory[0] = 0x1D.toUByte() // DEC E
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x1D.toByte() // DEC E
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -206,7 +227,9 @@ class CPUIncDecTest {
     @Test
     fun decrement_8bit_registerH() {
         registers.h = 0x80.toUByte()
-        memory[0] = 0x25.toUByte() // DEC H
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x25.toByte() // DEC H
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -220,7 +243,9 @@ class CPUIncDecTest {
     @Test
     fun decrement_8bit_registerL() {
         registers.l = 0xFF.toUByte()
-        memory[0] = 0x2D.toUByte() // DEC L
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x2D.toByte() // DEC L
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -234,7 +259,9 @@ class CPUIncDecTest {
     @Test
     fun decrement_8bit_registerA() {
         registers.a = 0x00.toUByte()
-        memory[0] = 0x3D.toUByte() // DEC A
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x3D.toByte() // DEC A
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -248,7 +275,9 @@ class CPUIncDecTest {
     @Test
     fun increment_16bit_registerBC() {
         registers.bc = 0x00FF.toUShort()
-        memory[0] = 0x03.toUByte() // INC BC
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x03.toByte() // INC BC
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -258,7 +287,9 @@ class CPUIncDecTest {
     @Test
     fun increment_16bit_registerDE() {
         registers.de = 0xFFFF.toUShort()
-        memory[0] = 0x13.toUByte() // INC DE
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x13.toByte() // INC DE
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -268,7 +299,9 @@ class CPUIncDecTest {
     @Test
     fun increment_16bit_registerHL() {
         registers.hl = 0x1234.toUShort()
-        memory[0] = 0x23.toUByte() // INC HL
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x23.toByte() // INC HL
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -278,7 +311,9 @@ class CPUIncDecTest {
     @Test
     fun increment_16bit_stackPointer() {
         stackPointer.setTo(0x7FFF.toUShort())
-        memory[0] = 0x33.toUByte() // INC SP
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x33.toByte() // INC SP
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -294,7 +329,9 @@ class CPUIncDecTest {
             carry = true,
         ).toUByte()
         val originalFlags = registers.f
-        memory[0] = 0x23.toUByte() // INC HL
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x23.toByte() // INC HL
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -304,7 +341,9 @@ class CPUIncDecTest {
     @Test
     fun decrement_16bit_registerBC() {
         registers.bc = 0x0100.toUShort()
-        memory[0] = 0x0B.toUByte() // DEC BC
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x0B.toByte() // DEC BC
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -314,7 +353,9 @@ class CPUIncDecTest {
     @Test
     fun decrement_16bit_registerDE() {
         registers.de = 0x0000.toUShort()
-        memory[0] = 0x1B.toUByte() // DEC DE
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x1B.toByte() // DEC DE
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -324,7 +365,9 @@ class CPUIncDecTest {
     @Test
     fun decrement_16bit_registerHL() {
         registers.hl = 0x1234.toUShort()
-        memory[0] = 0x2B.toUByte() // DEC HL
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x2B.toByte() // DEC HL
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -334,7 +377,9 @@ class CPUIncDecTest {
     @Test
     fun decrement_16bit_stackPointer() {
         stackPointer.setTo(0x8000.toUShort())
-        memory[0] = 0x3B.toUByte() // DEC SP
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x3B.toByte() // DEC SP
+        val cpu = createCpu(rom)
 
         cpu.step()
 
@@ -350,7 +395,9 @@ class CPUIncDecTest {
             carry = true,
         ).toUByte()
         val originalFlags = registers.f
-        memory[0] = 0x2B.toUByte() // DEC HL
+        val rom = ByteArray(0x8000)
+        rom[0] = 0x2B.toByte() // DEC HL
+        val cpu = createCpu(rom)
 
         cpu.step()
 
