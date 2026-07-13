@@ -62,7 +62,8 @@ fun RegisterFilePicker() {
 actual suspend fun pickRomFile(): ByteArray? {
     val launchPicker = AndroidFilePicker.launch ?: return null
     val deferred = CompletableDeferred<Uri?>()
-    AndroidFilePicker.pendingResult.set(deferred)
+    // Cancel any prior pending call that was never resolved (defensive against concurrent calls).
+    AndroidFilePicker.pendingResult.getAndSet(deferred)?.cancel()
 
     // The launcher must be invoked on the main thread.
     withContext(Dispatchers.Main) { launchPicker() }
