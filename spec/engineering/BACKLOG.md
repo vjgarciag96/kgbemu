@@ -13,7 +13,7 @@
 #### Task 1.1.1: Stub all expect/actual declarations
 **Owner:** Arthur
 **Domain:** infra
-**Status:** todo
+**Status:** done
 **Dependencies:** none
 **ACs:**
 - [ ] `expect class LoopDriver`, `expect suspend fun pickRomFile()`, `expect object SaveStorage` declared in `commonMain`
@@ -23,7 +23,7 @@
 #### Task 1.1.2: Add kotlinx-datetime to dependency graph
 **Owner:** Arthur
 **Domain:** infra
-**Status:** todo
+**Status:** done
 **Dependencies:** none
 **ACs:**
 - [ ] `kotlinx-datetime` added to `libs.versions.toml` and `commonMain` dependencies in `build.gradle.kts`
@@ -56,7 +56,7 @@
 #### Task 2.1.1: Cartridge interface + RomOnlyCartridge
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** none
 **ACs:**
 - [ ] `Cartridge` interface declared in `commonMain` with `readRom`, `writeRom`, `readRam`, `writeRam`, `hasBattery`, `savableState`, `loadState`
