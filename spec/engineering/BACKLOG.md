@@ -68,7 +68,7 @@
 #### Task 2.1.2: CartridgeLoader with header validation
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 2.1.1
 **ACs:**
 - [ ] `CartridgeLoader.load(ByteArray)` returns `Result<Cartridge, RomError>`
@@ -79,7 +79,7 @@
 #### Task 2.1.3: MemoryBus refactored to delegate to Cartridge
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 2.1.1
 **ACs:**
 - [ ] `MemoryBus` holds a `Cartridge` reference; reads at 0x0000–0x7FFF delegate to `cartridge.readRom()`; writes to `cartridge.writeRom()`
@@ -133,7 +133,7 @@
 #### Task 4.1.1: Metro DI setup
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 1.1.1
 **ACs:**
 - [ ] `dev.zacsweers.metro` plugin added to root and `composeApp` `build.gradle.kts`; version in `libs.versions.toml`
@@ -214,7 +214,7 @@
 #### Task 5.1.1: RecordingFrameSink in commonTest
 **Owner:** Neville
 **Domain:** qa
-**Status:** todo
+**Status:** done
 **Dependencies:** none
 **ACs:**
 - [ ] `RecordingFrameSink : FrameSink` in `commonTest` stores each `IntArray` received in `frames: List<IntArray>`
@@ -224,7 +224,7 @@
 #### Task 5.1.2: KMP test resource loader
 **Owner:** Neville
 **Domain:** qa
-**Status:** todo
+**Status:** done
 **Dependencies:** none
 **ACs:**
 - [ ] `expect fun loadTestResource(path: String): ByteArray` declared in `commonTest`
