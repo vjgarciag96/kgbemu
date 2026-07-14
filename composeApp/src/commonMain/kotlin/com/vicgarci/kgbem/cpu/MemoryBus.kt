@@ -1,10 +1,12 @@
 package com.vicgarci.kgbem.cpu
 
 import com.vicgarci.kgbem.cartridge.Cartridge
+import com.vicgarci.kgbem.joypad.JoypadRegister
 
 class MemoryBus(
     private val cartridge: Cartridge,
     private val memory: Array<UByte> = Array(0x10000) { 0b0.toUByte() },
+    private val joypadRegister: JoypadRegister? = null,
 ) {
     val interruptPendingMask: UByte
         get() = interruptEnable and interruptFlags and 0x1F.toUByte()
@@ -20,6 +22,7 @@ class MemoryBus(
         return when {
             addr <= 0x7FFF -> cartridge.readRom(addr).toUByte()
             addr in 0xA000..0xBFFF -> cartridge.readRam(addr).toUByte()
+            addr == 0xFF00 && joypadRegister != null -> joypadRegister.read().toUByte()
             else -> memory[addr]
         }
     }
@@ -30,6 +33,7 @@ class MemoryBus(
         when {
             addr <= 0x7FFF -> cartridge.writeRom(addr, v)
             addr in 0xA000..0xBFFF -> cartridge.writeRam(addr, v)
+            addr == 0xFF00 && joypadRegister != null -> joypadRegister.write(v)
             else -> memory[addr] = value
         }
     }
