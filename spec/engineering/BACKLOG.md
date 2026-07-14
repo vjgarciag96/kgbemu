@@ -121,7 +121,7 @@
 #### Task 3.1.3: CPU.step() returns T-cycles consumed
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 3.1.2
 **ACs:**
 - [ ] `CPU.step()` return type changed from `Unit` to `Int`; returns the number of T-cycles consumed by the executed instruction
