@@ -6,6 +6,8 @@ import com.vicgarci.kgbem.cpu.MemoryBus
 import com.vicgarci.kgbem.cpu.ProgramCounter
 import com.vicgarci.kgbem.cpu.Registers
 import com.vicgarci.kgbem.cpu.StackPointer
+import com.vicgarci.kgbem.joypad.InputSource
+import com.vicgarci.kgbem.joypad.JoypadRegister
 import com.vicgarci.kgbem.ppu.FrameSink
 
 /**
@@ -18,6 +20,7 @@ import com.vicgarci.kgbem.ppu.FrameSink
 class EmulatorLoop(
     cartridge: Cartridge,
     private val frameSink: FrameSink,
+    private val inputSource: InputSource,
 ) {
     private val registers = Registers(
         a = 0u, b = 0u, c = 0u, d = 0u,
@@ -25,7 +28,8 @@ class EmulatorLoop(
     )
     private val programCounter = ProgramCounter(0x0000.toUShort())
     private val stackPointer = StackPointer()
-    private val bus = MemoryBus(cartridge)
+    internal val joypadRegister = JoypadRegister()
+    private val bus = MemoryBus(cartridge, joypadRegister = joypadRegister)
     private val cpu = CPU(registers, programCounter, bus, stackPointer)
 
     init {
@@ -37,6 +41,7 @@ class EmulatorLoop(
      * been consumed, then notify the [FrameSink] with a blank frame.
      */
     fun runFrame() {
+        joypadRegister.update(inputSource.state.value)
         var elapsed = 0
         while (elapsed < CYCLES_PER_FRAME) {
             cpu.step()
@@ -49,9 +54,7 @@ class EmulatorLoop(
         /** T-cycles in one Game Boy frame: 154 scanlines x 456 dots. */
         const val CYCLES_PER_FRAME = 70_224
 
-        /** T-cycles consumed by a NOP instruction. */
         private const val NOP_CYCLES = 4
-
         private const val SCREEN_WIDTH = 160
         private const val SCREEN_HEIGHT = 144
     }
