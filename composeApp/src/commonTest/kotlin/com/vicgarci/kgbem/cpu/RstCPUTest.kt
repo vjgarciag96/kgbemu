@@ -32,8 +32,9 @@ class RstCPUTest {
         rom[0] = 0xC7.toByte() // RST 0x00 opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x0000.toUShort(), programCounter.get())
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
         val savedLow = memoryBus.readByte(0xFFFC.toUShort()).toUInt()
@@ -48,8 +49,9 @@ class RstCPUTest {
         rom[0] = 0xCF.toByte() // RST 0x08 opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x0008.toUShort(), programCounter.get())
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
         val savedLow = memoryBus.readByte(0xFFFC.toUShort()).toUInt()
@@ -64,8 +66,9 @@ class RstCPUTest {
         rom[0] = 0xD7.toByte() // RST 0x10 opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x0010.toUShort(), programCounter.get())
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
         val savedLow = memoryBus.readByte(0xFFFC.toUShort()).toUInt()
@@ -80,8 +83,9 @@ class RstCPUTest {
         rom[0] = 0xDF.toByte() // RST 0x18 opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x0018.toUShort(), programCounter.get())
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
         val savedLow = memoryBus.readByte(0xFFFC.toUShort()).toUInt()
@@ -96,8 +100,9 @@ class RstCPUTest {
         rom[0] = 0xE7.toByte() // RST 0x20 opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x0020.toUShort(), programCounter.get())
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
         val savedLow = memoryBus.readByte(0xFFFC.toUShort()).toUInt()
@@ -112,8 +117,9 @@ class RstCPUTest {
         rom[0] = 0xEF.toByte() // RST 0x28 opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x0028.toUShort(), programCounter.get())
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
         val savedLow = memoryBus.readByte(0xFFFC.toUShort()).toUInt()
@@ -128,8 +134,9 @@ class RstCPUTest {
         rom[0] = 0xF7.toByte() // RST 0x30 opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x0030.toUShort(), programCounter.get())
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
         val savedLow = memoryBus.readByte(0xFFFC.toUShort()).toUInt()
@@ -144,8 +151,9 @@ class RstCPUTest {
         rom[0] = 0xFF.toByte() // RST 0x38 opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x0038.toUShort(), programCounter.get())
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
         val savedLow = memoryBus.readByte(0xFFFC.toUShort()).toUInt()

@@ -35,8 +35,9 @@ class RetCPUTest {
         memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte()) // low byte
         memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte()) // high byte
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         val retProgramCounter = programCounter.get()
         assertEquals(0x1234.toUShort(), retProgramCounter)
         assertEquals(0xFFFE.toUShort(), stackPointer.getAndIncrement())
@@ -51,8 +52,9 @@ class RetCPUTest {
         memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte()) // low byte
         memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte()) // high byte
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(20, cycles)
         assertEquals(0x1234.toUShort(), programCounter.get())
         assertEquals(0xFFFE.toUShort(), stackPointer.getAndIncrement())
     }
@@ -66,8 +68,9 @@ class RetCPUTest {
         memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
         memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x0001.toUShort(), programCounter.get())
         assertEquals(0xFFFC.toUShort(), stackPointer.getAndIncrement())
     }
@@ -81,8 +84,9 @@ class RetCPUTest {
         memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
         memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(20, cycles)
         assertEquals(0x1234.toUShort(), programCounter.get())
         assertEquals(0xFFFE.toUShort(), stackPointer.getAndIncrement())
     }
@@ -96,8 +100,9 @@ class RetCPUTest {
         memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
         memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x0001.toUShort(), programCounter.get())
         assertEquals(0xFFFC.toUShort(), stackPointer.getAndIncrement())
     }
@@ -111,8 +116,9 @@ class RetCPUTest {
         memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
         memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(20, cycles)
         assertEquals(0x1234.toUShort(), programCounter.get())
         assertEquals(0xFFFE.toUShort(), stackPointer.getAndIncrement())
     }
@@ -126,8 +132,9 @@ class RetCPUTest {
         memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
         memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x0001.toUShort(), programCounter.get())
         assertEquals(0xFFFC.toUShort(), stackPointer.getAndIncrement())
     }
@@ -141,8 +148,9 @@ class RetCPUTest {
         memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
         memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(20, cycles)
         assertEquals(0x1234.toUShort(), programCounter.get())
         assertEquals(0xFFFE.toUShort(), stackPointer.getAndIncrement())
     }
@@ -156,8 +164,9 @@ class RetCPUTest {
         memoryBus.writeByte(0xFFFC.toUShort(), 0x34.toUByte())
         memoryBus.writeByte(0xFFFD.toUShort(), 0x12.toUByte())
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x0001.toUShort(), programCounter.get())
         assertEquals(0xFFFC.toUShort(), stackPointer.getAndIncrement())
     }

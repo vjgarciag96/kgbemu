@@ -35,8 +35,9 @@ class CallCPUTest {
         rom[2] = 0x12.toByte() // high byte of address
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(24, cycles)
         val callProgramCounter = programCounter.get()
         assertEquals(0x1234.toUShort(), callProgramCounter)
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
@@ -54,8 +55,9 @@ class CallCPUTest {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = false).toUByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(24, cycles)
         val callProgramCounter = programCounter.get()
         assertEquals(0x1234.toUShort(), callProgramCounter)
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
@@ -73,8 +75,9 @@ class CallCPUTest {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = true).toUByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         val callProgramCounter = programCounter.get()
         assertEquals(0x0003.toUShort(), callProgramCounter)
         assertEquals(0.toUByte(), memoryBus.readByte(0xFFFC.toUShort()))
@@ -90,8 +93,9 @@ class CallCPUTest {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = true).toUByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(24, cycles)
         val callProgramCounter = programCounter.get()
         assertEquals(0x1234.toUShort(), callProgramCounter)
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
@@ -109,8 +113,9 @@ class CallCPUTest {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(zero = false).toUByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         val callProgramCounter = programCounter.get()
         assertEquals(0x0003.toUShort(), callProgramCounter)
         assertEquals(0.toUByte(), memoryBus.readByte(0xFFFC.toUShort()))
@@ -126,8 +131,9 @@ class CallCPUTest {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = false).toUByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(24, cycles)
         val callProgramCounter = programCounter.get()
         assertEquals(0x1234.toUShort(), callProgramCounter)
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
@@ -145,8 +151,9 @@ class CallCPUTest {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         val callProgramCounter = programCounter.get()
         assertEquals(0x0003.toUShort(), callProgramCounter)
         assertEquals(0.toUByte(), memoryBus.readByte(0xFFFC.toUShort()))
@@ -162,8 +169,9 @@ class CallCPUTest {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = true).toUByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(24, cycles)
         val callProgramCounter = programCounter.get()
         assertEquals(0x1234.toUShort(), callProgramCounter)
         val savedHigh = memoryBus.readByte(0xFFFD.toUShort()).toUInt()
@@ -181,8 +189,9 @@ class CallCPUTest {
         registers.f = FlagsRegisterFixtures.FLAGS_NOT_SET.copy(carry = false).toUByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         val callProgramCounter = programCounter.get()
         assertEquals(0x0003.toUShort(), callProgramCounter)
         assertEquals(0.toUByte(), memoryBus.readByte(0xFFFC.toUShort()))

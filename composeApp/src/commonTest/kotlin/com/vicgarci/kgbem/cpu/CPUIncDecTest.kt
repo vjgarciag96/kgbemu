@@ -35,8 +35,9 @@ class CPUIncDecTest {
         rom[0] = 0x04.toByte() // INC B
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x01.toUByte(), registers.b)
         val flags = registers.f.toFlagsRegister()
         assertEquals(false, flags.zero)
@@ -51,8 +52,9 @@ class CPUIncDecTest {
         rom[0] = 0x0C.toByte() // INC C
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x80.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.zero)
@@ -67,8 +69,9 @@ class CPUIncDecTest {
         rom[0] = 0x14.toByte() // INC D
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x00.toUByte(), registers.d)
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.zero)
@@ -83,8 +86,9 @@ class CPUIncDecTest {
         rom[0] = 0x1C.toByte() // INC E
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x10.toUByte(), registers.e)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.zero)
@@ -99,8 +103,9 @@ class CPUIncDecTest {
         rom[0] = 0x24.toByte() // INC H
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x01.toUByte(), registers.h)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.zero)
@@ -115,8 +120,9 @@ class CPUIncDecTest {
         rom[0] = 0x2C.toByte() // INC L
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0xFF.toUByte(), registers.l)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.zero)
@@ -131,8 +137,9 @@ class CPUIncDecTest {
         rom[0] = 0x3C.toByte() // INC A
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x80.toUByte(), registers.a)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.zero)
@@ -152,8 +159,9 @@ class CPUIncDecTest {
         rom[0] = 0x04.toByte() // INC B
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x01.toUByte(), registers.b)
         val flags = registers.f.toFlagsRegister()
         assertEquals(false, flags.zero)
@@ -167,8 +175,9 @@ class CPUIncDecTest {
         rom[0] = 0x15.toByte() // DEC D
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0xFE.toUByte(), registers.d)
         val flags = registers.f.toFlagsRegister()
         assertEquals(false, flags.zero)
@@ -183,8 +192,9 @@ class CPUIncDecTest {
         rom[0] = 0x05.toByte() // DEC B
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x00.toUByte(), registers.b)
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.zero)
@@ -199,8 +209,9 @@ class CPUIncDecTest {
         rom[0] = 0x0D.toByte() // DEC C
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0xFF.toUByte(), registers.c)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.zero)
@@ -215,8 +226,9 @@ class CPUIncDecTest {
         rom[0] = 0x1D.toByte() // DEC E
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x0F.toUByte(), registers.e)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.zero)
@@ -231,8 +243,9 @@ class CPUIncDecTest {
         rom[0] = 0x25.toByte() // DEC H
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x7F.toUByte(), registers.h)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.zero)
@@ -247,8 +260,9 @@ class CPUIncDecTest {
         rom[0] = 0x2D.toByte() // DEC L
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0xFE.toUByte(), registers.l)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.zero)
@@ -263,8 +277,9 @@ class CPUIncDecTest {
         rom[0] = 0x3D.toByte() // DEC A
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0xFF.toUByte(), registers.a)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.zero)
@@ -279,8 +294,9 @@ class CPUIncDecTest {
         rom[0] = 0x03.toByte() // INC BC
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x0100.toUShort(), registers.bc)
     }
 
@@ -291,8 +307,9 @@ class CPUIncDecTest {
         rom[0] = 0x13.toByte() // INC DE
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x0000.toUShort(), registers.de)
     }
 
@@ -303,8 +320,9 @@ class CPUIncDecTest {
         rom[0] = 0x23.toByte() // INC HL
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x1235.toUShort(), registers.hl)
     }
 
@@ -315,8 +333,9 @@ class CPUIncDecTest {
         rom[0] = 0x33.toByte() // INC SP
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x8000.toUShort(), stackPointer.get())
     }
 
@@ -345,8 +364,9 @@ class CPUIncDecTest {
         rom[0] = 0x0B.toByte() // DEC BC
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x00FF.toUShort(), registers.bc)
     }
 
@@ -357,8 +377,9 @@ class CPUIncDecTest {
         rom[0] = 0x1B.toByte() // DEC DE
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0xFFFF.toUShort(), registers.de)
     }
 
@@ -369,8 +390,9 @@ class CPUIncDecTest {
         rom[0] = 0x2B.toByte() // DEC HL
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x1233.toUShort(), registers.hl)
     }
 
@@ -381,8 +403,9 @@ class CPUIncDecTest {
         rom[0] = 0x3B.toByte() // DEC SP
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x7FFF.toUShort(), stackPointer.get())
     }
 

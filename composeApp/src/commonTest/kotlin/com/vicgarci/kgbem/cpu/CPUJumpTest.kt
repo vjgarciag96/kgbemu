@@ -34,10 +34,11 @@ class CPUJumpTest {
         rom[2] = 0xAB.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
         val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0xABCD.toUShort(), currentPc)
+        assertEquals(16, cycles)
     }
 
     @Test
@@ -49,10 +50,11 @@ class CPUJumpTest {
         rom[2] = 0xAB.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
         val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0x0003.toUShort(), currentPc)
+        assertEquals(12, cycles)
     }
 
     @Test
@@ -64,10 +66,11 @@ class CPUJumpTest {
         rom[2] = 0xAB.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
         val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0xABCD.toUShort(), currentPc)
+        assertEquals(16, cycles)
     }
 
     @Test
@@ -79,10 +82,11 @@ class CPUJumpTest {
         rom[2] = 0xAB.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
         val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0x0003.toUShort(), currentPc)
+        assertEquals(12, cycles)
     }
 
     @Test
@@ -94,10 +98,11 @@ class CPUJumpTest {
         rom[2] = 0xAB.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
         val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0xABCD.toUShort(), currentPc)
+        assertEquals(16, cycles)
     }
 
     @Test
@@ -109,10 +114,11 @@ class CPUJumpTest {
         rom[2] = 0xAB.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
         val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0x0003.toUShort(), currentPc)
+        assertEquals(12, cycles)
     }
 
     @Test
@@ -124,10 +130,11 @@ class CPUJumpTest {
         rom[2] = 0xAB.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
         val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0xABCD.toUShort(), currentPc)
+        assertEquals(16, cycles)
     }
 
     @Test
@@ -139,10 +146,11 @@ class CPUJumpTest {
         rom[2] = 0xAB.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
         val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0x0003.toUShort(), currentPc)
+        assertEquals(12, cycles)
     }
 
     @Test
@@ -153,10 +161,11 @@ class CPUJumpTest {
         rom[2] = 0xAB.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
         val currentPc = programCounter.getAndIncrement()
 
         assertEquals(0xABCD.toUShort(), currentPc)
+        assertEquals(16, cycles)
     }
 
     @Test
@@ -166,10 +175,11 @@ class CPUJumpTest {
         rom[1] = 0x05.toByte() // +5
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         val programCounter = programCounter.get()
         assertEquals(0x0007.toUShort(), programCounter)
+        assertEquals(12, cycles)
     }
 
     @Test
@@ -179,10 +189,11 @@ class CPUJumpTest {
         rom[1] = 0xFB.toByte() // -5
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         val programCounter = programCounter.get()
         assertEquals(0xFFFD.toUShort(), programCounter)
+        assertEquals(12, cycles)
     }
 
     @Test
@@ -193,9 +204,10 @@ class CPUJumpTest {
         rom[1] = 0x05.toByte() // +5
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x0007.toUShort(), programCounter.get())
+        assertEquals(12, cycles)
     }
 
     @Test
@@ -206,9 +218,10 @@ class CPUJumpTest {
         rom[1] = 0x05.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x0002.toUShort(), programCounter.get())
+        assertEquals(8, cycles)
     }
 
     @Test
@@ -219,9 +232,10 @@ class CPUJumpTest {
         rom[1] = 0x05.toByte() // +5
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x0007.toUShort(), programCounter.get())
+        assertEquals(12, cycles)
     }
 
     @Test
@@ -232,9 +246,10 @@ class CPUJumpTest {
         rom[1] = 0x05.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x0002.toUShort(), programCounter.get())
+        assertEquals(8, cycles)
     }
 
     @Test
@@ -245,9 +260,10 @@ class CPUJumpTest {
         rom[1] = 0x05.toByte() // +5
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x0007.toUShort(), programCounter.get())
+        assertEquals(12, cycles)
     }
 
     @Test
@@ -258,9 +274,10 @@ class CPUJumpTest {
         rom[1] = 0x05.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x0002.toUShort(), programCounter.get())
+        assertEquals(8, cycles)
     }
 
     @Test
@@ -271,9 +288,10 @@ class CPUJumpTest {
         rom[1] = 0x05.toByte() // +5
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x0007.toUShort(), programCounter.get())
+        assertEquals(12, cycles)
     }
 
     @Test
@@ -284,8 +302,9 @@ class CPUJumpTest {
         rom[1] = 0x05.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x0002.toUShort(), programCounter.get())
+        assertEquals(8, cycles)
     }
 }

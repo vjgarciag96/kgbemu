@@ -34,8 +34,9 @@ class PushPopCPUTest {
         memoryBus.writeByte(0xFFFE.toUShort(), 0x34.toUByte()) // low byte
         memoryBus.writeByte(0xFFFF.toUShort(), 0x12.toUByte()) // high byte
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         assertEquals(0x1234.toUShort(), registers.bc)
     }
 
@@ -48,8 +49,9 @@ class PushPopCPUTest {
         memoryBus.writeByte(0xFFFE.toUShort(), 0x34.toUByte()) // low byte
         memoryBus.writeByte(0xFFFF.toUShort(), 0x12.toUByte()) // high byte
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         assertEquals(0x1234.toUShort(), registers.de)
     }
 
@@ -61,8 +63,9 @@ class PushPopCPUTest {
         memoryBus.writeByte(0xFFFE.toUShort(), 0x34.toUByte()) // low byte
         memoryBus.writeByte(0xFFFF.toUShort(), 0x12.toUByte()) // high byte
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         assertEquals(0x1234.toUShort(), registers.hl)
     }
 
@@ -74,8 +77,9 @@ class PushPopCPUTest {
         memoryBus.writeByte(0xFFFE.toUShort(), 0x34.toUByte()) // low byte
         memoryBus.writeByte(0xFFFF.toUShort(), 0x12.toUByte()) // high byte
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         // F low byte should always be 0
         assertEquals(0x1230.toUShort(), registers.af)
     }
@@ -88,8 +92,9 @@ class PushPopCPUTest {
         registers.c = 0x34.toUByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x34.toUByte(), memoryBus.readByte(0xFFFC.toUShort())) // low byte
         assertEquals(0x12.toUByte(), memoryBus.readByte(0xFFFD.toUShort())) // high byte
     }
@@ -102,8 +107,9 @@ class PushPopCPUTest {
         registers.e = 0x34.toUByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x34.toUByte(), memoryBus.readByte(0xFFFC.toUShort())) // low byte
         assertEquals(0x12.toUByte(), memoryBus.readByte(0xFFFD.toUShort())) // high byte
     }
@@ -116,8 +122,9 @@ class PushPopCPUTest {
         registers.l = 0x34.toUByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x34.toUByte(), memoryBus.readByte(0xFFFC.toUShort())) // low byte
         assertEquals(0x12.toUByte(), memoryBus.readByte(0xFFFD.toUShort())) // high byte
     }
@@ -130,8 +137,9 @@ class PushPopCPUTest {
         registers.f = 0x34.toUByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x34.toUByte(), memoryBus.readByte(0xFFFC.toUShort())) // low byte
         assertEquals(0x12.toUByte(), memoryBus.readByte(0xFFFD.toUShort())) // high byte
     }
