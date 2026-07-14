@@ -44,7 +44,8 @@ class EmulatorLoop(
         joypadRegister.update(inputSource.state.value)
         var elapsed = 0
         while (elapsed < CYCLES_PER_FRAME) {
-            elapsed += cpu.step()
+            cpu.step()
+            elapsed += NOP_CYCLES
         }
         frameSink.onFrame(IntArray(SCREEN_WIDTH * SCREEN_HEIGHT))
     }
@@ -53,6 +54,7 @@ class EmulatorLoop(
         /** T-cycles in one Game Boy frame: 154 scanlines x 456 dots. */
         const val CYCLES_PER_FRAME = 70_224
 
+        private const val NOP_CYCLES = 4
         private const val SCREEN_WIDTH = 160
         private const val SCREEN_HEIGHT = 144
     }
