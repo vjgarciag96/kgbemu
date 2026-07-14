@@ -110,13 +110,24 @@
 #### Task 3.1.2: EmulatorLoop.runFrame() ticking CPU only
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 3.1.1, Task 2.1.3
 **ACs:**
 - [ ] `EmulatorLoop.runFrame()` calls `cpu.step()` in a loop until ≥ 70,224 T-cycles accumulated
 - [ ] `FrameSink.onFrame()` is called exactly once per `runFrame()` (with a null/empty pixel array at this stage — PPU not wired yet)
 - [ ] Integration test: construct `EmulatorLoop` with `RomOnlyCartridge` (NOP-filled ROM), `RecordingFrameSink`; call `runFrame()` 3 times; assert sink received 3 calls; assert no exception thrown
 - [ ] `RecordingFrameSink` implemented in `commonTest` for use across all integration tests
+
+#### Task 3.1.3: CPU.step() returns T-cycles consumed
+**Owner:** Hermione
+**Domain:** backend
+**Status:** todo
+**Dependencies:** Task 3.1.2
+**ACs:**
+- [ ] `CPU.step()` return type changed from `Unit` to `Int`; returns the number of T-cycles consumed by the executed instruction
+- [ ] All existing CPU unit tests updated to handle the return value
+- [ ] `EmulatorLoop.runFrame()` updated to accumulate `cpu.step()` return value instead of the hardcoded `NOP_CYCLES = 4` constant
+- [ ] Integration test: NOP-filled ROM still produces exactly 70,224 T-cycles per frame; a ROM with mix of 4-cycle and 8-cycle instructions produces the correct total
 
 ---
 
@@ -270,7 +281,7 @@
 #### Task 7.1.1: PPU mode state machine
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 2.1.3, Task 5.1.1
 **ACs:**
 - [ ] `Ppu.step(cycles: Int)` advances the mode state machine: OAM Search (80) → Drawing (172) → HBlank (204) per scanline; VBlank after scanline 143
