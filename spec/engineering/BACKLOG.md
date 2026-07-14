@@ -384,7 +384,7 @@
 #### Task 8.1.2: InputSource interface + EmulatorLoop wiring
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 8.1.1
 **ACs:**
 - [ ] `InputSource` interface declared in `commonMain`
