@@ -38,8 +38,9 @@ class LoadCPUTest {
         rom[1] = 0x42.toByte() // value to load into register B
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x42.toUByte(), registers.b)
     }
 
@@ -50,8 +51,9 @@ class LoadCPUTest {
         rom[1] = 0x43.toByte() // value to load into register C
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x43.toUByte(), registers.c)
     }
 
@@ -62,8 +64,9 @@ class LoadCPUTest {
         rom[1] = 0x44.toByte() // value to load into register D
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x44.toUByte(), registers.d)
     }
 
@@ -74,8 +77,9 @@ class LoadCPUTest {
         rom[1] = 0x45.toByte() // value to load into register E
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x45.toUByte(), registers.e)
     }
 
@@ -86,8 +90,9 @@ class LoadCPUTest {
         rom[1] = 0x46.toByte() // value to load into register H
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x46.toUByte(), registers.h)
     }
 
@@ -98,8 +103,9 @@ class LoadCPUTest {
         rom[1] = 0x47.toByte() // value to load into register L
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x47.toUByte(), registers.l)
     }
 
@@ -110,8 +116,9 @@ class LoadCPUTest {
         rom[1] = 0x48.toByte() // value to load into register A
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x48.toUByte(), registers.a)
     }
 
@@ -123,8 +130,9 @@ class LoadCPUTest {
         rom[1] = 0x99.toByte() // value to store at HL
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         assertEquals(0x99.toUByte(), memoryBus.readByte(0xC000.toUShort()))
     }
 
@@ -136,8 +144,9 @@ class LoadCPUTest {
         rom[2] = 0x12.toByte() // high byte
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         assertEquals(0x1234.toUShort(), registers.bc)
     }
 
@@ -149,8 +158,9 @@ class LoadCPUTest {
         rom[2] = 0x34.toByte() // high byte
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         assertEquals(0x3456.toUShort(), registers.de)
     }
 
@@ -162,8 +172,9 @@ class LoadCPUTest {
         rom[2] = 0x56.toByte() // high byte
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         assertEquals(0x5678.toUShort(), registers.hl)
     }
 
@@ -175,8 +186,9 @@ class LoadCPUTest {
         rom[2] = 0x78.toByte() // high byte
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         assertEquals(0x789A.toUShort(), stackPointer.get())
     }
 
@@ -188,8 +200,9 @@ class LoadCPUTest {
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
         memoryBus.writeByte(0xC009.toUShort(), 0x42.toUByte()) // Value at HL
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x42.toUByte(), registers.a) // A should now hold the value at HL
         assertEquals(0xC00A.toUShort(), registers.hl) // HL should increment by 1
     }
@@ -202,8 +215,9 @@ class LoadCPUTest {
         rom[0] = 0x22.toByte() // LD (HL+), A opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x42.toUByte(), memoryBus.readByte(0xC009.toUShort())) // Memory at HL should now hold the value of A
         assertEquals(0xC00A.toUShort(), registers.hl) // HL should increment by 1
     }
@@ -216,8 +230,9 @@ class LoadCPUTest {
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
         memoryBus.writeByte(0xC009.toUShort(), 0x42.toUByte()) // Value at HL
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x42.toUByte(), registers.a) // A should now hold the value at HL
         assertEquals(0xC008.toUShort(), registers.hl) // HL should decrement by 1
     }
@@ -230,8 +245,9 @@ class LoadCPUTest {
         rom[0] = 0x32.toByte() // LD (HL-), A opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x42.toUByte(), memoryBus.readByte(0xC009.toUShort())) // Memory at HL should now hold the value of A
         assertEquals(0xC008.toUShort(), registers.hl) // HL should decrement by 1
     }
@@ -243,8 +259,9 @@ class LoadCPUTest {
         rom[0] = 0x22.toByte() // LD (HL+), A opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x0000.toUShort(), registers.hl)
     }
 
@@ -255,8 +272,9 @@ class LoadCPUTest {
         rom[0] = 0x32.toByte() // LD (HL-), A opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0xFFFF.toUShort(), registers.hl)
     }
 
@@ -267,8 +285,9 @@ class LoadCPUTest {
         rom[0] = 0x78.toByte() // LD A, B opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x45.toUByte(), registers.a) // Value from B should be loaded into A
     }
 
@@ -279,8 +298,9 @@ class LoadCPUTest {
         rom[0] = 0x41.toByte() // LD B, C opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x42.toUByte(), registers.b) // Value from C should be loaded into B
     }
 
@@ -291,8 +311,9 @@ class LoadCPUTest {
         rom[0] = 0x42.toByte() // LD B, D opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x50.toUByte(), registers.b) // Value from D should be loaded into B
     }
 
@@ -303,8 +324,9 @@ class LoadCPUTest {
         rom[0] = 0x53.toByte() // LD D, E opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x43.toUByte(), registers.d) // Value from E should be loaded into D
     }
     @Test
@@ -314,8 +336,9 @@ class LoadCPUTest {
         rom[0] = 0x5C.toByte() // LD E, H opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x47.toUByte(), registers.e) // Value from H should be loaded into E
     }
 
@@ -326,8 +349,9 @@ class LoadCPUTest {
         rom[0] = 0x65.toByte() // LD H, L opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x44.toUByte(), registers.h) // Value from L should be loaded into H
     }
 
@@ -338,8 +362,9 @@ class LoadCPUTest {
         rom[0] = 0x4F.toByte() // LD C, A opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x46.toUByte(), registers.c) // Value from A should be loaded into C
     }
 
@@ -351,8 +376,9 @@ class LoadCPUTest {
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
         memoryBus.writeByte(0xC000.toUShort(), 0x42.toUByte()) // Value at HL
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x42.toUByte(), registers.a) // Value at HL should be loaded into A
     }
 
@@ -364,8 +390,9 @@ class LoadCPUTest {
         rom[0] = 0x77.toByte() // LD (HL), A opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x42.toUByte(), memoryBus.readByte(0xC000.toUShort())) // Value in A should be stored at HL
     }
 
@@ -377,8 +404,9 @@ class LoadCPUTest {
         rom[0] = 0x02.toByte() // LD (BC), A opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x77.toUByte(), memoryBus.readByte(0xC000.toUShort()))
     }
 
@@ -390,8 +418,9 @@ class LoadCPUTest {
         rom[0] = 0x12.toByte() // LD (DE), A opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x88.toUByte(), memoryBus.readByte(0xC001.toUShort()))
     }
 
@@ -403,8 +432,9 @@ class LoadCPUTest {
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
         memoryBus.writeByte(0xC002.toUShort(), 0x55.toUByte()) // Value at BC
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x55.toUByte(), registers.a)
     }
 
@@ -416,8 +446,9 @@ class LoadCPUTest {
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
         memoryBus.writeByte(0xC003.toUShort(), 0x66.toUByte()) // Value at DE
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x66.toUByte(), registers.a)
     }
 
@@ -430,8 +461,9 @@ class LoadCPUTest {
         rom[2] = 0xC0.toByte() // high byte -> 0xC034 (WRAM)
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x5A.toUByte(), memoryBus.readByte(0xC034.toUShort()))
     }
 
@@ -444,8 +476,9 @@ class LoadCPUTest {
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
         memoryBus.writeByte(0xC078.toUShort(), 0xAB.toUByte()) // Value at nn
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0xAB.toUByte(), registers.a)
     }
 
@@ -457,8 +490,9 @@ class LoadCPUTest {
         rom[1] = 0x10.toByte()
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         assertEquals(0x1A.toUByte(), memoryBus.readByte(0xFF10.toUShort()))
     }
 
@@ -470,8 +504,9 @@ class LoadCPUTest {
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
         memoryBus.writeByte(0xFF20.toUShort(), 0x2B.toUByte())
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         assertEquals(0x2B.toUByte(), registers.a)
     }
 
@@ -483,8 +518,9 @@ class LoadCPUTest {
         rom[0] = 0xE2.toByte() // LD (C), A opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x3C.toUByte(), memoryBus.readByte(0xFF30.toUShort()))
     }
 
@@ -496,8 +532,9 @@ class LoadCPUTest {
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
         memoryBus.writeByte(0xFF40.toUShort(), 0x4D.toUByte())
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x4D.toUByte(), registers.a)
     }
 
@@ -509,8 +546,9 @@ class LoadCPUTest {
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
         memoryBus.writeByte(0xC000.toUShort(), 0x55.toUByte()) // Value at HL
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x55.toUByte(), registers.b) // Value at HL should be loaded into B
     }
 
@@ -522,8 +560,9 @@ class LoadCPUTest {
         rom[0] = 0x71.toByte() // LD (HL), C opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x66.toUByte(), memoryBus.readByte(0xC000.toUShort())) // Value in C should be stored at HL
     }
 }

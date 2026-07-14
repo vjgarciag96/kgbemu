@@ -43,9 +43,10 @@ class CPUTest {
         rom[1] = 0x05.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x15.toUByte(), registers.a)
+        assertEquals(8, cycles)
     }
 
     @Test
@@ -62,9 +63,10 @@ class CPUTest {
         rom[1] = 0x01.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x12.toUByte(), registers.a)
+        assertEquals(8, cycles)
     }
 
     @Test
@@ -75,9 +77,10 @@ class CPUTest {
         rom[1] = 0x01.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x0F.toUByte(), registers.a)
+        assertEquals(8, cycles)
     }
 
     @Test
@@ -94,9 +97,10 @@ class CPUTest {
         rom[1] = 0x01.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x0E.toUByte(), registers.a)
+        assertEquals(8, cycles)
     }
 
     @Test
@@ -107,9 +111,10 @@ class CPUTest {
         rom[1] = 0x0F.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0x00.toUByte(), registers.a)
+        assertEquals(8, cycles)
     }
 
     @Test
@@ -120,9 +125,10 @@ class CPUTest {
         rom[1] = 0x0F.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0xF0.toUByte(), registers.a)
+        assertEquals(8, cycles)
     }
 
     @Test
@@ -133,9 +139,10 @@ class CPUTest {
         rom[1] = 0x0F.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertEquals(0xFF.toUByte(), registers.a)
+        assertEquals(8, cycles)
     }
 
     @Test
@@ -146,10 +153,11 @@ class CPUTest {
         rom[1] = 0x10.toByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
         assertTrue(registers.f.toFlagsRegister().zero)
         assertEquals(0x10.toUByte(), registers.a)
+        assertEquals(8, cycles)
     }
 
     @Test
@@ -160,8 +168,9 @@ class CPUTest {
         rom[1] = 0x10.toByte() // +16
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x0000.toUShort(), stackPointer.get())
         assertFalse(registers.f.toFlagsRegister().zero)
         assertFalse(registers.f.toFlagsRegister().subtract)
@@ -177,8 +186,9 @@ class CPUTest {
         rom[1] = 0x0F.toByte() // +15
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(16, cycles)
         assertEquals(0x000D.toUShort(), stackPointer.get())
         assertFalse(registers.f.toFlagsRegister().zero)
         assertFalse(registers.f.toFlagsRegister().subtract)
@@ -194,8 +204,9 @@ class CPUTest {
         rom[1] = 0xFE.toByte() // -2
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         assertEquals(0xFFFF.toUShort(), registers.hl)
         assertEquals(0x0001.toUShort(), stackPointer.get())
         assertFalse(registers.f.toFlagsRegister().zero)
@@ -212,8 +223,9 @@ class CPUTest {
         rom[1] = 0x0F.toByte() // +15
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(12, cycles)
         assertEquals(0x000D.toUShort(), registers.hl)
         assertFalse(registers.f.toFlagsRegister().zero)
         assertFalse(registers.f.toFlagsRegister().subtract)
@@ -235,8 +247,9 @@ class CPUTest {
         ).toUByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x1000.toUShort(), registers.hl)
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.zero)
@@ -259,8 +272,9 @@ class CPUTest {
         ).toUByte()
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x0000.toUShort(), registers.hl)
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.zero)
@@ -276,8 +290,9 @@ class CPUTest {
         rom[0] = 0xF9.toByte() // LD SP, HL opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(8, cycles)
         assertEquals(0x2468.toUShort(), stackPointer.get())
     }
 
@@ -290,8 +305,9 @@ class CPUTest {
         rom[2] = 0xC0.toByte() // high byte -> target 0xC000 (WRAM, non-ROM)
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(20, cycles)
         assertEquals(0xEF.toUByte(), memoryBus.readByte(0xC000.toUShort()))
         assertEquals(0xBE.toUByte(), memoryBus.readByte(0xC001.toUShort()))
     }
@@ -305,8 +321,9 @@ class CPUTest {
         rom[2] = 0xFF.toByte() // high byte -> target 0xFFFF
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(20, cycles)
         assertEquals(0x34.toUByte(), memoryBus.readByte(0xFFFF.toUShort()))
         // Address 0x0000 wraps around and is in ROM range — write goes to cartridge (no-op for RomOnly).
         // So we verify the 0xFFFF write succeeded instead of checking the wrapped write at 0x0000.
@@ -319,8 +336,9 @@ class CPUTest {
         rom[0] = 0xE9.toByte() // JP (HL) opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x2345.toUShort(), programCounter.get())
     }
 
@@ -533,8 +551,9 @@ class CPUTest {
         rom[0] = 0x2F.toByte() // CPL opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x0F.toUByte(), registers.a)
     }
 
@@ -549,8 +568,9 @@ class CPUTest {
         rom[0] = 0x37.toByte() // SCF opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.carry)
         assertFalse(flags.subtract)
@@ -568,8 +588,9 @@ class CPUTest {
         rom[0] = 0x3F.toByte() // CCF opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.carry)
         assertFalse(flags.subtract)
@@ -985,8 +1006,9 @@ class CPUTest {
         rom[0] = 0x27.toByte() // DAA opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x45.toUByte(), registers.a)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.carry)
@@ -1007,8 +1029,9 @@ class CPUTest {
         rom[0] = 0x27.toByte() // DAA opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x10.toUByte(), registers.a)
         val flags = registers.f.toFlagsRegister()
         assertFalse(flags.carry)
@@ -1029,8 +1052,9 @@ class CPUTest {
         rom[0] = 0x27.toByte() // DAA opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x00.toUByte(), registers.a)
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.carry)
@@ -1051,8 +1075,9 @@ class CPUTest {
         rom[0] = 0x27.toByte() // DAA opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x00.toUByte(), registers.a)
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.carry)
@@ -1073,8 +1098,9 @@ class CPUTest {
         rom[0] = 0x27.toByte() // DAA opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(4, cycles)
         assertEquals(0x00.toUByte(), registers.a)
         val flags = registers.f.toFlagsRegister()
         assertTrue(flags.carry)
@@ -1088,8 +1114,11 @@ class CPUTest {
         rom[0] = 0x76.toByte() // HALT opcode
         val cpu = createCpu(rom)
 
-        cpu.step()
-        cpu.step()
+        val haltCycles = cpu.step()
+        assertEquals(4, haltCycles)
+        // While halted, step() returns 4 (NOP-equivalent idle cycles)
+        val idleCycles = cpu.step()
+        assertEquals(4, idleCycles)
         cpu.step()
 
         assertEquals(0x01.toUShort(), programCounter.get())
@@ -1109,8 +1138,9 @@ class CPUTest {
 
         memoryBus.setInterruptFlagBit(0, true) // V-Blank interrupt
         memoryBus.setInterruptEnableBit(0, true)
-        cpu.step()
+        val interruptCycles = cpu.step()
 
+        assertEquals(20, interruptCycles)
         // PC jumps to V-Blank handler
         assertEquals(0x40.toUShort(), programCounter.get())
     }
@@ -1123,8 +1153,9 @@ class CPUTest {
         rom[2] = 0x00.toByte() // NOP opcode
         val (cpu, memoryBus) = createCpuWithMemoryBus(rom)
 
-        cpu.step()
+        val diCycles = cpu.step()
 
+        assertEquals(4, diCycles)
         memoryBus.setInterruptFlagBit(0, true) // V-Blank interrupt
         memoryBus.setInterruptEnableBit(0, true)
         cpu.step()
@@ -1147,7 +1178,8 @@ class CPUTest {
         memoryBus.setInterruptEnableBit(0, true)
 
         // enable interrupts
-        cpu.step()
+        val eiCycles = cpu.step()
+        assertEquals(4, eiCycles)
         assertEquals(0x2.toUShort(), programCounter.get())
 
         // PC jumps to V-Blank handler
@@ -1167,8 +1199,9 @@ class CPUTest {
         memoryBus.setInterruptFlagBit(0, true)
         memoryBus.setInterruptEnableBit(0, true)
 
-        cpu.step()
+        val cycles = cpu.step()
 
+        assertEquals(20, cycles)
         // PC jumps to V-Blank handler
         assertEquals(0x40.toUShort(), programCounter.get())
     }
@@ -1195,7 +1228,8 @@ class CPUTest {
         cpu.step()
 
         // return from subroutine + enabling interrupts
-        cpu.step()
+        val retiCycles = cpu.step()
+        assertEquals(16, retiCycles)
         assertEquals(0x1234.toUShort(), programCounter.get())
 
         // interrupts are now enabled

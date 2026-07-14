@@ -16,20 +16,21 @@ class CPU(
     private var globalInterruptEnabled = true
     private var enableGlobalInterruptPending = false
     private var halted = false
+    private var lastBranchTaken = false
 
-    fun step() {
+    fun step(): Int {
         val pending = anyInterruptPending()
         if (globalInterruptEnabled && pending) {
             halted = false
             serviceInterrupt()
-            return
+            return INTERRUPT_SERVICE_CYCLES
         }
 
         if (halted) {
             if (pending) {
                 halted = false
             }
-            return
+            return NOP_CYCLES
         }
 
         var instructionByte = memoryBus.readByte(programCounter.getAndIncrement())
@@ -40,12 +41,15 @@ class CPU(
 
         val instruction = InstructionDecoder.decode(instructionByte, prefixed)
             ?: error("Invalid instruction $instructionByte")
+        lastBranchTaken = false
         execute(instruction)
 
         if (enableGlobalInterruptPending) {
             globalInterruptEnabled = true
             enableGlobalInterruptPending = false
         }
+
+        return cyclesFor(instruction, lastBranchTaken)
     }
 
     fun execute(instruction: Instruction) {
@@ -201,13 +205,15 @@ class CPU(
 
     override fun shouldJump(condition: JumpCondition): Boolean {
         val flags = registers.f.toFlagsRegister()
-        return when (condition) {
+        val result = when (condition) {
             JumpCondition.NOT_ZERO -> !flags.zero
             JumpCondition.ZERO -> flags.zero
             JumpCondition.CARRY -> flags.carry
             JumpCondition.NOT_CARRY -> !flags.carry
             JumpCondition.ALWAYS -> true
         }
+        lastBranchTaken = result
+        return result
     }
 
     private fun anyInterruptPending(): Boolean {
@@ -313,8 +319,171 @@ class CPU(
     override fun haltCpu() {
         halted = true
     }
+
+    companion object {
+        private const val NOP_CYCLES = 4
+        private const val INTERRUPT_SERVICE_CYCLES = 20
+
+        private fun cyclesFor(
+            instruction: Instruction,
+            branchTaken: Boolean,
+        ): Int = when (instruction) {
+            // -- Arithmetic / Logic 8-bit --
+            is Instruction.Add,
+            is Instruction.AddC,
+            is Instruction.Sub,
+            is Instruction.Sbc,
+            is Instruction.And,
+            is Instruction.Or,
+            is Instruction.Xor,
+            is Instruction.Cp -> arithmeticLogic8Cycles(instruction)
+
+            // -- Arithmetic 16-bit --
+            is Instruction.AddHl -> 8
+            Instruction.AddSp -> 16
+
+            // -- INC / DEC --
+            is Instruction.Inc -> incDecCycles(instruction.target)
+            is Instruction.Dec -> incDecCycles(instruction.target)
+
+            // -- Flags --
+            Instruction.Ccf -> 4
+            Instruction.Scf -> 4
+            Instruction.Cpl -> 4
+            Instruction.Daa -> 4
+
+            // -- Bit operations (unprefixed A rotates) --
+            Instruction.Rra -> 4
+            Instruction.Rla -> 4
+            Instruction.Rrca -> 4
+            Instruction.Rlca -> 4
+
+            // -- CB-prefixed bit operations --
+            is Instruction.Rl,
+            is Instruction.Rlc,
+            is Instruction.Rr,
+            is Instruction.Rrc,
+            is Instruction.Sla,
+            is Instruction.Sra,
+            is Instruction.Srl,
+            is Instruction.Swap,
+            is Instruction.Bit,
+            is Instruction.Res,
+            is Instruction.Set -> cbPrefixedCycles(instruction)
+
+            // -- Loads --
+            is Instruction.Ld8 -> ld8Cycles(instruction)
+            is Instruction.Ld16 -> 12
+            Instruction.LdIncHLA -> 8
+            Instruction.LdIncAHL -> 8
+            Instruction.LdDecHLA -> 8
+            Instruction.LdDecAHL -> 8
+            Instruction.LdHlSpOffset -> 12
+            Instruction.LdSpHl -> 8
+            Instruction.LdMemoryAtData16Sp -> 20
+
+            // -- Stack --
+            is Instruction.Push -> 16
+            is Instruction.Pop -> 12
+
+            // -- Control flow --
+            is Instruction.Jp -> if (branchTaken) 16 else 12
+            Instruction.JpHl -> 4
+            is Instruction.Jr -> if (branchTaken) 12 else 8
+            is Instruction.Call -> if (branchTaken) 24 else 12
+            is Instruction.Ret -> if (instruction.condition == JumpCondition.ALWAYS) {
+                16
+            } else {
+                if (branchTaken) 20 else 8
+            }
+            Instruction.RetI -> 16
+            is Instruction.Rst -> 16
+
+            // -- CPU control --
+            Instruction.Nop -> 4
+            Instruction.Halt -> 4
+            Instruction.Stop -> 4
+            Instruction.DisableInterrupts -> 4
+            Instruction.EnableInterrupts -> 4
+        }
+
+        private fun arithmeticLogic8Cycles(instruction: Instruction): Int {
+            val target = when (instruction) {
+                is Instruction.Add -> instruction.target
+                is Instruction.AddC -> instruction.target
+                is Instruction.Sub -> instruction.target
+                is Instruction.Sbc -> instruction.target
+                is Instruction.And -> instruction.target
+                is Instruction.Or -> instruction.target
+                is Instruction.Xor -> instruction.target
+                is Instruction.Cp -> instruction.target
+                else -> return 4
+            }
+            return when (target) {
+                is Register8 -> 4
+                MemoryAtHl -> 8
+                Data8 -> 8
+                is MemoryAtRegister16 -> 8
+                MemoryAtData16 -> 16
+                MemoryAtHighData8 -> 12
+                MemoryAtHighC -> 8
+            }
+        }
+
+        private fun incDecCycles(target: Register): Int = when (target) {
+            is Register8 -> 4
+            is Register16 -> 8
+        }
+
+        private fun cbPrefixedCycles(instruction: Instruction): Int {
+            val target = when (instruction) {
+                is Instruction.Rl -> instruction.target
+                is Instruction.Rlc -> instruction.target
+                is Instruction.Rr -> instruction.target
+                is Instruction.Rrc -> instruction.target
+                is Instruction.Sla -> instruction.target
+                is Instruction.Sra -> instruction.target
+                is Instruction.Srl -> instruction.target
+                is Instruction.Swap -> instruction.target
+                is Instruction.Bit -> instruction.target
+                is Instruction.Res -> instruction.target
+                is Instruction.Set -> instruction.target
+                else -> return 8
+            }
+            return if (target == MemoryAtHl) 16 else 8
+        }
+
+        private fun ld8Cycles(instruction: Instruction.Ld8): Int {
+            val source = instruction.source
+            val target = instruction.target
+            return when {
+                // LD (nn), A or LD A, (nn)
+                source is Register8 && target == MemoryAtData16 -> 16
+                source == MemoryAtData16 && target is Register8 -> 16
+                // LDH (n), A or LDH A, (n)
+                source is Register8 && target == MemoryAtHighData8 -> 12
+                source == MemoryAtHighData8 && target is Register8 -> 12
+                // LD (C), A or LD A, (C)
+                source is Register8 && target == MemoryAtHighC -> 8
+                source == MemoryAtHighC && target is Register8 -> 8
+                // LD r, (rr) or LD (rr), r
+                source is Register8 && target is MemoryAtRegister16 -> 8
+                source is MemoryAtRegister16 && target is Register8 -> 8
+                // LD r, (HL) or LD (HL), r
+                source is Register8 && target == MemoryAtHl -> 8
+                source == MemoryAtHl && target is Register8 -> 8
+                // LD r, n (8-bit immediate)
+                source == Data8 && target is Register8 -> 8
+                // LD (HL), n
+                source == Data8 && target == MemoryAtHl -> 12
+                // LD r, r
+                source is Register8 && target is Register8 -> 4
+                else -> 4
+            }
+        }
+    }
 }
 
 interface ImmutableCPU {
-    fun step()
+    fun step(): Int
 }
