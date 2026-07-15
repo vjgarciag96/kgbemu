@@ -294,7 +294,7 @@
 #### Task 7.1.2: PPU background tile rendering
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 7.1.1
 **ACs:**
 - [ ] Tile map read from 0x9800 or 0x9C00 per LCDC bit 3
