@@ -477,7 +477,7 @@
 #### Task 10.1.1: Mbc1Cartridge
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 2.1.2
 **ACs:**
 - [ ] `CartridgeLoader` returns `Mbc1Cartridge` for type bytes 0x01–0x03
