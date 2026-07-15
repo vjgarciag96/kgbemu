@@ -38,6 +38,10 @@ object CartridgeLoader {
         val typeId = bytes[CARTRIDGE_TYPE_ADDR].toInt() and 0xFF
         return when (typeId) {
             TYPE_ROM_ONLY -> CartridgeLoadResult.Success(RomOnlyCartridge(bytes))
+            Mbc1Cartridge.TYPE_MBC1,
+            Mbc1Cartridge.TYPE_MBC1_RAM,
+            Mbc1Cartridge.TYPE_MBC1_RAM_BATTERY ->
+                CartridgeLoadResult.Success(Mbc1Cartridge(bytes, typeId))
             else -> CartridgeLoadResult.Failure(RomError.UnsupportedMapper(typeId))
         }
     }

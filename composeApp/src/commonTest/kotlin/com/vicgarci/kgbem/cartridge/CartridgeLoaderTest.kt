@@ -92,9 +92,9 @@ class CartridgeLoaderTest {
     }
 
     @Test
-    fun loadUnsupportedMapperType0x01ReturnsUnsupportedMapper() {
+    fun loadMbc1Type0x01ReturnsSuccess() {
         val rom = validRomOnlyBytes()
-        rom[0x0147] = 0x01 // MBC1, not yet implemented
+        rom[0x0147] = 0x01 // MBC1
         // Recompute checksum
         var checksum = 0
         for (i in 0x0134..0x014C) {
@@ -103,8 +103,8 @@ class CartridgeLoaderTest {
         rom[0x014D] = (checksum and 0xFF).toByte()
 
         val result = CartridgeLoader.load(rom)
-        assertIs<CartridgeLoadResult.Failure>(result)
-        assertEquals(RomError.UnsupportedMapper(0x01), result.error)
+        assertIs<CartridgeLoadResult.Success>(result)
+        assertIs<Mbc1Cartridge>(result.cartridge)
     }
 
     @Test
