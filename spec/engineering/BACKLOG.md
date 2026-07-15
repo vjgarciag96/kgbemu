@@ -306,7 +306,7 @@
 #### Task 7.1.3: PPU window layer
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 7.1.2
 **ACs:**
 - [ ] Window rendered when LCDC bit 5 set, LY ≥ WY, and pixel X ≥ (WX − 7)
