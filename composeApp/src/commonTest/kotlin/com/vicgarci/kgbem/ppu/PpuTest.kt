@@ -130,13 +130,15 @@ class PpuTest {
     }
 
     @Test
-    fun frontBufferIsAllZerosAtThisStage() {
+    fun frontBufferIsAllWhiteWhenLcdOff() {
         val (ppu, _, sink) = createTestPpu()
 
+        // LCDC defaults to 0x00 (LCD off), so output should be all white
         ppu.step(70224)
 
         val frame = sink.frames.first()
-        assertTrue(frame.all { it == 0 }, "Frame buffer should be all zeros at this stage")
+        val white = 0xFFFFFFFF.toInt()
+        assertTrue(frame.all { it == white }, "Frame buffer should be all white when LCD is off")
         assertEquals(160 * 144, frame.size, "Frame should be 160x144 pixels")
     }
 }
