@@ -25,7 +25,13 @@ class Ppu(
         const val BGP_ADDRESS: UShort = 0xFF47u
         const val WY_ADDRESS: UShort = 0xFF4Au
         const val WX_ADDRESS: UShort = 0xFF4Bu
+        const val OBP0_ADDRESS: UShort = 0xFF48u
+        const val OBP1_ADDRESS: UShort = 0xFF49u
         const val IF_ADDRESS: UShort = 0xFF0Fu
+
+        const val OAM_BASE = 0xFE00
+        const val MAX_SPRITES_PER_LINE = 10
+        const val TOTAL_SPRITES = 40
 
         const val WHITE = 0xFFFFFFFF.toInt()
 
@@ -53,6 +59,9 @@ class Ppu(
 
     private val backBuffer = IntArray(SCREEN_WIDTH * SCREEN_HEIGHT)
     private val frontBuffer = IntArray(SCREEN_WIDTH * SCREEN_HEIGHT)
+
+    /** Per-pixel BG/window colour ID for the current scanline (used for OBJ-to-BG priority). */
+    private val bgColourIds = IntArray(SCREEN_WIDTH)
 
     init {
         updateStatMode()
@@ -172,6 +181,9 @@ class Ppu(
 
         val lineOffset = y * SCREEN_WIDTH
 
+        // Reset BG colour IDs for this scanline
+        bgColourIds.fill(0)
+
         for (x in 0 until SCREEN_WIDTH) {
             // X position in the 256x256 background space (wraps)
             val bgX = (scx + x) and 0xFF
@@ -201,6 +213,8 @@ class Ppu(
             val colourBit1 = (highByte shr tileXBit) and 1
             val colourId = (colourBit1 shl 1) or colourBit0
 
+            bgColourIds[x] = colourId
+
             // Apply BGP palette
             val shade = (bgp shr (colourId * 2)) and 0x03
 
@@ -209,54 +223,136 @@ class Ppu(
 
         // --- Window layer ---
         val windowEnabled = lcdc and 0x20 != 0 // LCDC bit 5
-        if (!windowEnabled) return
+        if (windowEnabled) {
+            val wy = bus.readByte(WY_ADDRESS).toInt()
+            val wx = bus.readByte(WX_ADDRESS).toInt()
 
-        val wy = bus.readByte(WY_ADDRESS).toInt()
-        val wx = bus.readByte(WX_ADDRESS).toInt()
+            if (y >= wy) {
+                val windowStartX = wx - 7
+                if (windowStartX < SCREEN_WIDTH) {
+                    // Window tile map from LCDC bit 6 (separate from BG tile map bit 3)
+                    val winTileMapBase = if (lcdc and 0x40 != 0) 0x9C00 else 0x9800
 
-        // Window only renders if current scanline >= WY
-        if (y < wy) return
+                    // Window uses same tile data addressing as background (LCDC bit 4)
+                    val winTileRow = windowLineCounter / 8
+                    val winTileYOffset = windowLineCounter % 8
 
-        val windowStartX = wx - 7
-        // If entire window is off-screen to the right, skip
-        if (windowStartX >= SCREEN_WIDTH) return
+                    for (x in 0 until SCREEN_WIDTH) {
+                        if (x < windowStartX) continue
 
-        // Window tile map from LCDC bit 6 (separate from BG tile map bit 3)
-        val winTileMapBase = if (lcdc and 0x40 != 0) 0x9C00 else 0x9800
+                        val winX = x - windowStartX
+                        val winTileCol = winX / 8
+                        val winTileXBit = 7 - (winX % 8)
 
-        // Window uses same tile data addressing as background (LCDC bit 4)
-        val winTileRow = windowLineCounter / 8
-        val winTileYOffset = windowLineCounter % 8
+                        val winTileMapAddr = winTileMapBase + winTileRow * 32 + winTileCol
+                        val winTileIndex = bus.readByte(winTileMapAddr.toUShort()).toInt()
 
-        for (x in 0 until SCREEN_WIDTH) {
-            if (x < windowStartX) continue
+                        val winTileDataAddr = if (unsignedAddressing) {
+                            0x8000 + winTileIndex * 16
+                        } else {
+                            0x9000 + winTileIndex.toByte().toInt() * 16
+                        }
 
-            val winX = x - windowStartX
-            val winTileCol = winX / 8
-            val winTileXBit = 7 - (winX % 8)
+                        val winRowAddr = winTileDataAddr + winTileYOffset * 2
+                        val winLowByte = bus.readByte(winRowAddr.toUShort()).toInt()
+                        val winHighByte = bus.readByte((winRowAddr + 1).toUShort()).toInt()
 
-            val winTileMapAddr = winTileMapBase + winTileRow * 32 + winTileCol
-            val winTileIndex = bus.readByte(winTileMapAddr.toUShort()).toInt()
+                        val winColourBit0 = (winLowByte shr winTileXBit) and 1
+                        val winColourBit1 = (winHighByte shr winTileXBit) and 1
+                        val winColourId = (winColourBit1 shl 1) or winColourBit0
 
-            val winTileDataAddr = if (unsignedAddressing) {
-                0x8000 + winTileIndex * 16
-            } else {
-                0x9000 + winTileIndex.toByte().toInt() * 16
+                        bgColourIds[x] = winColourId
+
+                        val winShade = (bgp shr (winColourId * 2)) and 0x03
+                        backBuffer[lineOffset + x] = SHADE_TABLE[winShade]
+                    }
+
+                    windowLineCounter++
+                }
             }
-
-            val winRowAddr = winTileDataAddr + winTileYOffset * 2
-            val winLowByte = bus.readByte(winRowAddr.toUShort()).toInt()
-            val winHighByte = bus.readByte((winRowAddr + 1).toUShort()).toInt()
-
-            val winColourBit0 = (winLowByte shr winTileXBit) and 1
-            val winColourBit1 = (winHighByte shr winTileXBit) and 1
-            val winColourId = (winColourBit1 shl 1) or winColourBit0
-
-            val winShade = (bgp shr (winColourId * 2)) and 0x03
-            backBuffer[lineOffset + x] = SHADE_TABLE[winShade]
         }
 
-        windowLineCounter++
+        // --- Sprite (OBJ) layer ---
+        renderSprites(lcdc, lineOffset, y)
+    }
+
+    private fun renderSprites(lcdc: Int, lineOffset: Int, y: Int) {
+        // LCDC bit 1: sprite enable
+        if (lcdc and 0x02 == 0) return
+
+        // LCDC bit 2: sprite height (0 = 8, 1 = 16)
+        val spriteHeight = if (lcdc and 0x04 != 0) 16 else 8
+
+        // Collect sprites visible on this scanline (max 10, by OAM index order)
+        val visibleSprites = mutableListOf<Int>()
+        for (i in 0 until TOTAL_SPRITES) {
+            if (visibleSprites.size >= MAX_SPRITES_PER_LINE) break
+
+            val oamAddr = OAM_BASE + i * 4
+            val spriteY = bus.readByte(oamAddr.toUShort()).toInt()
+            val screenY = spriteY - 16
+
+            if (y >= screenY && y < screenY + spriteHeight) {
+                visibleSprites.add(i)
+            }
+        }
+
+        // Render in reverse order so lower OAM index (higher priority) overwrites
+        for (idx in visibleSprites.indices.reversed()) {
+            val i = visibleSprites[idx]
+            val oamAddr = OAM_BASE + i * 4
+            val spriteY = bus.readByte(oamAddr.toUShort()).toInt()
+            val spriteX = bus.readByte((oamAddr + 1).toUShort()).toInt()
+            var tileIndex = bus.readByte((oamAddr + 2).toUShort()).toInt()
+            val attrs = bus.readByte((oamAddr + 3).toUShort()).toInt()
+
+            val bgPriority = attrs and 0x80 != 0 // bit 7
+            val yFlip = attrs and 0x40 != 0       // bit 6
+            val xFlip = attrs and 0x20 != 0       // bit 5
+            val paletteNum = attrs and 0x10 != 0   // bit 4: 0=OBP0, 1=OBP1
+
+            val palette = if (paletteNum) {
+                bus.readByte(OBP1_ADDRESS).toInt()
+            } else {
+                bus.readByte(OBP0_ADDRESS).toInt()
+            }
+
+            val screenY = spriteY - 16
+            var rowInSprite = y - screenY
+
+            // For 8x16 mode, mask bit 0 of tile index
+            if (spriteHeight == 16) {
+                tileIndex = tileIndex and 0xFE
+            }
+
+            if (yFlip) {
+                rowInSprite = (spriteHeight - 1) - rowInSprite
+            }
+
+            // Tile data always at 0x8000 for sprites (unsigned addressing)
+            val tileDataAddr = 0x8000 + tileIndex * 16 + rowInSprite * 2
+            val lowByte = bus.readByte(tileDataAddr.toUShort()).toInt()
+            val highByte = bus.readByte((tileDataAddr + 1).toUShort()).toInt()
+
+            for (px in 0 until 8) {
+                val screenX = spriteX - 8 + px
+                if (screenX < 0 || screenX >= SCREEN_WIDTH) continue
+
+                val bit = if (xFlip) px else (7 - px)
+                val colourBit0 = (lowByte shr bit) and 1
+                val colourBit1 = (highByte shr bit) and 1
+                val colourId = (colourBit1 shl 1) or colourBit0
+
+                // Colour 0 is always transparent for sprites
+                if (colourId == 0) continue
+
+                // OBJ-to-BG priority check
+                if (bgPriority && bgColourIds[screenX] != 0) continue
+
+                val shade = (palette shr (colourId * 2)) and 0x03
+                backBuffer[lineOffset + screenX] = SHADE_TABLE[shade]
+            }
+        }
     }
 
     private fun checkLycCoincidence() {
