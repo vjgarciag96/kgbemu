@@ -44,7 +44,9 @@ class EmulatorLoop(
         joypadRegister.update(inputSource.state.value)
         var elapsed = 0
         while (elapsed < CYCLES_PER_FRAME) {
-            elapsed += cpu.step()
+            val cycles = cpu.step()
+            bus.advanceDma(cycles)
+            elapsed += cycles
         }
         frameSink.onFrame(IntArray(SCREEN_WIDTH * SCREEN_HEIGHT))
     }
