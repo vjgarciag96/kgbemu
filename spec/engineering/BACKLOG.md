@@ -317,7 +317,7 @@
 #### Task 7.1.4: PPU sprite rendering + OBJ-to-BG priority
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 7.1.2
 **ACs:**
 - [ ] OAM scanned for sprites on current scanline; max 10 per scanline enforced (by OAM index order)
