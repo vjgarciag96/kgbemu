@@ -23,6 +23,8 @@ class Ppu(
         const val LY_ADDRESS: UShort = 0xFF44u
         const val LYC_ADDRESS: UShort = 0xFF45u
         const val BGP_ADDRESS: UShort = 0xFF47u
+        const val WY_ADDRESS: UShort = 0xFF4Au
+        const val WX_ADDRESS: UShort = 0xFF4Bu
         const val IF_ADDRESS: UShort = 0xFF0Fu
 
         const val WHITE = 0xFFFFFFFF.toInt()
@@ -46,6 +48,8 @@ class Ppu(
     private var mode: Mode = Mode.OAM_SEARCH
     private var scanline: Int = 0
     private var cycleClock: Int = 0
+
+    private var windowLineCounter: Int = 0
 
     private val backBuffer = IntArray(SCREEN_WIDTH * SCREEN_HEIGHT)
     private val frontBuffer = IntArray(SCREEN_WIDTH * SCREEN_HEIGHT)
@@ -103,6 +107,7 @@ class Ppu(
 
                     if (scanline >= TOTAL_SCANLINES) {
                         scanline = 0
+                        windowLineCounter = 0
                         updateLy()
                         setMode(Mode.OAM_SEARCH)
                         checkLycCoincidence()
@@ -201,6 +206,57 @@ class Ppu(
 
             backBuffer[lineOffset + x] = SHADE_TABLE[shade]
         }
+
+        // --- Window layer ---
+        val windowEnabled = lcdc and 0x20 != 0 // LCDC bit 5
+        if (!windowEnabled) return
+
+        val wy = bus.readByte(WY_ADDRESS).toInt()
+        val wx = bus.readByte(WX_ADDRESS).toInt()
+
+        // Window only renders if current scanline >= WY
+        if (y < wy) return
+
+        val windowStartX = wx - 7
+        // If entire window is off-screen to the right, skip
+        if (windowStartX >= SCREEN_WIDTH) return
+
+        // Window tile map from LCDC bit 6 (separate from BG tile map bit 3)
+        val winTileMapBase = if (lcdc and 0x40 != 0) 0x9C00 else 0x9800
+
+        // Window uses same tile data addressing as background (LCDC bit 4)
+        val winTileRow = windowLineCounter / 8
+        val winTileYOffset = windowLineCounter % 8
+
+        for (x in 0 until SCREEN_WIDTH) {
+            if (x < windowStartX) continue
+
+            val winX = x - windowStartX
+            val winTileCol = winX / 8
+            val winTileXBit = 7 - (winX % 8)
+
+            val winTileMapAddr = winTileMapBase + winTileRow * 32 + winTileCol
+            val winTileIndex = bus.readByte(winTileMapAddr.toUShort()).toInt()
+
+            val winTileDataAddr = if (unsignedAddressing) {
+                0x8000 + winTileIndex * 16
+            } else {
+                0x9000 + winTileIndex.toByte().toInt() * 16
+            }
+
+            val winRowAddr = winTileDataAddr + winTileYOffset * 2
+            val winLowByte = bus.readByte(winRowAddr.toUShort()).toInt()
+            val winHighByte = bus.readByte((winRowAddr + 1).toUShort()).toInt()
+
+            val winColourBit0 = (winLowByte shr winTileXBit) and 1
+            val winColourBit1 = (winHighByte shr winTileXBit) and 1
+            val winColourId = (winColourBit1 shl 1) or winColourBit0
+
+            val winShade = (bgp shr (winColourId * 2)) and 0x03
+            backBuffer[lineOffset + x] = SHADE_TABLE[winShade]
+        }
+
+        windowLineCounter++
     }
 
     private fun checkLycCoincidence() {
