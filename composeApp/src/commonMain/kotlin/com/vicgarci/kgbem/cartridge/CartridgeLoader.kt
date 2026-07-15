@@ -42,6 +42,12 @@ object CartridgeLoader {
             Mbc1Cartridge.TYPE_MBC1_RAM,
             Mbc1Cartridge.TYPE_MBC1_RAM_BATTERY ->
                 CartridgeLoadResult.Success(Mbc1Cartridge(bytes, typeId))
+            Mbc3Cartridge.TYPE_MBC3_TIMER_BATTERY,
+            Mbc3Cartridge.TYPE_MBC3_TIMER_RAM_BATTERY,
+            Mbc3Cartridge.TYPE_MBC3_ONLY,
+            Mbc3Cartridge.TYPE_MBC3_RAM,
+            Mbc3Cartridge.TYPE_MBC3_RAM_BATTERY ->
+                CartridgeLoadResult.Success(Mbc3Cartridge(bytes, typeId))
             else -> CartridgeLoadResult.Failure(RomError.UnsupportedMapper(typeId))
         }
     }
