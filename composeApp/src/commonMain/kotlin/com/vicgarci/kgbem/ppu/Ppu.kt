@@ -16,10 +16,24 @@ class Ppu(
         const val SCREEN_WIDTH = 160
         const val SCREEN_HEIGHT = 144
 
+        const val LCDC_ADDRESS: UShort = 0xFF40u
         const val STAT_ADDRESS: UShort = 0xFF41u
+        const val SCY_ADDRESS: UShort = 0xFF42u
+        const val SCX_ADDRESS: UShort = 0xFF43u
         const val LY_ADDRESS: UShort = 0xFF44u
         const val LYC_ADDRESS: UShort = 0xFF45u
+        const val BGP_ADDRESS: UShort = 0xFF47u
         const val IF_ADDRESS: UShort = 0xFF0Fu
+
+        const val WHITE = 0xFFFFFFFF.toInt()
+
+        /** ARGB shade table indexed by 2-bit colour ID. */
+        val SHADE_TABLE = intArrayOf(
+            0xFFFFFFFF.toInt(), // 0 = white
+            0xFFAAAAAA.toInt(), // 1 = light grey
+            0xFF555555.toInt(), // 2 = dark grey
+            0xFF000000.toInt(), // 3 = black
+        )
     }
 
     private enum class Mode(val bits: Int) {
@@ -74,9 +88,7 @@ class Ppu(
                         // Fire VBlank interrupt
                         val ifValue = bus.readByte(IF_ADDRESS).toInt()
                         bus.writeByte(IF_ADDRESS, (ifValue or 0x01).toUByte())
-                        // Copy back buffer to front buffer and emit frame
-                        backBuffer.copyInto(frontBuffer)
-                        frameSink.onFrame(frontBuffer)
+                        swapBuffers()
                         checkLycCoincidence()
                     } else {
                         setMode(Mode.OAM_SEARCH)
@@ -106,6 +118,9 @@ class Ppu(
     private fun setMode(newMode: Mode) {
         mode = newMode
         updateStatMode()
+        if (newMode == Mode.DRAWING) {
+            renderScanline()
+        }
     }
 
     private fun updateStatMode() {
@@ -117,6 +132,75 @@ class Ppu(
 
     private fun updateLy() {
         bus.writeByte(LY_ADDRESS, scanline.toUByte())
+    }
+
+    private fun swapBuffers() {
+        val lcdc = bus.readByte(LCDC_ADDRESS).toInt()
+        if (lcdc and 0x80 == 0) {
+            // LCD off: output all white
+            backBuffer.fill(WHITE)
+        }
+        backBuffer.copyInto(frontBuffer)
+        frameSink.onFrame(frontBuffer)
+    }
+
+    private fun renderScanline() {
+        val lcdc = bus.readByte(LCDC_ADDRESS).toInt()
+        // Only render when LCD is on (bit 7)
+        if (lcdc and 0x80 == 0) return
+
+        val bgp = bus.readByte(BGP_ADDRESS).toInt()
+        val scy = bus.readByte(SCY_ADDRESS).toInt()
+        val scx = bus.readByte(SCX_ADDRESS).toInt()
+
+        // Determine tile map base address from LCDC bit 3
+        val tileMapBase = if (lcdc and 0x08 != 0) 0x9C00 else 0x9800
+
+        // Determine tile data addressing mode from LCDC bit 4
+        val unsignedAddressing = lcdc and 0x10 != 0
+
+        val y = scanline
+        // Y position in the 256x256 background space (wraps)
+        val bgY = (scy + y) and 0xFF
+        val tileRow = bgY / 8
+        val tileYOffset = bgY % 8
+
+        val lineOffset = y * SCREEN_WIDTH
+
+        for (x in 0 until SCREEN_WIDTH) {
+            // X position in the 256x256 background space (wraps)
+            val bgX = (scx + x) and 0xFF
+            val tileCol = bgX / 8
+            val tileXBit = 7 - (bgX % 8)
+
+            // Fetch tile index from tile map
+            val tileMapAddr = tileMapBase + tileRow * 32 + tileCol
+            val tileIndex = bus.readByte(tileMapAddr.toUShort()).toInt()
+
+            // Compute tile data address
+            val tileDataAddr = if (unsignedAddressing) {
+                // 0x8000 + tileIndex * 16
+                0x8000 + tileIndex * 16
+            } else {
+                // 0x8800 base, signed indexing: tile 0 is at 0x9000
+                0x9000 + tileIndex.toByte().toInt() * 16
+            }
+
+            // Read the two bytes for this row of the tile
+            val rowAddr = tileDataAddr + tileYOffset * 2
+            val lowByte = bus.readByte(rowAddr.toUShort()).toInt()
+            val highByte = bus.readByte((rowAddr + 1).toUShort()).toInt()
+
+            // Extract 2-bit colour ID
+            val colourBit0 = (lowByte shr tileXBit) and 1
+            val colourBit1 = (highByte shr tileXBit) and 1
+            val colourId = (colourBit1 shl 1) or colourBit0
+
+            // Apply BGP palette
+            val shade = (bgp shr (colourId * 2)) and 0x03
+
+            backBuffer[lineOffset + x] = SHADE_TABLE[shade]
+        }
     }
 
     private fun checkLycCoincidence() {
