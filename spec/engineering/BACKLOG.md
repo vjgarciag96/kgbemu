@@ -330,7 +330,7 @@
 #### Task 7.1.5: OAM DMA
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 7.1.1
 **ACs:**
 - [ ] Write to 0xFF46 triggers transfer of 160 bytes from `(value << 8)` to OAM (0xFE00–0xFE9F)
