@@ -352,7 +352,7 @@
 #### Task 7.1.7: dmg-acid2 CI test
 **Owner:** Neville
 **Domain:** qa
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 7.1.4, Task 5.1.1, Task 5.1.2
 **ACs:**
 - [ ] `commonTest`: construct `EmulatorLoop` with dmg-acid2 ROM; run 200 frames; capture last frame via `RecordingFrameSink`
@@ -604,3 +604,20 @@
 - [ ] CI (GitHub Actions `macos-latest` runner) runs `./gradlew :composeApp:assembleXCFramework`
 - [ ] Job runs on every PR; failure blocks merge
 - [ ] Job placed after JVM test job (depends on it passing first)
+
+---
+
+## Epic 13: CI Infrastructure
+**Slice:** 2
+
+### Story 13.1: CI runs all JVM tests on every PR
+
+#### Task 13.1.1: Fix CI JVM version for Metro plugin
+**Owner:** Arthur
+**Domain:** infra
+**Status:** todo
+**Dependencies:** none
+**ACs:**
+- [ ] GitHub Actions workflow updated to use JDK 21 (Metro compiler plugin requires JVM 21+)
+- [ ] `./gradlew :composeApp:jvmTest` passes in CI (currently fails due to JVM 17)
+- [ ] Workflow file uses `java-version: '21'` in the `setup-java` step
