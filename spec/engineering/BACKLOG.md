@@ -157,7 +157,7 @@
 #### Task 4.1.2: EmulatorController (commonMain) + EmulatorViewModel (androidMain)
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 4.1.1, Task 3.1.2
 **ACs:**
 - [ ] `EmulatorController` in `commonMain` exposes `emulatorState: StateFlow<EmulatorState>` and `frameState: StateFlow<IntArray?>`; implements `FrameSink.onFrame()` via `_frameState.value = pixels`
