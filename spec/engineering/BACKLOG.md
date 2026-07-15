@@ -615,7 +615,7 @@
 #### Task 13.1.1: Fix CI JVM version for Metro plugin
 **Owner:** Arthur
 **Domain:** infra
-**Status:** todo
+**Status:** done
 **Dependencies:** none
 **ACs:**
 - [ ] GitHub Actions workflow updated to use JDK 21 (Metro compiler plugin requires JVM 21+)
