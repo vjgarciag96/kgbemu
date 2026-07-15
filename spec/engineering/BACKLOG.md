@@ -504,7 +504,7 @@
 #### Task 11.1.1: Mbc3Cartridge
 **Owner:** Hermione
 **Domain:** backend
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 2.1.2, Task 1.1.2
 **ACs:**
 - [ ] ROM bank switching: 0x4000–0x7FFF selects bank 1–127 via writes to 0x2000–0x3FFF
