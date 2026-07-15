@@ -1,6 +1,9 @@
 package com.vicgarci.kgbem.di
 
 import com.vicgarci.kgbem.emulator.EmulatorController
+import com.vicgarci.kgbem.joypad.InputSource
+import com.vicgarci.kgbem.joypad.NoOpInputSource
+import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.SingleIn
 
@@ -8,4 +11,7 @@ import dev.zacsweers.metro.SingleIn
 @SingleIn(AppScope::class)
 interface AppGraph {
     val emulatorController: EmulatorController
+
+    @Binds
+    fun NoOpInputSource.bindInputSource(): InputSource
 }
