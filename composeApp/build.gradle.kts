@@ -93,10 +93,17 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 dependencies {
     debugImplementation(compose.uiTooling)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlin.testJunit)
+    testImplementation(libs.androidx.test.core)
 }
 
 compose.desktop {

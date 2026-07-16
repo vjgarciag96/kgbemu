@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import com.vicgarci.kgbem.di.AppGraph
 import com.vicgarci.kgbem.platform.AndroidFilePicker
 import com.vicgarci.kgbem.platform.RegisterFilePicker
+import com.vicgarci.kgbem.platform.SaveStorage
 import dev.zacsweers.metro.createGraph
 
 class MainActivity : ComponentActivity() {
@@ -17,6 +18,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         AndroidFilePicker.context = applicationContext
+        SaveStorage.context = applicationContext
 
         val emulatorController = appGraph.emulatorController
 
