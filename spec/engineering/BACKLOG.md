@@ -180,7 +180,7 @@
 #### Task 4.1.4: LoopDriver Android actual
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 3.1.2
 **ACs:**
 - [ ] `actual class LoopDriver` in `androidMain` runs `EmulatorLoop.runFrame()` on `Dispatchers.Default` coroutine, paced to ~16.74 ms/frame using `System.nanoTime`
@@ -191,7 +191,7 @@
 #### Task 4.1.5: LauncherScreen
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 4.1.2, Task 4.1.3
 **ACs:**
 - [ ] Unloaded state: kgbemu wordmark + "Open ROM" button visible
@@ -204,7 +204,7 @@
 #### Task 4.1.6: GameScreen with grey placeholder viewport
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 4.1.2
 **ACs:**
 - [ ] GameScreen displayed when `emulatorState` is Running
