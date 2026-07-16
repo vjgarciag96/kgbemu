@@ -517,7 +517,7 @@
 #### Task 11.1.2: SaveStorage Android actual
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 11.1.1
 **ACs:**
 - [ ] `actual object SaveStorage` in `androidMain` reads/writes to `context.filesDir/saves/<romTitle>.sav`
@@ -528,7 +528,7 @@
 #### Task 11.1.3: SaveStorage Desktop actual
 **Owner:** Arthur
 **Domain:** infra
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 11.1.1
 **ACs:**
 - [ ] `actual object SaveStorage` in `jvmMain` reads/writes to `${user.home}/.kgbemu/saves/<romTitle>.sav`
