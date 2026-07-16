@@ -517,23 +517,23 @@
 #### Task 11.1.2: SaveStorage Android actual
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 11.1.1
 **ACs:**
-- [ ] `actual object SaveStorage` in `androidMain` reads/writes to `context.filesDir/saves/<romTitle>.sav`
-- [ ] Write is atomic: write to `.tmp`, then `File.renameTo()` to `.sav`
-- [ ] Load with wrong-length file: logs warning, returns null (caller zero-pads RAM)
-- [ ] Unit test (Robolectric): save and load a 8192-byte payload; assert round-trip equality; assert `.tmp` file absent after successful save
+- [x] `actual object SaveStorage` in `androidMain` reads/writes to `context.filesDir/saves/<romTitle>.sav`
+- [x] Write is atomic: write to `.tmp`, then `File.renameTo()` to `.sav`
+- [x] Load with wrong-length file: logs warning, returns null (caller zero-pads RAM)
+- [x] Unit test (Robolectric): save and load a 8192-byte payload; assert round-trip equality; assert `.tmp` file absent after successful save
 
 #### Task 11.1.3: SaveStorage Desktop actual
 **Owner:** Arthur
 **Domain:** infra
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 11.1.1
 **ACs:**
-- [ ] `actual object SaveStorage` in `jvmMain` reads/writes to `${user.home}/.kgbemu/saves/<romTitle>.sav`
-- [ ] Atomic write via `.tmp` + rename
-- [ ] Corrupted-length load returns null
+- [x] `actual object SaveStorage` in `jvmMain` reads/writes to `${user.home}/.kgbemu/saves/<romTitle>.sav`
+- [x] Atomic write via `.tmp` + rename
+- [x] Corrupted-length load returns null
 
 #### Task 11.1.4: Save/load integration in EmulatorViewModel
 **Owner:** Harry
