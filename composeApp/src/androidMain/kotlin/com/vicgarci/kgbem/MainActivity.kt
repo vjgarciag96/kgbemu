@@ -4,8 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import com.vicgarci.kgbem.di.AppGraph
 import com.vicgarci.kgbem.platform.AndroidFilePicker
 import com.vicgarci.kgbem.platform.RegisterFilePicker
@@ -20,15 +18,11 @@ class MainActivity : ComponentActivity() {
 
         AndroidFilePicker.context = applicationContext
 
+        val emulatorController = appGraph.emulatorController
+
         setContent {
             RegisterFilePicker()
-            App()
+            App(emulatorController)
         }
     }
-}
-
-@Preview
-@Composable
-fun AppAndroidPreview() {
-    App()
 }
