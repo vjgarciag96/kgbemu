@@ -690,5 +690,70 @@ Pixel 6 (Android 12) is the baseline device for "playable frame rate." A 60-seco
 | # | Question | Status |
 |---|---|---|
 | OQ-1 | MBC3 RTC: confirm `kotlinx-datetime` is in the dependency graph | Resolve in Slice 1 setup |
-| OQ-2 | `ImageBitmap.writePixels()` API: verify same call signature on Android vs Desktop | Validate in Slice 1 walking skeleton |
+| OQ-2 | `ImageBitmap.writePixels()` API: verify same call signature on Android vs Desktop | **Resolved** — see SPIKE-002 findings below |
 | OQ-3 | iOS `CADisplayLink`: UIKit import in iosMain — confirm KMP allows this | Validate during iOS slice |
+
+---
+
+## Appendix A: SPIKE-002 — ImageBitmap Pixel-Write API Validation (OQ-2)
+
+**Goal:** Confirm the API for converting an `IntArray` of ARGB values into a Compose `ImageBitmap` on Android and Desktop (JVM).
+
+### Finding: Shared pixel format
+
+Both Android and Desktop accept ARGB `IntArray(160 * 144)` as the pixel format. The PPU's `frontBuffer: IntArray` can be consumed directly on both platforms without byte-order conversion.
+
+### Android — Confirmed API
+
+```kotlin
+// Create a pre-allocated bitmap
+val bitmap = android.graphics.Bitmap.createBitmap(160, 144, Bitmap.Config.ARGB_8888)
+
+// Write the PPU frame buffer (ARGB IntArray)
+bitmap.setPixels(pixels, /*offset=*/0, /*stride=*/160, /*x=*/0, /*y=*/0, /*width=*/160, /*height=*/144)
+
+// Read back a single pixel (for verification)
+val argb: Int = bitmap.getPixel(x, y)
+
+// Convert to Compose ImageBitmap (from androidx.compose.ui.graphics)
+val imageBitmap: ImageBitmap = bitmap.asImageBitmap()
+```
+
+**Status:** API names confirmed from Android SDK documentation. Not runnable in JVM tests without Robolectric.
+
+### Desktop (JVM) — Confirmed API
+
+Two approaches validated with passing headless JVM tests:
+
+**Approach 1: BufferedImage (recommended)**
+
+```kotlin
+val bufferedImage = BufferedImage(160, 144, BufferedImage.TYPE_INT_ARGB)
+bufferedImage.setRGB(0, 0, 160, 144, pixels, 0, 160)
+
+// Convert to Compose ImageBitmap (from androidx.compose.ui.graphics)
+val imageBitmap: ImageBitmap = bufferedImage.toComposeImageBitmap()
+```
+
+ARGB `IntArray` round-trips correctly through `setRGB`/`getRGB`. The `toComposeImageBitmap()` extension preserves all four channels (verified by reading back via `toPixelMap()`).
+
+**Approach 2: Skia Bitmap**
+
+```kotlin
+val skiaBitmap = org.jetbrains.skia.Bitmap()
+skiaBitmap.allocPixels(ImageInfo.makeN32(160, 144, ColorAlphaType.UNPREMUL))
+skiaBitmap.installPixels(pixelsByteArray)  // ByteArray, not IntArray
+
+// Convert to Compose ImageBitmap (from androidx.compose.ui.graphics)
+val imageBitmap: ImageBitmap = skiaBitmap.asComposeImageBitmap()
+```
+
+Requires converting `IntArray` to `ByteArray` via `ByteBuffer`. N32 format is platform-native (BGRA on little-endian). On macOS ARM64, ARGB ints written via `ByteBuffer.putInt()` with native byte order produced correct pixel values.
+
+### Recommendation
+
+Use **BufferedImage** on Desktop because it accepts `IntArray` ARGB directly (matching the PPU buffer format) and requires no byte-order considerations. The Android path uses `Bitmap.setPixels()` which also accepts `IntArray` ARGB directly.
+
+### Test location
+
+`composeApp/src/jvmTest/kotlin/com/vicgarci/kgbem/spike/ImageBitmapSpikeTest.kt` — 5 passing tests.
