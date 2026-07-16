@@ -33,12 +33,12 @@
 #### Task 1.1.3: Validate ImageBitmap pixel-write API on Android and Desktop (SPIKE-002)
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 1.1.1
 **ACs:**
-- [ ] A throwaway `commonTest` or `androidTest` test writes a known `IntArray(160*144)` of ARGB values into a `Bitmap` via `Bitmap.setPixels()` on Android and reads back the same values
-- [ ] Equivalent test passes on Desktop (JVM) using `org.jetbrains.skia.Bitmap` or `BufferedImage`
-- [ ] Decision documented in `TECH_SPEC.md` OQ-2 with the confirmed API name per platform
+- [x] A throwaway `commonTest` or `androidTest` test writes a known `IntArray(160*144)` of ARGB values into a `Bitmap` via `Bitmap.setPixels()` on Android and reads back the same values
+- [x] Equivalent test passes on Desktop (JVM) using `org.jetbrains.skia.Bitmap` or `BufferedImage`
+- [x] Decision documented in `TECH_SPEC.md` OQ-2 with the confirmed API name per platform
 
 ---
 
