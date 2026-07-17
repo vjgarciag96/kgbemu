@@ -63,6 +63,7 @@ class EmulatorController(
 
     private var cartridge: Cartridge? = null
     private var romTitle: String = ""
+    private var lastRomBytes: ByteArray? = null
 
     override fun onFrame(pixels: IntArray) {
         _frameState.value = pixels
@@ -75,6 +76,7 @@ class EmulatorController(
      */
     fun loadRom(bytes: ByteArray) {
         _emulatorState.value = EmulatorState.Loading
+        lastRomBytes = bytes
         romTitle = extractRomTitle(bytes)
         when (val result = CartridgeLoader.load(bytes)) {
             is CartridgeLoadResult.Success -> {
@@ -126,6 +128,35 @@ class EmulatorController(
             .trim()
             .take(16)
             .ifEmpty { "rom" }
+    }
+
+    /**
+     * Cold-resets the emulator by reloading the last ROM bytes.
+     *
+     * This re-creates the [EmulatorLoop] from scratch (including
+     * [CpuInitialiser.applyPostBootState]), restores any saved battery
+     * RAM, and restarts the loop driver. No-op if no ROM was loaded.
+     */
+    fun reset() {
+        val bytes = lastRomBytes ?: return
+        loadRom(bytes)
+    }
+
+    /**
+     * Stops emulation and returns to the idle (unloaded) state.
+     *
+     * Tears down the loop driver, clears the cartridge and frame data,
+     * and transitions to [EmulatorState.Idle] so that navigation
+     * automatically returns to the launcher screen.
+     */
+    fun unload() {
+        loopDriver?.stop()
+        loopDriver = null
+        loop = null
+        cartridge = null
+        lastRomBytes = null
+        _frameState.value = null
+        _emulatorState.value = EmulatorState.Idle
     }
 
     /**

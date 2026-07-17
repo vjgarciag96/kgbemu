@@ -24,12 +24,17 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -62,12 +67,63 @@ fun GameScreen(
     val pixelBuffer = remember { PixelBuffer(GB_WIDTH, GB_HEIGHT) }
     val pixels by emulatorController.frameState.collectAsStateWithLifecycle()
 
+    var showMenu by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+
+    if (showMenu) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                showMenu = false
+                emulatorController.resume()
+            },
+            sheetState = sheetState,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            ) {
+                TextButton(
+                    onClick = {
+                        showMenu = false
+                        emulatorController.resume()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Resume")
+                }
+                TextButton(
+                    onClick = {
+                        showMenu = false
+                        emulatorController.reset()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Reset")
+                }
+                TextButton(
+                    onClick = {
+                        showMenu = false
+                        emulatorController.unload()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Load New ROM")
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = {
+                        emulatorController.pause()
+                        showMenu = true
+                    }) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Menu",
