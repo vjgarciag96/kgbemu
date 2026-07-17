@@ -5,6 +5,7 @@ import com.vicgarci.kgbem.cartridge.CartridgeLoadResult
 import com.vicgarci.kgbem.cartridge.CartridgeLoader
 import com.vicgarci.kgbem.di.AppScope
 import com.vicgarci.kgbem.joypad.InputSource
+import com.vicgarci.kgbem.platform.LoopDriver
 import com.vicgarci.kgbem.platform.SaveStorage
 import com.vicgarci.kgbem.ppu.FrameSink
 import dev.zacsweers.metro.Inject
@@ -36,6 +37,8 @@ class EmulatorController(
     var loop: EmulatorLoop? = null
         private set
 
+    private var loopDriver: LoopDriver? = null
+
     private var cartridge: Cartridge? = null
     private var romTitle: String = ""
 
@@ -62,11 +65,16 @@ class EmulatorController(
                         // Corrupt save data — start with clean RAM state.
                     }
                 }
-                loop = EmulatorLoop(
+                val emulatorLoop = EmulatorLoop(
                     cartridge = cart,
                     frameSink = this,
                     inputSource = inputSource,
                 )
+                loop = emulatorLoop
+                loopDriver?.stop()
+                val driver = LoopDriver(emulatorLoop)
+                loopDriver = driver
+                driver.start()
                 _emulatorState.value = EmulatorState.Running
             }
             is CartridgeLoadResult.Failure -> {
@@ -103,6 +111,7 @@ class EmulatorController(
      */
     fun pause() {
         if (_emulatorState.value == EmulatorState.Running) {
+            loopDriver?.stop()
             _emulatorState.value = EmulatorState.Paused
         }
     }
@@ -112,6 +121,7 @@ class EmulatorController(
      */
     fun resume() {
         if (_emulatorState.value == EmulatorState.Paused) {
+            loopDriver?.start()
             _emulatorState.value = EmulatorState.Running
         }
     }
