@@ -413,12 +413,12 @@
 #### Task 9.1.2: Touch control overlay layout
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 9.1.1
 **ACs:**
-- [ ] D-pad cluster in lower-left; A/B buttons in lower-right; Start/Select in centre-bottom
-- [ ] Controls are semi-transparent and do not occlude the game viewport
-- [ ] Touch targets meet minimum 48dp size on Android
+- [x] D-pad cluster in lower-left; A/B buttons in lower-right; Start/Select in centre-bottom
+- [x] Controls are semi-transparent and do not occlude the game viewport
+- [x] Touch targets meet minimum 48dp size on Android
 
 #### Task 9.1.3: Pause + Resume
 **Owner:** Harry
@@ -446,11 +446,11 @@
 #### Task 9.1.5: LoopDriver Desktop actual + FilePicker Desktop actual
 **Owner:** Arthur
 **Domain:** infra
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 3.1.2
 **ACs:**
-- [ ] `actual class LoopDriver` (JVM) uses `withFrameNanos` in a coroutine on `Dispatchers.Default`
-- [ ] `actual suspend fun pickRomFile()` shows `java.awt.FileDialog` with `.gb` filter on `Dispatchers.IO`
+- [x] `actual class LoopDriver` (JVM) uses `withFrameNanos` in a coroutine on `Dispatchers.Default`
+- [x] `actual suspend fun pickRomFile()` shows `java.awt.FileDialog` with `.gb` filter on `Dispatchers.IO`
 - [ ] `./gradlew :composeApp:run` launches, loads a ROM, and renders frames without crash
 
 #### Task 9.1.6: KeyboardInputSource (Desktop)
