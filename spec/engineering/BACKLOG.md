@@ -341,12 +341,12 @@
 #### Task 7.1.6: FrameSink → ViewModel → ImageBitmap pipeline
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 7.1.1, Task 4.1.2, Task 1.1.3
 **ACs:**
-- [ ] `EmulatorViewModel.onFrame(pixels)` sets `_frameState.value = pixels` (thread-safe via StateFlow)
-- [ ] `GameScreen` collects `frameState` with `collectAsStateWithLifecycle()`; on each new `IntArray`, calls `androidBitmap.setPixels(it, 0, 160, 0, 0, 160, 144)` on the main thread
-- [ ] `androidBitmap` and `imageBitmap` are `remember`-ed across recompositions (no per-frame allocation)
+- [x] `EmulatorViewModel.onFrame(pixels)` sets `_frameState.value = pixels` (thread-safe via StateFlow)
+- [x] `GameScreen` collects `frameState` with `collectAsStateWithLifecycle()`; on each new `IntArray`, calls `androidBitmap.setPixels(it, 0, 160, 0, 0, 160, 144)` on the main thread
+- [x] `androidBitmap` and `imageBitmap` are `remember`-ed across recompositions (no per-frame allocation)
 - [ ] Manual test on Pixel 6: 60 seconds of dmg-acid2 run; no OOM; no ANR; frame counter shows ≥57 fps
 
 #### Task 7.1.7: dmg-acid2 CI test
@@ -538,12 +538,12 @@
 #### Task 11.1.4: Save/load integration in EmulatorViewModel
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 11.1.2
 **ACs:**
-- [ ] `onCleared()` calls `saveStorage.save(romTitle, cartridge.savableState())` if `cartridge.hasBattery()`
-- [ ] On ROM load success, `saveStorage.load(romTitle)` called; if non-null, `cartridge.loadState(bytes)` called before loop starts
-- [ ] Corruption-safe: if `loadState` throws, log and start with clean state
+- [x] `onCleared()` calls `saveStorage.save(romTitle, cartridge.savableState())` if `cartridge.hasBattery()`
+- [x] On ROM load success, `saveStorage.load(romTitle)` called; if non-null, `cartridge.loadState(bytes)` called before loop starts
+- [x] Corruption-safe: if `loadState` throws, log and start with clean state
 
 ---
 
