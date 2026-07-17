@@ -423,13 +423,13 @@
 #### Task 9.1.3: Pause + Resume
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 4.1.4
 **ACs:**
-- [ ] Tapping pause icon calls `loopDriver.stop()`; `emulatorState` transitions to `Paused`
-- [ ] "PAUSED" overlay appears centred on game viewport
-- [ ] Tapping play icon calls `loopDriver.start()`; `emulatorState` transitions to `Running`
-- [ ] Last rendered frame retained on screen while paused (no black screen)
+- [x] Tapping pause icon calls `loopDriver.stop()`; `emulatorState` transitions to `Paused`
+- [x] "PAUSED" overlay appears centred on game viewport
+- [x] Tapping play icon calls `loopDriver.start()`; `emulatorState` transitions to `Running`
+- [x] Last rendered frame retained on screen while paused (no black screen)
 
 #### Task 9.1.4: Menu sheet + Reset + Load New ROM
 **Owner:** Harry
