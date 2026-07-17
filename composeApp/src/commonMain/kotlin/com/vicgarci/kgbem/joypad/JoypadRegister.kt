@@ -1,5 +1,7 @@
 package com.vicgarci.kgbem.joypad
 
+import kotlin.concurrent.Volatile
+
 class JoypadRegister {
     @Volatile
     var state: JoypadState = JoypadState()
