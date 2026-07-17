@@ -589,11 +589,11 @@
 #### Task 12.1.4: TouchInputSource iOS
 **Owner:** Sirius
 **Domain:** ios
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 8.1.2
 **ACs:**
-- [ ] Touch control overlay rendered via Compose Multiplatform on iOS
-- [ ] Touch events update `JoypadState` correctly
+- [x] Touch control overlay rendered via Compose Multiplatform on iOS
+- [x] Touch events update `JoypadState` correctly
 
 #### Task 12.1.5: iOS CI job
 **Owner:** Arthur
