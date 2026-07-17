@@ -16,6 +16,11 @@ class EmulatorViewModel(
     /** Track whether we were running before onStop so we can auto-resume. */
     private var wasRunning = false
 
+    override fun onCleared() {
+        super.onCleared()
+        emulatorController.saveGame()
+    }
+
     override fun onStop(owner: LifecycleOwner) {
         wasRunning = emulatorController.emulatorState.value == EmulatorState.Running
         emulatorController.pause()
