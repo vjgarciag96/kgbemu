@@ -29,6 +29,26 @@ class EmulatorController(
     private val inputSource: InputSource,
 ) : FrameSink {
 
+    /**
+     * Optional override for the injected [InputSource].
+     * On Desktop, [main.kt] sets this to a [KeyboardInputSource] so that
+     * keyboard events drive the joypad instead of (the DI-default) touch.
+     */
+    private var inputOverride: InputSource? = null
+
+    /**
+     * Replaces the DI-provided [InputSource] with [source].
+     * Must be called before [loadRom] so the [EmulatorLoop] picks up
+     * the correct source.
+     */
+    fun setInputOverride(source: InputSource) {
+        inputOverride = source
+    }
+
+    /** The effective input source: override if set, otherwise DI-injected. */
+    private val effectiveInput: InputSource
+        get() = inputOverride ?: inputSource
+
     private val _emulatorState = MutableStateFlow<EmulatorState>(EmulatorState.Idle)
     val emulatorState: StateFlow<EmulatorState> = _emulatorState.asStateFlow()
 
@@ -70,7 +90,7 @@ class EmulatorController(
                 val emulatorLoop = EmulatorLoop(
                     cartridge = cart,
                     frameSink = this,
-                    inputSource = inputSource,
+                    inputSource = effectiveInput,
                 )
                 loop = emulatorLoop
                 loopDriver?.stop()
