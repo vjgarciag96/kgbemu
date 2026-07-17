@@ -434,14 +434,14 @@
 #### Task 9.1.4: Menu sheet + Reset + Load New ROM
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 9.1.3
 **ACs:**
-- [ ] Menu icon opens bottom sheet; emulator pauses automatically
-- [ ] Resume closes sheet and resumes
-- [ ] Reset cold-boots: `CpuInitialiser.applyPostBootState()` called; ROM reloaded from `filesDir` cache; loop restarts
-- [ ] Load New ROM stops loop and returns to LauncherScreen (Unloaded state)
-- [ ] Backdrop dismiss closes sheet and resumes
+- [x] Menu icon opens bottom sheet; emulator pauses automatically
+- [x] Resume closes sheet and resumes
+- [x] Reset cold-boots: `CpuInitialiser.applyPostBootState()` called; ROM reloaded from `filesDir` cache; loop restarts
+- [x] Load New ROM stops loop and returns to LauncherScreen (Unloaded state)
+- [x] Backdrop dismiss closes sheet and resumes
 
 #### Task 9.1.5: LoopDriver Desktop actual + FilePicker Desktop actual
 **Owner:** Arthur
@@ -559,32 +559,32 @@
 #### Task 12.1.1: LoopDriver iOS actual (CADisplayLink)
 **Owner:** Sirius
 **Domain:** ios
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 3.1.2
 **ACs:**
-- [ ] `actual class LoopDriver` in `iosMain` uses `CADisplayLink` to call `runFrame()` each vsync
-- [ ] `stop()` invalidates the display link; `start()` creates a new one
-- [ ] `CADisplayLink` runs on the main run loop; `runFrame()` dispatched to a background queue to avoid blocking the UI thread
-- [ ] Xcode project builds and runs on iOS Simulator without crash
+- [x] `actual class LoopDriver` in `iosMain` uses `CADisplayLink` to call `runFrame()` each vsync
+- [x] `stop()` invalidates the display link; `start()` creates a new one
+- [x] `CADisplayLink` runs on the main run loop; `runFrame()` dispatched to a background queue to avoid blocking the UI thread
+- [ ] Xcode project builds and runs on iOS Simulator without crash (manual verification required)
 
 #### Task 12.1.2: FilePicker iOS actual
 **Owner:** Sirius
 **Domain:** ios
-**Status:** todo
+**Status:** done
 **Dependencies:** none
 **ACs:**
-- [ ] `actual suspend fun pickRomFile()` presents `UIDocumentPickerViewController` for `public.data` UTType
-- [ ] Selected file read via `Data(contentsOf:)` and returned as `ByteArray`
-- [ ] Returns null if user cancels
+- [x] `actual suspend fun pickRomFile()` presents `UIDocumentPickerViewController` for `public.data` UTType
+- [x] Selected file read via `Data(contentsOf:)` and returned as `ByteArray`
+- [x] Returns null if user cancels
 
 #### Task 12.1.3: SaveStorage iOS actual
 **Owner:** Sirius
 **Domain:** ios
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 11.1.1
 **ACs:**
-- [ ] `actual object SaveStorage` writes to `Documents/saves/<romTitle>.sav` via atomic write
-- [ ] Corrupted-length load returns null
+- [x] `actual object SaveStorage` writes to `Documents/saves/<romTitle>.sav` via atomic write
+- [x] Corrupted-length load returns null
 
 #### Task 12.1.4: TouchInputSource iOS
 **Owner:** Sirius
