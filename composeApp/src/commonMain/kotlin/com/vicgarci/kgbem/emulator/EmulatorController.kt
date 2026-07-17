@@ -4,7 +4,9 @@ import com.vicgarci.kgbem.cartridge.Cartridge
 import com.vicgarci.kgbem.cartridge.CartridgeLoadResult
 import com.vicgarci.kgbem.cartridge.CartridgeLoader
 import com.vicgarci.kgbem.di.AppScope
+import com.vicgarci.kgbem.joypad.GameBoyButton
 import com.vicgarci.kgbem.joypad.InputSource
+import com.vicgarci.kgbem.joypad.TouchInputSource
 import com.vicgarci.kgbem.platform.LoopDriver
 import com.vicgarci.kgbem.platform.SaveStorage
 import com.vicgarci.kgbem.ppu.FrameSink
@@ -104,6 +106,23 @@ class EmulatorController(
             .trim()
             .take(16)
             .ifEmpty { "rom" }
+    }
+
+    /**
+     * Forwards a button-press to the underlying [TouchInputSource].
+     * No-op when the injected [InputSource] is not a [TouchInputSource]
+     * (e.g. on Desktop where keyboard input is used instead).
+     */
+    fun buttonDown(button: GameBoyButton) {
+        (inputSource as? TouchInputSource)?.onButtonDown(button)
+    }
+
+    /**
+     * Forwards a button-release to the underlying [TouchInputSource].
+     * No-op when the injected [InputSource] is not a [TouchInputSource].
+     */
+    fun buttonUp(button: GameBoyButton) {
+        (inputSource as? TouchInputSource)?.onButtonUp(button)
     }
 
     /**
