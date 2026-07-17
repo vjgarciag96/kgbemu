@@ -104,30 +104,50 @@ fun GameScreen(
                 .background(Color.Black),
         ) {
             // Game viewport
-            val currentPixels = pixels
-            if (currentPixels != null) {
-                pixelBuffer.updatePixels(currentPixels)
-                val imageBitmap = pixelBuffer.toImageBitmap()
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(GB_WIDTH.toFloat() / GB_HEIGHT.toFloat()),
-                ) {
-                    drawImage(
-                        image = imageBitmap,
-                        srcOffset = IntOffset.Zero,
-                        srcSize = IntSize(GB_WIDTH, GB_HEIGHT),
-                        dstSize = IntSize(size.width.toInt(), size.height.toInt()),
-                        filterQuality = FilterQuality.None,
-                    )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(GB_WIDTH.toFloat() / GB_HEIGHT.toFloat()),
+                contentAlignment = Alignment.Center,
+            ) {
+                val currentPixels = pixels
+                if (currentPixels != null) {
+                    pixelBuffer.updatePixels(currentPixels)
+                    val imageBitmap = pixelBuffer.toImageBitmap()
+                    Canvas(
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        drawImage(
+                            image = imageBitmap,
+                            srcOffset = IntOffset.Zero,
+                            srcSize = IntSize(GB_WIDTH, GB_HEIGHT),
+                            dstSize = IntSize(size.width.toInt(), size.height.toInt()),
+                            filterQuality = FilterQuality.None,
+                        )
+                    }
+                } else {
+                    Canvas(
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        // No frame data yet -- render blank screen.
+                    }
                 }
-            } else {
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(GB_WIDTH.toFloat() / GB_HEIGHT.toFloat()),
-                ) {
-                    // No frame data yet -- render blank screen.
+
+                // PAUSED overlay
+                if (state is EmulatorState.Paused) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color.Black.copy(alpha = 0.4f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = "PAUSED",
+                            color = Color.White,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
                 }
             }
 
