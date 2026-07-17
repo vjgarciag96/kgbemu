@@ -1,29 +1,26 @@
 package com.vicgarci.kgbem.joypad
 
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 /**
- * [InputSource] driven by touch events.
+ * [InputSource] backed by touch events from the UI overlay.
  *
- * The overlay composable (Task 9.1.2) calls [onButtonDown] / [onButtonUp]
- * when the user touches or releases a virtual button. This class is agnostic
- * about *where* the touch zones are — it only translates button events into
- * [JoypadState] updates.
+ * Call [onButtonDown] / [onButtonUp] from the touch-overlay composable
+ * to update the joypad state that the emulator reads each frame.
  */
+@Inject
 class TouchInputSource : InputSource {
 
     private val _state = MutableStateFlow(JoypadState())
-    override val state: StateFlow<JoypadState> = _state.asStateFlow()
+    override val state: StateFlow<JoypadState> = _state
 
-    /** Mark [button] as pressed. */
     fun onButtonDown(button: GameBoyButton) {
         _state.update { it.withButton(button, pressed = true) }
     }
 
-    /** Mark [button] as released. */
     fun onButtonUp(button: GameBoyButton) {
         _state.update { it.withButton(button, pressed = false) }
     }
