@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class, kotlinx.cinterop.BetaInteropApi::class)
+
 package com.vicgarci.kgbem.platform
 
 import com.vicgarci.kgbem.emulator.EmulatorLoop
