@@ -456,12 +456,12 @@
 #### Task 9.1.6: KeyboardInputSource (Desktop)
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 8.1.2, Task 9.1.5
 **ACs:**
-- [ ] Arrow keys → D-pad; Z → A; X → B; Enter → Start; Right Shift → Select
-- [ ] Key down sets button true; key up sets button false
-- [ ] First-launch tooltip displayed showing key bindings; dismissed on any key press
+- [x] Arrow keys → D-pad; Z → A; X → B; Enter → Start; Right Shift → Select
+- [x] Key down sets button true; key up sets button false
+- [x] First-launch tooltip displayed showing key bindings; dismissed on any key press
 
 ---
 
