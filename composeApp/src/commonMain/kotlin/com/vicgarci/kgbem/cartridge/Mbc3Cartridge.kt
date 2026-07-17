@@ -1,8 +1,8 @@
 package com.vicgarci.kgbem.cartridge
 
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 class Mbc3Cartridge(
     romData: ByteArray,
