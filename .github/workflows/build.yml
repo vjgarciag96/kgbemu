@@ -41,5 +41,5 @@ jobs:
         distribution: 'zulu'
         java-version: '21'
 
-    - name: Assemble XCFramework
-      run: ./gradlew :composeApp:assembleXCFramework
+    - name: Link iOS frameworks
+      run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64 :composeApp:linkReleaseFrameworkIosSimulatorArm64
