@@ -404,11 +404,11 @@
 #### Task 9.1.1: TouchInputSource (Android)
 **Owner:** Harry
 **Domain:** android
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 8.1.2
 **ACs:**
-- [ ] `TouchInputSource` implements `InputSource`; emits `JoypadState` on touch down/up events
-- [ ] Touch zones do not intercept touches intended for the game viewport
+- [x] `TouchInputSource` implements `InputSource`; emits `JoypadState` on touch down/up events
+- [x] Touch zones do not intercept touches intended for the game viewport
 
 #### Task 9.1.2: Touch control overlay layout
 **Owner:** Harry
