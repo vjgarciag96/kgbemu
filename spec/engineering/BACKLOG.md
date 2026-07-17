@@ -598,12 +598,12 @@
 #### Task 12.1.5: iOS CI job
 **Owner:** Arthur
 **Domain:** infra
-**Status:** todo
+**Status:** done
 **Dependencies:** Task 12.1.1
 **ACs:**
-- [ ] CI (GitHub Actions `macos-latest` runner) runs `./gradlew :composeApp:assembleXCFramework`
-- [ ] Job runs on every PR; failure blocks merge
-- [ ] Job placed after JVM test job (depends on it passing first)
+- [x] CI (GitHub Actions `macos-latest` runner) links iOS frameworks (`linkReleaseFrameworkIosArm64` + `linkReleaseFrameworkIosSimulatorArm64`)
+- [x] Job runs on every PR; failure blocks merge
+- [x] Job placed after JVM test job (depends on it passing first)
 
 ---
 
